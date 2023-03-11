@@ -3,24 +3,31 @@ from dataclasses import dataclass
 
 @dataclass
 class BaseData:
+    """Base dataclass for model data."""
+
     @classmethod
     def fields(cls) -> list[str]:
+        """Field names defined in derived dataclasses."""
         return list(cls.__annotations__.keys())
 
 
 @dataclass
 class UnparsedBaseData(BaseData):
+    """Unparsed data base dataclass."""
+
     ...
 
 
 @dataclass
 class InvalidData(UnparsedBaseData):
+    """Unparsed data with invalid format."""
+
     pass
 
 
 @dataclass
 class ArticleData(UnparsedBaseData):
-    """Unparsed single article's data"""
+    """Unparsed single article's data."""
 
     id: int
     title: str
@@ -35,7 +42,7 @@ class ArticleData(UnparsedBaseData):
 
 @dataclass
 class TweetData(UnparsedBaseData):
-    """Unparsed single tweet's data"""
+    """Unparsed single tweet's data."""
 
     id: int
     datetime: str
@@ -46,7 +53,7 @@ class TweetData(UnparsedBaseData):
 
 @dataclass
 class MlData(BaseData):
-    """The final data which is used in an AI model"""
+    """The final data which is used in an AI model."""
 
     year: int
     month: int

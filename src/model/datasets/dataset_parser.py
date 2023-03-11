@@ -6,7 +6,7 @@ from . import ArticleData, InvalidData, MlData, TweetData, UnparsedBaseData
 
 
 class DatasetParser:
-    """This class reads datasets from csv files.
+    """Read datasets from csv files.
 
     In order to have a unanimous output data with varying csv formats, any new formats must be added
     to src.datasets.data_types.py file and referenced in both _parse() match-case clause and
@@ -21,6 +21,7 @@ class DatasetParser:
     """
 
     def __init__(self, file_path: str) -> None:
+        """Initialize parser and setup reader according to CSV file format."""
         self.file_cursor: int = 0
         self.file_path = file_path
         self.dialect: Optional[Type[csv.Dialect]] = None
@@ -34,8 +35,8 @@ class DatasetParser:
         with open(self.file_path, encoding="utf-8") as csvfile:
             try:
                 self.dialect = csv.Sniffer().sniff(csvfile.read(4096))
-            except csv.Error as e:
-                print(f"ERROR: {e}")
+            except csv.Error as error:
+                print(f"ERROR: {error}")
                 self.dialect = None
             finally:
                 csvfile.seek(0)
@@ -44,18 +45,17 @@ class DatasetParser:
                 reader = csv.reader(csvfile, dialect=self.dialect)
             else:
                 reader = csv.reader(csvfile)
-                print(f"INFO: {self.dialect=}")
 
             self.field_names.extend(next(reader))
             self.field_names.remove("")  # remove a field named: ''
             csvfile.seek(0)
 
-    def _guess_data_type(self):
+    def _guess_data_type(self) -> None:
         types: list[Type[UnparsedBaseData]] = [ArticleData, TweetData]
 
-        for type in types:
-            if set(self.field_names) == set(type.fields()):
-                self.data_type = type
+        for type_ in types:
+            if set(self.field_names) == set(type_.fields()):
+                self.data_type = type_
                 break
 
         if self.data_type is InvalidData:
@@ -88,6 +88,7 @@ class DatasetParser:
                 raise RuntimeError("Tried to parse unknown data type")
 
     def read(self) -> Generator[MlData, None, None]:
+        """Yield one row from CSV without loading whole contents."""
         with open(self.file_path, newline="", encoding="utf-8") as csvfile:
             if self.dialect is not None:
                 reader = csv.DictReader(csvfile, dialect=self.dialect)
