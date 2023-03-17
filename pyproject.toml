@@ -1,0 +1,13 @@
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+skip = "__init__.py"
+
+[tool.pydocstyle]
+ignore = ["D100", "D104", "D203", "D213"]
+
+[tool.pylint]
+max-line-length = 100
+disable = "C0114"

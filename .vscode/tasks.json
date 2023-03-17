@@ -7,18 +7,17 @@
             "isBackground": false,
             "command": "python",
             "args": [
-                "-m", "pip", "install", "--user", "--upgrade", "-r",
-                "${workspaceFolder}/requirements.txt"
+                "-m", "pip", "install", "--user", "--upgrade",
+                "-r", "${workspaceFolder}/requirements.txt",
+                "-r", "${workspaceFolder}/src/server/requirements.txt"
             ],
             "windows": {
-                "command": "python.exe",
-            },
-            "presentation": {
-                "reveal": "silent",
+                "command": "python.exe"
             },
             "runOptions": {
-                "runOn": "folderOpen",
-            }
+                "runOn": "folderOpen"
+            },
+            "promptOnClose": true,
         }
     ]
 }
