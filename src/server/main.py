@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import datetime, timedelta
 from functools import wraps
@@ -11,6 +12,10 @@ from flask import Flask, Response, make_response, request
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .database_provider import getDatabaseConnection
+
+data = None
+with open("./res/datasets/dummy_data.json", "r") as file:
+    data = json.loads(file.read())
 
 app = Flask(__name__)
 # Generetion method -> uuid.uuid4().hex
@@ -329,7 +334,7 @@ def refresh(unique_id: str) -> Response:
 @app.route("/chart")
 def chart() -> str:
     """Chart data retrieval endpoint."""
-    return "chart"
+    return data
 
 
 @app.route("/future_value")
