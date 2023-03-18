@@ -10,4 +10,9 @@ ignore = ["D100", "D104", "D203", "D213"]
 
 [tool.pylint]
 max-line-length = 100
-disable = "C0114"
+disable = [
+    "C0103",  # not snake_case naming style
+    "C0114",  # missing module docstring
+    "C0116",  # missing method/class docstring
+    "R0902",  # too many instance attributes
+    "R0903" ] # too few public methods
