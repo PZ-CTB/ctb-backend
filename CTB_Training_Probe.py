@@ -73,4 +73,5 @@ while df.Date.size - 372 - rows * 30 > 0:
     age = 0
     counter = 0
     loop = 0
+
 print(vectors)
