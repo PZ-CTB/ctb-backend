@@ -1,6 +1,6 @@
 {
     "[jsonc]": {
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": false,
     },
     "[python]": {
         "editor.codeActionsOnSave": {
@@ -11,15 +11,22 @@
     },
     "python.analysis.typeCheckingMode": "basic",
     "python.languageServer": "Pylance",
-
     "isort.args": [
-        "--config", "pyproject.toml"
+        "--config",
+        "pyproject.toml"
     ],
-
     "python.linting.pycodestyleEnabled": false,
     "python.linting.pydocstyleEnabled": true,
-
-    "black-formatter.args": [ "--config", "pyproject.toml" ],
-    "pylint.args": [ "--config",  "pyproject.toml" ],
-    "python.linting.pydocstyleArgs": [ "--config", "pyproject.toml" ],
+    "black-formatter.args": [
+        "--config",
+        "pyproject.toml"
+    ],
+    "pylint.args": [
+        "--config",
+        "pyproject.toml"
+    ],
+    "python.linting.pydocstyleArgs": [
+        "--config",
+        "pyproject.toml"
+    ],
 }
