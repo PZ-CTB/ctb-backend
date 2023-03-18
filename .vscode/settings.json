@@ -1,13 +1,13 @@
 {
     "[jsonc]": {
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
     },
     "[python]": {
         "editor.codeActionsOnSave": {
             "source.organizeImports": true
         },
         "editor.defaultFormatter": "ms-python.black-formatter",
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": false,
     },
     "python.analysis.typeCheckingMode": "basic",
     "python.languageServer": "Pylance",
@@ -16,7 +16,7 @@
         "--config", "pyproject.toml"
     ],
 
-    "python.linting.pycodestyleEnabled": true,
+    "python.linting.pycodestyleEnabled": false,
     "python.linting.pydocstyleEnabled": true,
 
     "black-formatter.args": [ "--config", "pyproject.toml" ],

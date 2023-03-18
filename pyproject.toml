@@ -6,7 +6,7 @@ profile = "black"
 skip = "__init__.py"
 
 [tool.pydocstyle]
-ignore = ["D100", "D104", "D203", "D213"]
+ignore = ["D100", "D101", "D103", "D104", "D203", "D213"]
 
 [tool.pylint]
 max-line-length = 100
