@@ -23,7 +23,7 @@ RUN pip3 install bcrypt secrets
 ENV PYTHONOPTIMIZE=TRUE
 ENV CERT_KEY_FILE=$APPLICATION_ROOT_PATH"res/cert/example.key"
 ENV CERT_FILE=$APPLICATION_ROOT_PATH"res/cert/example.crt"
-ENV PYTHONPATH=$APPLICATION_ROOT_PATH"/src/server/:$PYTHONPATH"
+ENV PYTHONPATH=$APPLICATION_ROOT_PATH"/src/:$PYTHONPATH"
 
 EXPOSE 8080
-CMD gunicorn --keyfile $CERT_KEY_FILE --certfile $CERT_FILE --bind 0.0.0.0:8080 main:app 
+CMD gunicorn --keyfile $CERT_KEY_FILE --certfile $CERT_FILE --bind 0.0.0.0:8080 server.main:app 

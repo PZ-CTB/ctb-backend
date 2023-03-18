@@ -7,26 +7,19 @@
             "source.organizeImports": true
         },
         "editor.defaultFormatter": "ms-python.black-formatter",
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
     },
     "python.analysis.typeCheckingMode": "basic",
     "python.languageServer": "Pylance",
+
     "isort.args": [
-        "--config",
-        "pyproject.toml"
+        "--config", "pyproject.toml"
     ],
-    "python.linting.pycodestyleEnabled": false,
+
+    "python.linting.pycodestyleEnabled": true,
     "python.linting.pydocstyleEnabled": true,
-    "black-formatter.args": [
-        "--config",
-        "pyproject.toml"
-    ],
-    "pylint.args": [
-        "--config",
-        "pyproject.toml"
-    ],
-    "python.linting.pydocstyleArgs": [
-        "--config",
-        "pyproject.toml"
-    ],
+
+    "black-formatter.args": [ "--config", "pyproject.toml" ],
+    "pylint.args": [ "--config",  "pyproject.toml" ],
+    "python.linting.pydocstyleArgs": [ "--config", "pyproject.toml" ],
 }

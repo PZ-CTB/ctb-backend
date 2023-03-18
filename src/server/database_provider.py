@@ -1,13 +1,16 @@
 import sqlite3
 import os
 
-from constants import PATHS
+from . import PATHS
+
 
 def getDatabaseConnection():
     return sqlite3.connect(PATHS.DATABASE)
 
+
 def loadDefaultDataToDatabase():
     pass
+
 
 def initDatabase():
     if not os.path.exists(PATHS.DATABASE):
@@ -20,5 +23,6 @@ def initDatabase():
         cursor.close()
         connection.commit()
         connection.close()
-            
+
+
 initDatabase()
