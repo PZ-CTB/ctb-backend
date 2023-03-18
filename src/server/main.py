@@ -1,5 +1,5 @@
-import sqlite3
-import constants
+import database_provider
+
 from flask import Flask
 
 app = Flask(__name__)
