@@ -22,3 +22,4 @@ disable = [
     "C0116",  # missing method/class docstring
     "R0902",  # too many instance attributes
     "R0903" ] # too few public methods
+ignore = ["__init__.py"]
