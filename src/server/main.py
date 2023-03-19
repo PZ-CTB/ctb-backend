@@ -15,14 +15,15 @@ app = Flask(__name__)
 # Generetion method -> uuid.uuid4().hex
 app.config["SECRET_KEY"] = "55cfba6d5bd6405c8e9b7b681f6b8835"
 
-# decorator for verifying the JWT
-def token_required(fun) -> Any:
+
+# Decorator for verifying the JWT
+def token_required(fun: function) -> Any:
     """Validate received token."""
 
     @wraps(fun)
-    def decorated(*args, **kwargs) -> Any:
+    def decorated(*args: tuple, **kwargs: dict) -> Any:
         """Validate received token."""
-        token: str = None
+        token: str = ""
         # JWT is passed in the request header
         if "x-access-token" in request.headers:
             token = request.headers["x-access-token"]
@@ -49,8 +50,8 @@ def token_required(fun) -> Any:
             except:
                 return jsonify({"message": "Database connection error!"}), 500
 
-            unique_id: str = None
-            email: str = None
+            unique_id: str = ""
+            email: str = ""
 
             if user_information:
                 # Retrieve user uuid
@@ -66,10 +67,10 @@ def token_required(fun) -> Any:
     return decorated
 
 
-def revoke_token(token) -> Any:
+def revoke_token(token: str) -> Any:
     """Revoking activated token."""
     decoded_token: str = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
-    expiry: datetime = datetime.fromtimestamp(decoded_token["exp"])
+    expiry: datetime = datetime.fromtimestamp(float(decoded_token["exp"]))
 
     # Saving revoked token into the database
     try:
@@ -87,7 +88,7 @@ def revoke_token(token) -> Any:
         return jsonify({"message": "Database connection error!"}), 500
 
 
-def is_token_revoked(token) -> Any:
+def is_token_revoked(token: str) -> Any:
     """Check if token is revoked."""
     try:
         connection: Connection = getDatabaseConnection()
@@ -123,7 +124,7 @@ def register() -> Response:
 
     try:
         connection: Connection = getDatabaseConnection()
-        sql = "SELECT * FROM users WHERE email=?"
+        sql: str = "SELECT * FROM users WHERE email=?"
         cursor: Cursor = connection.cursor()
         cursor.execute(sql, (email,))
         user_information: list = cursor.fetchall()
@@ -139,9 +140,9 @@ def register() -> Response:
         )
 
     try:
-        connection: Connection = getDatabaseConnection()
+        connection = getDatabaseConnection()
         sql = "INSERT INTO users(uuid, email, password_hash) VALUES (?, ?, ?)"
-        cursor: Cursor = connection.cursor()
+        cursor = connection.cursor()
         cursor.execute(
             sql,
             (
@@ -176,9 +177,9 @@ def login() -> Response:
     except:
         return jsonify({"message": "Database connection error!"}), 500
 
-    user_uuid: str = None
-    user_email: str = None
-    user_password: str = None
+    user_uuid: str = ""
+    user_email: str = ""
+    user_password: str = ""
 
     if not user_information:
         return make_response(
@@ -190,7 +191,7 @@ def login() -> Response:
         user_password = user_information[0][2]  # password
 
     if check_password_hash(user_password, password):
-        token = jwt.encode(
+        token: str = jwt.encode(
             {
                 "uuid": user_uuid,
                 "email": user_email,
@@ -209,7 +210,7 @@ def login() -> Response:
 
 @app.route("/me", methods=["GET"])
 @token_required
-def me(unique_id, email) -> Response:
+def me(unique_id: str, email: str) -> Response:
     """User's information endpoint."""
     try:
         connection: Connection = getDatabaseConnection()
@@ -222,10 +223,9 @@ def me(unique_id, email) -> Response:
         return jsonify({"message": "Database connection error!"}), 500
 
     if user_information:
-        uuid: str = user_information[0][0]
-        email: str = user_information[0][1]
-        walled_usd: float = user_information[0][2]
-        wallet_btc: float = user_information[0][3]
+        uuid: str = user_information[0][0]  #  uuid
+        walled_usd: float = user_information[0][2]  # wallet_usd
+        wallet_btc: float = user_information[0][3]  # wallet_btc
     else:
         return make_response(
             "Could not verify", 401, {"WWW-Authenticate": 'Basic realm ="User does not exist!"'}
@@ -243,7 +243,7 @@ def me(unique_id, email) -> Response:
 
 @app.route("/logout", methods=["POST"])
 @token_required
-def logout(unique_id, email) -> Response:
+def logout(unique_id: str, email: str) -> Response:
     """Logout endpoint."""
     token: str = request.headers["x-access-token"]
     if token:
