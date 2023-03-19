@@ -5,14 +5,12 @@ from . import PATHS
 
 
 def getDatabaseConnection():
+    """Return new connection to database."""
     return sqlite3.connect(PATHS.DATABASE)
 
 
-def loadDefaultDataToDatabase():
-    pass
-
-
 def initDatabase():
+    """Create new database if it does not exist."""
     if not os.path.exists(PATHS.DATABASE):
         connection = getDatabaseConnection()
         cursor = connection.cursor()
