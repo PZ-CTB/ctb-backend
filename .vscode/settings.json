@@ -20,6 +20,6 @@
     "python.linting.pydocstyleEnabled": true,
 
     "black-formatter.args": [ "--config", "pyproject.toml" ],
-    "isort.args": [ "--config", "pyproject.toml" ],
+    "isort.args": [ "--settings-file", "pyproject.toml" ],
     "python.linting.pydocstyleArgs": [ "--config", "pyproject.toml" ],
 }

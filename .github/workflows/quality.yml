@@ -4,6 +4,7 @@ on: [pull_request]
 
 jobs:
   pylint:
+    name: Code check
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -19,6 +20,7 @@ jobs:
       run: |
         pylint $(git ls-files '*.py')
   pydocstyle:
+    name: Docstrings check
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -33,3 +35,35 @@ jobs:
     - name: Run pydocstyle
       run: |
         pydocstyle --config pyproject.toml --count
+  isort:
+    name: Imports check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.11
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install isort
+    - name: Run isort
+      run: |
+        isort --settings-file pyproject.toml --check --diff .
+  black:
+    name: Format check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.11
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black
+    - name: Run black
+      run: |
+        black --config pyproject.toml --diff --color .
