@@ -4,7 +4,7 @@ on: [pull_request]
 
 jobs:
   pylint:
-    name: Code check
+    name: Code check - pylint
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -19,6 +19,22 @@ jobs:
     - name: Run pylint
       run: |
         pylint --output-format=colorized $(git ls-files '*.py')
+  mypy:
+    name: Code check - mypy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.11
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mypy
+    - name: Run mypy
+      run: |
+        mypy --config-file pyproject.toml .
   pydocstyle:
     name: Docstrings check
     runs-on: ubuntu-latest

@@ -17,9 +17,11 @@
     "python.analysis.typeCheckingMode": "basic",
     "python.languageServer": "Pylance",
 
+    "python.linting.mypyEnabled": true,
     "python.linting.pydocstyleEnabled": true,
 
     "black-formatter.args": [ "--config", "pyproject.toml" ],
     "isort.args": [ "--settings-file", "pyproject.toml" ],
+    "python.linting.mypyArgs": [ "--config-file", "pyproject.toml" ],
     "python.linting.pydocstyleArgs": [ "--config", "pyproject.toml" ],
 }
