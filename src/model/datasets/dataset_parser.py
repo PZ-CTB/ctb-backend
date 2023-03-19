@@ -31,7 +31,7 @@ class DatasetParser:
         self._prepare_reader()
         self._guess_data_type()
 
-    def _prepare_reader(self):
+    def _prepare_reader(self) -> None:
         with open(self.file_path, encoding="utf-8") as csvfile:
             try:
                 self.dialect = csv.Sniffer().sniff(csvfile.read(4096))

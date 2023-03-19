@@ -9,17 +9,19 @@
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.formatOnSave": true,
     },
+    "files.eol": "\n",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+
     "python.analysis.typeCheckingMode": "basic",
     "python.languageServer": "Pylance",
 
-    "isort.args": [
-        "--config", "pyproject.toml"
-    ],
-
-    "python.linting.pycodestyleEnabled": true,
+    "python.linting.mypyEnabled": true,
     "python.linting.pydocstyleEnabled": true,
 
     "black-formatter.args": [ "--config", "pyproject.toml" ],
-    "pylint.args": [ "--config",  "pyproject.toml" ],
+    "isort.args": [ "--settings-file", "pyproject.toml" ],
+    "python.linting.mypyArgs": [ "--config-file", "pyproject.toml" ],
     "python.linting.pydocstyleArgs": [ "--config", "pyproject.toml" ],
 }
