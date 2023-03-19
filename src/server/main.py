@@ -13,6 +13,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .database_provider import getDatabaseConnection
 
+from .database_provider import getDatabaseConnection
+
 data = dict()
 with open("./res/datasets/dummy_data.json", "r") as file:
     data = json.loads(file.read())
@@ -335,15 +337,37 @@ def refresh(unique_id: str) -> Response:
 def chart() -> Response:
     """Chart data retrieval endpoint."""
     args = request.args
-    aggregate_param = args.get("aggregate", 1)
+    aggregate_param = int(args.get("aggregate", 1))
+    aggregate_seconds = int(aggregate_param) * 3600 * 24
     from_param = args.get("from")
     to_param = args.get("to")
     if from_param == None or to_param == None:
         return Response("Please provide both from and to parameters!", 400)
 
-    filtered_list = [
-        entry for entry in data if entry["date"] >= from_param and entry["date"] <= to_param
-    ]
+    db = getDatabaseConnection()
+    cur = db.cursor()
+    filtered_list = []
+
+    if aggregate_param == 1:
+        cur.execute(
+            """ SELECT date, value FROM exchange_rate_history
+                        WHERE date BETWEEN ? and ?
+                        ORDER BY date""",
+            [from_param, to_param],
+        )
+        filtered_list = [{"date": date, "avg": avg} for date, avg in cur]
+    else:
+        cur.execute(
+            """ SELECT MIN(date), AVG(value), MIN(value), MAX(value) FROM exchange_rate_history
+                        WHERE date BETWEEN ? and ?
+                        GROUP BY ROUND((STRFTIME("%s", ?) - timestamp)/(?) - 0.5)
+                        ORDER BY MIN(date)""",
+            [from_param, to_param, to_param, aggregate_seconds],
+        )
+
+        filtered_list = [
+            {"date": date, "avg": avg, "low": low, "high": high} for date, avg, low, high in cur
+        ]
 
     return Response(json.dumps(filtered_list).encode("utf-8"), 200)
 
