@@ -1,24 +1,26 @@
-import sqlite3
 import os
+import sqlite3
 
 from . import PATHS
 
 
-def getDatabaseConnection():
+def getDatabaseConnection() -> sqlite3.Connection:
+    """Return connected transaction tunnel to the database."""
     return sqlite3.connect(PATHS.DATABASE)
 
 
-def loadDefaultDataToDatabase():
+def loadDefaultDataToDatabase() -> None:  # noqa: D103
     pass
 
 
-def initDatabase():
+def initDatabase() -> None:
+    """Create SQLite3 database and insert some default historic data."""
     if not os.path.exists(PATHS.DATABASE):
         connection = getDatabaseConnection()
         cursor = connection.cursor()
-        with open(PATHS.DATABASE_SCHEMA) as f:
+        with open(file=PATHS.DATABASE_SCHEMA, encoding="utf-8") as f:
             cursor.executescript(f.read())
-        with open(PATHS.DATABASE_DEFAULT_DUMP) as f:
+        with open(file=PATHS.DATABASE_DEFAULT_DUMP, encoding="utf-8") as f:
             cursor.executescript(f.read())
         cursor.close()
         connection.commit()
