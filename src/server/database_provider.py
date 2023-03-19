@@ -9,7 +9,7 @@ def getDatabaseConnection() -> sqlite3.Connection:
     return sqlite3.connect(PATHS.DATABASE)
 
 
-def __initDatabase__() -> None:
+def _initDatabase() -> None:
     """Create SQLite3 database and insert some default historic data."""
     if not os.path.exists(PATHS.DATABASE):
         connection = getDatabaseConnection()
@@ -23,4 +23,4 @@ def __initDatabase__() -> None:
         connection.close()
 
 
-__initDatabase__()
+_initDatabase()
