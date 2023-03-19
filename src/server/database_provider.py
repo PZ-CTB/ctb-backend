@@ -4,6 +4,11 @@ import sqlite3
 from . import PATHS
 
 
+def getDatabaseConnection() -> sqlite3.Connection:
+    """Return connected transaction tunnel to the database."""
+    return sqlite3.connect(PATHS.DATABASE)
+
+
 def loadDefaultDataToDatabase() -> None:  # noqa: D103
     pass
 
@@ -11,11 +16,11 @@ def loadDefaultDataToDatabase() -> None:  # noqa: D103
 def initDatabase() -> None:
     """Create SQLite3 database and insert some default historic data."""
     if not os.path.exists(PATHS.DATABASE):
-        connection = sqlite3.connect(PATHS.DATABASE)
+        connection = getDatabaseConnection()
         cursor = connection.cursor()
-        with open(PATHS.DATABASE_SCHEMA, mode="r", encoding="utf-8") as f:
+        with open(file=PATHS.DATABASE_SCHEMA, encoding="utf-8") as f:
             cursor.executescript(f.read())
-        with open(PATHS.DATABASE_DEFAULT_DUMP, mode="r", encoding="utf-8") as f:
+        with open(file=PATHS.DATABASE_DEFAULT_DUMP, encoding="utf-8") as f:
             cursor.executescript(f.read())
         cursor.close()
         connection.commit()
