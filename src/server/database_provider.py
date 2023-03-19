@@ -9,7 +9,7 @@ def getDatabaseConnection():
     return sqlite3.connect(PATHS.DATABASE)
 
 
-def initDatabase():
+def __initDatabase__():
     """Create new database if it does not exist."""
     if not os.path.exists(PATHS.DATABASE):
         connection = getDatabaseConnection()
@@ -23,4 +23,4 @@ def initDatabase():
         connection.close()
 
 
-initDatabase()
+__initDatabase__()
