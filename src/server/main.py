@@ -13,7 +13,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .database_provider import getDatabaseConnection
 
-data = None
+data = dict()
 with open("./res/datasets/dummy_data.json", "r") as file:
     data = json.loads(file.read())
 
@@ -332,9 +332,20 @@ def refresh(unique_id: str) -> Response:
 
 
 @app.route("/chart")
-def chart() -> str:
+def chart() -> Response:
     """Chart data retrieval endpoint."""
-    return data
+    args = request.args
+    aggregate_param = args.get("aggregate", 1)
+    from_param = args.get("from")
+    to_param = args.get("to")
+    if from_param == None or to_param == None:
+        return Response("Please provide both from and to parameters!", 400)
+
+    filtered_list = [
+        entry for entry in data if entry["date"] >= from_param and entry["date"] <= to_param
+    ]
+
+    return Response(json.dumps(filtered_list).encode("utf-8"), 200)
 
 
 @app.route("/future_value")
