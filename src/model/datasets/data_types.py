@@ -15,14 +15,10 @@ class BaseData:
 class UnparsedBaseData(BaseData):
     """Unparsed data base dataclass."""
 
-    ...
-
 
 @dataclass
 class InvalidData(UnparsedBaseData):
     """Unparsed data with invalid format."""
-
-    pass
 
 
 @dataclass
