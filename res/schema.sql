@@ -1,17 +1,15 @@
 CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    uuid TEXT NOT NULL,
-    email TEXT NOT NULL,
+    uuid TEXT PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
     password_hash TEXT,
     wallet_usd FLOAT NOT NULL DEFAULT 0.0,
     wallet_btc FLOAT NOT NULL DEFAULT 0.0
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS user_name_index ON users (email);
+CREATE UNIQUE INDEX IF NOT EXISTS user_uuid_index ON users (uuid);
 
 CREATE TABLE IF NOT EXISTS revoked_tokens (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    token TEXT NOT NULL,
+    token TEXT PRIMARY KEY,
     expiry TEXT NOT NULL
 );
 
