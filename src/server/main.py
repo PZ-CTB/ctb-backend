@@ -59,9 +59,7 @@ def token_required(fun: Callable[..., Any]) -> Callable[..., Any]:
                     {"WWW-Authenticate": 'Basic realm ="Token is revoked!"'},
                 )
         except SqlError as e:
-            return make_response(
-                json.dumps({"message": "Database connection error: {}".format(e)}), 501
-            )
+            return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
 
         # Decode the token and retrieve the information contained in it
         try:
@@ -76,7 +74,7 @@ def token_required(fun: Callable[..., Any]) -> Callable[..., Any]:
                 connection.close()
             except SqlError as e:
                 return make_response(
-                    json.dumps({"message": "Database connection error: {}".format(e)}), 500
+                    json.dumps({"message": f"Database connection error: {e}"}), 500
                 )
 
             unique_id: str = ""
@@ -93,7 +91,7 @@ def token_required(fun: Callable[..., Any]) -> Callable[..., Any]:
 
         except jwt.InvalidTokenError as e:
             return make_response(
-                json.dumps({"message": "Token is invalid: {}".format(e)}),
+                json.dumps({"message": f"Token is invalid: {e}"}),
                 401,
                 {"WWW-Authenticate": 'Basic realm ="Token is invalid!"'},
             )
@@ -157,7 +155,7 @@ def register() -> Response:
         password: str = new_user["password"]
         repeated_password: str = new_user["repeatedPassword"]
     except KeyError as e:
-        return make_response(json.dumps({"message": "Invalid Json format: {}".format(e)}), 202)
+        return make_response(json.dumps({"message": f"Invalid Json format: {e}"}), 202)
 
     if password != repeated_password:
         return make_response(
@@ -174,9 +172,7 @@ def register() -> Response:
         user_information: List[Tuple] = cursor.fetchall()
         connection.close()
     except SqlError as e:
-        return make_response(
-            json.dumps({"message": "Database connection error: {}".format(e)}), 501
-        )
+        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
 
     if user_information:
         return make_response(
@@ -201,9 +197,7 @@ def register() -> Response:
         connection.commit()
         connection.close()
     except SqlError as e:
-        return make_response(
-            json.dumps({"message": "Database connection error: {}".format(e)}), 501
-        )
+        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
 
     return make_response(json.dumps({"message": "Successfully registered"}), 201)
 
@@ -217,7 +211,7 @@ def login() -> Response:
         email: str = auth["email"]
         password: str = auth["password"]
     except KeyError as e:
-        return make_response(json.dumps({"message": "Invalid Json format: {}".format(e)}), 202)
+        return make_response(json.dumps({"message": f"Invalid Json format: {e}"}), 202)
 
     try:
         connection: Connection = getDatabaseConnection()
@@ -228,7 +222,7 @@ def login() -> Response:
         connection.close()
     except SqlError as e:
         return make_response(
-            json.dumps({"message": "Database connection error: {}".format(e)}), 501
+            json.dumps({"message": f"Database connection error: {e}"}), 501
         )
 
     if not user_information:
@@ -274,7 +268,7 @@ def me(unique_id: str) -> Response:
         connection.close()
     except SqlError as e:
         return make_response(
-            json.dumps({"message": "Database connection error: {}".format(e)}), 501
+            json.dumps({"message": f"Database connection error: {e}"}), 501
         )
 
     if not user_information:
@@ -319,9 +313,7 @@ def logout(unique_id: str) -> Response:
     try:
         revoke_token(token)
     except SqlError as e:
-        return make_response(
-            json.dumps({"message": "Database connection error: {}".format(e)}), 501
-        )
+        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
 
     return make_response(json.dumps({"message": "User is successfully logged out"}), 201)
 
