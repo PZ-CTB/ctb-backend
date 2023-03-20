@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, List, Tuple
 from uuid import UUID
 
 import jwt  # type: ignore
-from flask import Flask, Response, jsonify, make_response, request  # type: ignore
+from flask import Flask, Response, make_response, request  # type: ignore
 from werkzeug.security import (  # type: ignore
     check_password_hash,
     generate_password_hash,
@@ -124,7 +124,7 @@ def revoke_token(token: str) -> None:
         connection.commit()
         connection.close()
     except SqlError as e:
-        raise SqlError(f"Database connection error: {str(e)}")
+        raise SqlError(f"Database connection error: {str(e)}") from e
 
 
 def is_token_revoked(token: str) -> bool:
@@ -218,7 +218,6 @@ def login() -> Response:
         password: str = auth["password"]
     except KeyError as e:
         return make_response(json.dumps({"message": "Invalid Json format: {}".format(e)}), 202)
-
 
     try:
         connection: Connection = getDatabaseConnection()
