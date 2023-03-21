@@ -14,6 +14,8 @@ docker run -d -p 8080:8080 ctb
 
 Test connection (in your browser): `https://localhost:8080/`.
 
+## Killing the container
+
 To shutdown the server, type:
 ```
 docker ps
@@ -32,10 +34,14 @@ Or just type the following command to kill all containers:
 docker kill `docker container ls -q`
 ```
 
+## One-command test
+
 Whole test (killing old, building and starting the new one) can be done with one command:
 ```
 docker kill `docker container ls -q` ; docker build . -t ctb && docker run -d -p 8080:8080 ctb
 ```
+
+## Directory binding
 
 In case of necessity of saving the database between every start of the container,
 it can be achieved by binding of container's directory with host's directory.
