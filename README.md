@@ -2,37 +2,37 @@
 
 ## How to run
 
-Najpierw w celu zbudowania obrazu wykonaj polecenie:
+At the beginig you must create an image:
 ```
 docker build . -t ctb
 ```
 
-Następnie w celu uruchomienia kontenera:
+The next step is starting container. For that you must type:
 ```
 docker run -d -p 8080:8080 ctb
 ```
 
-Wtedy bedzie można wejść (np przez przeglądarkę) na adres: `https://localhost:8080/`
+And then you should be able to open (in your browser) address: `https://localhost:8080/`.
 
-W celu wyłączenia serwera można wpisać:
+To shutdown the server, type:
 ```
 docker ps
 ```
-Wyświetlą się tam id kontenerów. Aby jakiś ubić należy wykonać polecenie:
+The command shows ids of containers. To kill the container, you must execute the command:
 ```
-docker kill <id kontenera>
+docker kill <id of the container>
 ```
-np:
+f.e.:
 ```
 docker kill 3fd7d783ce9a
 ```
 
-A jak komuś się nie chce, to proponuję jednym poleceniem:
+If someone does not want searching the id, they could execute one command:
 ```
 docker kill `docker container ls -q`
 ```
 
-Pojedynczy test można wykonywać poleceniem:
+Whole test (killing old, building and starting the new one) can be done with one command:
 ```
 docker kill `docker container ls -q` ; docker build . -t ctb && docker run -d -p 8080:8080 ctb
 ```
@@ -41,12 +41,18 @@ Jeśli nie chcemy, aby baza danych nie była tworzona za każdym razem, można w
 katalogu podczas uruchamiania kontenera. Wcześniej należy utworzyć odpowiedni katalog na naszym
 komputerze. Przykładowo, aby baza danych była w katalogi <i>/tmp/ctb_opt</i>
 należy wykonać polecenia:
+
+In case of necessity of saving the database between every start of container,
+it should be done binding of container's directory with host's directory.
+The destination directory on the host must be created befor the binding.
+For example, for storing the database in <i>/tmp/ctb_opt</i>,
+it must be execuuted the following command:
 ```
 mkdir -p /tmp/ctb_opt
 docker run -d -p 8080:8080 --mount type=bind,source=/tmp/ctb_opt,target=/var/ctb ctb
 ```
 
-Lub w jednej linijce, włączając w to restart starego kontenera:
+Or if someone want do everything in one test, they should execute:
 ```
 mkdir -p /tmp/ctb_opt && docker kill `docker container ls -q` ; docker build . -t ctb && docker run -d -p 8080:8080 --mount type=bind,source=/tmp/ctb_opt,target=/var/ctb ctb
 ```
