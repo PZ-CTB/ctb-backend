@@ -7,12 +7,9 @@ from sqlite3 import Error as SqlError
 from typing import Any, Callable
 from uuid import UUID
 
-import jwt  # type: ignore
-from flask import Flask, Response, make_response, request  # type: ignore
-from werkzeug.security import (  # type: ignore
-    check_password_hash,
-    generate_password_hash,
-)
+import jwt
+from flask import Flask, Response, make_response, request
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from .database_provider import getDatabaseConnection
 
@@ -35,7 +32,7 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
         # If the token is not passed return message and exit function
         if not token:
             return make_response(
-                json.dumps({"message": "Token is missing"}),
+                {"message": "Token is missing"},
                 401,
                 {"WWW-Authenticate": 'Basic realm ="Token is missing!"'},
             )
@@ -43,7 +40,7 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
         # If the token is revoked return message and exit function
         if is_token_revoked(token):
             return make_response(
-                json.dumps({"message": "Token is revoked"}),
+                {"message": "Token is revoked"},
                 401,
                 {"WWW-Authenticate": 'Basic realm ="Token is revoked!"'},
             )
@@ -53,7 +50,7 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
             data: dict[str, Any] = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
         except jwt.InvalidTokenError as e:
             return make_response(
-                json.dumps({"message": f"Token is invalid: {e}"}),
+                {"message": f"Token is invalid: {e}"},
                 401,
                 {"WWW-Authenticate": 'Basic realm ="Token is invalid!"'},
             )
@@ -66,19 +63,17 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
             user_information: list[tuple[str, str]] = cursor.fetchall()
             connection.close()
         except SqlError as e:
-            return make_response(json.dumps({"message": f"Database connection error: {e}"}), 500)
-
-        unique_id: str = ""
+            return make_response({"message": f"Database connection error: {e}"}, 500)
 
         if not user_information:
             return make_response(
-                json.dumps({"message": "User does not exist"}),
+                {"message": "User does not exist"},
                 401,
                 {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
             )
 
         # Retrieve user uuid
-        unique_id = user_information[0][0]
+        unique_id: str = user_information[0][0]
 
         # Returns the current logged-in users context to the routes
         return fun(unique_id, *args, **kwargs)
@@ -134,19 +129,11 @@ def register() -> Response:
     new_user: dict[str, str] = request.json
 
     unique_id: UUID = uuid.uuid4()
-    try:
-        email: str = new_user["email"]
-        password: str = new_user["password"]
-        repeated_password: str = new_user["repeatedPassword"]
-    except KeyError as e:
-        return make_response(json.dumps({"message": f"Invalid Json format: {e}"}), 202)
+    email: str = new_user.get("email", "")
+    password: str = new_user.get("password", "")
 
-    if password != repeated_password:
-        return make_response(
-            json.dumps({"message": "Passwords doesn't match"}),
-            202,
-            {"WWW-Authenticate": "Passwords doesn't match"},
-        )
+    if not email or not password:
+        return make_response({"message": "Invalid Json format"}, 202)
 
     try:
         connection: Connection = getDatabaseConnection()
@@ -156,11 +143,11 @@ def register() -> Response:
         user_information: list[tuple] = cursor.fetchall()
         connection.close()
     except SqlError as e:
-        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
+        return make_response({"message": f"Database connection error: {e}"}, 501)
 
     if user_information:
         return make_response(
-            json.dumps({"message": "User already exists. Please Log in."}),
+            {"message": "User already exists. Please Log in."},
             202,
             {"WWW-Authenticate": "User already exists. Please Log in."},
         )
@@ -181,9 +168,9 @@ def register() -> Response:
         connection.commit()
         connection.close()
     except SqlError as e:
-        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
+        return make_response({"message": f"Database connection error: {e}"}, 501)
 
-    return make_response(json.dumps({"message": "Successfully registered"}), 201)
+    return make_response({"message": "Successfully registered"}, 201)
 
 
 @app.route("/login", methods=["POST"])
@@ -191,11 +178,11 @@ def login() -> Response:
     """Login endpoint."""
     auth: dict[str, Any] = request.json
 
-    try:
-        email: str = auth["email"]
-        password: str = auth["password"]
-    except KeyError as e:
-        return make_response(json.dumps({"message": f"Invalid Json format: {e}"}), 202)
+    email: str = auth.get("email", "")
+    password: str = auth.get("password", "")
+
+    if not email or not password:
+        return make_response({"message": "Invalid Json format"}, 202)
 
     try:
         connection: Connection = getDatabaseConnection()
@@ -205,11 +192,11 @@ def login() -> Response:
         user_information: list[tuple[str, str, str]] = cursor.fetchall()
         connection.close()
     except SqlError as e:
-        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
+        return make_response({"message": f"Database connection error: {e}"}, 501)
 
     if not user_information:
         return make_response(
-            json.dumps({"message": "User does not exist"}),
+            {"message": "User does not exist"},
             401,
             {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
         )
@@ -228,10 +215,10 @@ def login() -> Response:
             app.config["SECRET_KEY"],
         )
 
-        return make_response(json.dumps({"AUTH-TOKEN": token}), 201)
+        return make_response({"AUTH-TOKEN": token}, 201)
 
     return make_response(
-        json.dumps({"message": "Could not verify"}),
+        {"message": "Could not verify"},
         403,
         {"WWW-Authenticate": 'Basic realm ="Wrong password"'},
     )
@@ -249,11 +236,11 @@ def me(unique_id: str) -> Response:
         user_information: list = cursor.fetchall()
         connection.close()
     except SqlError as e:
-        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
+        return make_response({"message": f"Database connection error: {e}"}, 501)
 
     if not user_information:
         return make_response(
-            json.dumps({"message": "User does not exist"}),
+            {"message": "User does not exist"},
             401,
             {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
         )
@@ -263,9 +250,7 @@ def me(unique_id: str) -> Response:
     wallet_btc: float = user_information[0][2]
 
     return make_response(
-        json.dumps(
-            {"uuid": unique_id, "email": email, "wallet_usd": wallet_usd, "wallet_btc": wallet_btc}
-        ),
+        {"uuid": unique_id, "email": email, "wallet_usd": wallet_usd, "wallet_btc": wallet_btc},
         200,
     )
 
@@ -278,14 +263,14 @@ def logout(_unique_id: str) -> Response:
 
     if not token:
         return make_response(
-            json.dumps({"message": "Token not delivered"}),
+            {"message": "Token not delivered"},
             401,
             {"WWW-Authenticate": 'Basic realm ="Token not delivered!"'},
         )
 
     if is_token_revoked(token):
         return make_response(
-            json.dumps({"message": "Token already revoked"}),
+            {"message": "Token already revoked"},
             401,
             {"WWW-Authenticate": 'Basic realm ="Token already revoked!"'},
         )
@@ -293,9 +278,9 @@ def logout(_unique_id: str) -> Response:
     try:
         revoke_token(token)
     except SqlError as e:
-        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
+        return make_response({"message": f"Database connection error: {e}"}, 501)
 
-    return make_response(json.dumps({"message": "User is successfully logged out"}), 201)
+    return make_response({"message": "User is successfully logged out"}, 201)
 
 
 @app.route("/refresh", methods=["POST"])
@@ -310,13 +295,13 @@ def refresh(unique_id: str) -> Response:
         user_information: list[tuple[str, str]] = cursor.fetchall()
         connection.close()
     except SqlError as e:
-        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 500)
+        return make_response({"message": f"Database connection error: {e}"}, 500)
 
     user_email: str = ""
 
     if not user_information:
         return make_response(
-            json.dumps({"message": "User does not exist"}),
+            {"message": "User does not exist"},
             401,
             {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
         )
@@ -337,9 +322,9 @@ def refresh(unique_id: str) -> Response:
     try:
         revoke_token(token)
     except SqlError as e:
-        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
+        return make_response({"message": f"Database connection error: {e}"}, 501)
 
-    return make_response(json.dumps({"AUTH-TOKEN": new_token}), 201)
+    return make_response({"AUTH-TOKEN": new_token}, 201)
 
 
 @app.route("/chart")
