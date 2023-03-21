@@ -298,6 +298,50 @@ def logout(_unique_id: str) -> Response:
     return make_response(json.dumps({"message": "User is successfully logged out"}), 201)
 
 
+@app.route("/refresh", methods=["POST"])
+@token_required
+def refresh(unique_id: str) -> Response:
+    """Token refresh endpoint."""
+    try:
+        connection: Connection = getDatabaseConnection()
+        sql: str = "SELECT email FROM users WHERE uuid=?"
+        cursor: Cursor = connection.cursor()
+        cursor.execute(sql, (unique_id,))
+        user_information: list[tuple[str, str]] = cursor.fetchall()
+        connection.close()
+    except SqlError as e:
+        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 500)
+
+    user_email: str = ""
+
+    if not user_information:
+        return make_response(
+            json.dumps({"message": "User does not exist"}),
+            401,
+            {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
+        )
+
+    user_email = user_information[0][0]
+
+    new_token: str = jwt.encode(
+        {
+            "uuid": unique_id,
+            "email": user_email,
+            "exp": datetime.utcnow() + timedelta(minutes=30),
+        },
+        app.config["SECRET_KEY"],
+    )
+
+    # Token exists -> checked by decorator
+    token: str = request.headers["x-access-token"]
+    try:
+        revoke_token(token)
+    except SqlError as e:
+        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
+
+    return make_response(json.dumps({"AUTH-TOKEN": new_token}), 201)
+
+
 @app.route("/chart")
 def chart() -> str:
     """Chart data retrieval endpoint."""
