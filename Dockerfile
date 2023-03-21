@@ -12,13 +12,15 @@ RUN mkdir -p $APPLICATION_ROOT_PATH
 RUN mkdir -p $VAR_PATH
 WORKDIR $APPLICATION_ROOT_PATH
 
-COPY src $APPLICATION_ROOT_PATH/src
-COPY res $APPLICATION_ROOT_PATH/res
+COPY src/server/requirements.txt /tmp/requirements.txt
 
 RUN pip3 install --upgrade pip
-RUN pip3 install -r $APPLICATION_ROOT_PATH/src/server/requirements.txt
+RUN pip3 install -r /tmp/requirements.txt
 # poniższe muszą być instalowane w drugiej turze
 RUN pip3 install bcrypt secrets 
+
+COPY src $APPLICATION_ROOT_PATH/src
+COPY res $APPLICATION_ROOT_PATH/res
 
 ENV PYTHONOPTIMIZE=TRUE
 ENV CERT_KEY_FILE=$APPLICATION_ROOT_PATH"res/cert/example.key"
