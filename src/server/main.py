@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from sqlite3 import Connection, Cursor
 from sqlite3 import Error as SqlError
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable
 from uuid import UUID
 
 import jwt  # type: ignore
@@ -21,22 +21,12 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "55cfba6d5bd6405c8e9b7b681f6b8835"
 
 
-def token_required(fun: Callable[..., Any]) -> Callable[..., Any]:
+def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
     """Validate received token."""
 
     @wraps(fun)
-    def decorated(*args: Tuple[Any], **kwargs: Dict[str, Any]) -> Any:
+    def decorated(*args: tuple, **kwargs: dict) -> Response:
         """Validate received token."""
-        # Check if the arguments have correct types.
-        if not callable(fun):
-            raise TypeError(f"Expected callable function, got {type(fun)}")
-
-        if not isinstance(args, tuple):
-            raise TypeError(f"Expected tuple for args, got {type(args)}")
-
-        if not isinstance(kwargs, dict):
-            raise TypeError(f"Expected dict for kwargs, got {type(kwargs)}")
-
         token: str = ""
         # JWT is passed in the request header
         if "x-access-token" in request.headers:
@@ -51,50 +41,44 @@ def token_required(fun: Callable[..., Any]) -> Callable[..., Any]:
             )
 
         # If the token is revoked return message and exit function
-        try:
-            if is_token_revoked(token):
-                return make_response(
-                    json.dumps({"message": "Token is revoked"}),
-                    401,
-                    {"WWW-Authenticate": 'Basic realm ="Token is revoked!"'},
-                )
-        except SqlError as e:
-            return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
+        if is_token_revoked(token):
+            return make_response(
+                json.dumps({"message": "Token is revoked"}),
+                401,
+                {"WWW-Authenticate": 'Basic realm ="Token is revoked!"'},
+            )
 
         # Decode the token and retrieve the information contained in it
         try:
-            data: Dict[str, Any] = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
-
-            try:
-                connection: Connection = getDatabaseConnection()
-                sql: str = "SELECT uuid, email FROM users WHERE uuid=?"
-                cursor: Cursor = connection.cursor()
-                cursor.execute(sql, (data["uuid"],))
-                user_information: List[Tuple[str, str]] = cursor.fetchall()
-                connection.close()
-            except SqlError as e:
-                return make_response(
-                    json.dumps({"message": f"Database connection error: {e}"}), 500
-                )
-
-            unique_id: str = ""
-
-            if not user_information:
-                return make_response(
-                    json.dumps({"message": "User does not exist"}),
-                    401,
-                    {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
-                )
-
-            # Retrieve user uuid
-            unique_id = user_information[0][0]
-
+            data: dict[str, Any] = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
         except jwt.InvalidTokenError as e:
             return make_response(
                 json.dumps({"message": f"Token is invalid: {e}"}),
                 401,
                 {"WWW-Authenticate": 'Basic realm ="Token is invalid!"'},
             )
+
+        try:
+            connection: Connection = getDatabaseConnection()
+            sql: str = "SELECT uuid, email FROM users WHERE uuid=?"
+            cursor: Cursor = connection.cursor()
+            cursor.execute(sql, (data["uuid"],))
+            user_information: list[tuple[str, str]] = cursor.fetchall()
+            connection.close()
+        except SqlError as e:
+            return make_response(json.dumps({"message": f"Database connection error: {e}"}), 500)
+
+        unique_id: str = ""
+
+        if not user_information:
+            return make_response(
+                json.dumps({"message": "User does not exist"}),
+                401,
+                {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
+            )
+
+        # Retrieve user uuid
+        unique_id = user_information[0][0]
 
         # Returns the current logged-in users context to the routes
         return fun(unique_id, *args, **kwargs)
@@ -104,7 +88,7 @@ def token_required(fun: Callable[..., Any]) -> Callable[..., Any]:
 
 def revoke_token(token: str) -> None:
     """Revoking activated token."""
-    decoded_token: Dict[str, Any] = jwt.decode(
+    decoded_token: dict[str, Any] = jwt.decode(
         token, app.config["SECRET_KEY"], algorithms=["HS256"]
     )
     expiry: datetime = datetime.fromtimestamp(decoded_token["exp"])
@@ -123,6 +107,8 @@ def revoke_token(token: str) -> None:
         connection.close()
     except SqlError as e:
         raise SqlError(f"Database connection error: {str(e)}") from e
+
+    return None
 
 
 def is_token_revoked(token: str) -> bool:
@@ -147,7 +133,7 @@ def is_token_revoked(token: str) -> bool:
 @app.route("/register", methods=["POST"])
 def register() -> Response:
     """Registration endpoint."""
-    new_user: Dict[str, str] = request.json
+    new_user: dict[str, str] = request.json
 
     unique_id: UUID = uuid.uuid4()
     try:
@@ -169,7 +155,7 @@ def register() -> Response:
         sql: str = "SELECT * FROM users WHERE email=?"
         cursor: Cursor = connection.cursor()
         cursor.execute(sql, (email,))
-        user_information: List[Tuple] = cursor.fetchall()
+        user_information: list[tuple] = cursor.fetchall()
         connection.close()
     except SqlError as e:
         return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
@@ -205,7 +191,7 @@ def register() -> Response:
 @app.route("/login", methods=["POST"])
 def login() -> Response:
     """Login endpoint."""
-    auth: Dict[str, Any] = request.json
+    auth: dict[str, Any] = request.json
 
     try:
         email: str = auth["email"]
@@ -218,12 +204,10 @@ def login() -> Response:
         sql: str = "SELECT uuid, email, password_hash FROM users WHERE email=?"
         cursor: Cursor = connection.cursor()
         cursor.execute(sql, (email,))
-        user_information: List[Tuple[str, str, str]] = cursor.fetchall()
+        user_information: list[tuple[str, str, str]] = cursor.fetchall()
         connection.close()
     except SqlError as e:
-        return make_response(
-            json.dumps({"message": f"Database connection error: {e}"}), 501
-        )
+        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
 
     if not user_information:
         return make_response(
@@ -267,9 +251,7 @@ def me(unique_id: str) -> Response:
         user_information: list = cursor.fetchall()
         connection.close()
     except SqlError as e:
-        return make_response(
-            json.dumps({"message": f"Database connection error: {e}"}), 501
-        )
+        return make_response(json.dumps({"message": f"Database connection error: {e}"}), 501)
 
     if not user_information:
         return make_response(
@@ -292,7 +274,7 @@ def me(unique_id: str) -> Response:
 
 @app.route("/logout", methods=["POST"])
 @token_required
-def logout(unique_id: str) -> Response:
+def logout(_unique_id: str) -> Response:
     """Logout endpoint."""
     token: str = request.headers["x-access-token"]
 
