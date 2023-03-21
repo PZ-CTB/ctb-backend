@@ -108,8 +108,6 @@ def revoke_token(token: str) -> None:
     except SqlError as e:
         raise SqlError(f"Database connection error: {str(e)}") from e
 
-    return None
-
 
 def is_token_revoked(token: str) -> bool:
     """Check if token is revoked."""
