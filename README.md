@@ -1,6 +1,6 @@
 # ctb-backend
 
-Jak to uruchomić?
+## How to run
 
 Najpierw w celu zbudowania obrazu wykonaj polecenie:
 ```
@@ -35,4 +35,18 @@ docker kill `docker container ls -q`
 Pojedynczy test można wykonywać poleceniem:
 ```
 docker kill `docker container ls -q` ; docker build . -t ctb && docker run -d -p 8080:8080 ctb
+```
+
+Jeśli nie chcemy, aby baza danych nie była tworzona za każdym razem, można wykonać bindowanie
+katalogu podczas uruchamiania kontenera. Wcześniej należy utworzyć odpowiedni katalog na naszym
+komputerze. Przykładowo, aby baza danych była w katalogi <i>/tmp/ctb_opt</i>
+należy wykonać polecenia:
+```
+mkdir -p /tmp/ctb_opt
+docker run -d -p 8080:8080 --mount type=bind,source=/tmp/ctb_opt,target=/var/ctb ctb
+```
+
+Lub w jednej linijce, włączając w to restart starego kontenera:
+```
+mkdir -p /tmp/ctb_opt && docker kill `docker container ls -q` ; docker build . -t ctb && docker run -d -p 8080:8080 --mount type=bind,source=/tmp/ctb_opt,target=/var/ctb ctb
 ```
