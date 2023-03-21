@@ -37,11 +37,6 @@ Whole test (killing old, building and starting the new one) can be done with one
 docker kill `docker container ls -q` ; docker build . -t ctb && docker run -d -p 8080:8080 ctb
 ```
 
-Jeśli nie chcemy, aby baza danych nie była tworzona za każdym razem, można wykonać bindowanie
-katalogu podczas uruchamiania kontenera. Wcześniej należy utworzyć odpowiedni katalog na naszym
-komputerze. Przykładowo, aby baza danych była w katalogi <i>/tmp/ctb_opt</i>
-należy wykonać polecenia:
-
 In case of necessity of saving the database between every start of container,
 it should be done binding of container's directory with host's directory.
 The destination directory on the host must be created befor the binding.
