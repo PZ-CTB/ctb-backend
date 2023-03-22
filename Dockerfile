@@ -5,8 +5,8 @@ ENV APPLICATION_ROOT_PATH="/opt/ctb/"
 ENV VAR_PATH="/var/ctb/"
 
 RUN apk update
-RUN apk upgrade -y
-RUN apk install -y sqlite3 libsasl2-dev python3-dev libldap2-dev libssl-dev
+RUN apk upgrade
+RUN apk install sqlite3 libsasl2-dev python3-dev libldap2-dev libssl-dev
 
 RUN mkdir -p $APPLICATION_ROOT_PATH
 RUN mkdir -p $VAR_PATH
