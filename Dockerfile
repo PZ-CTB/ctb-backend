@@ -26,5 +26,5 @@ ENV CERT_KEY_FILE=$APPLICATION_ROOT_PATH"res/cert/example.key"
 ENV CERT_FILE=$APPLICATION_ROOT_PATH"res/cert/example.crt"
 ENV PYTHONPATH=$APPLICATION_ROOT_PATH"/src/:$PYTHONPATH"
 
-EXPOSE 443
-CMD gunicorn --bind 0.0.0.0:443 server.main:app
+EXPOSE 8080
+CMD gunicorn --bind 0.0.0.0:8080 server.main:app
