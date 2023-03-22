@@ -1,13 +1,12 @@
-FROM python:3.11-alpine
+FROM python:3.11-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV APPLICATION_ROOT_PATH="/opt/ctb/"
 ENV VAR_PATH="/var/ctb/"
 
-RUN apk --no-cache update && \
-    apk --no-cache upgrade && \
-    apk --no-cache add \
-    gcc musl-dev g++ sqlite libsasl python3-dev openldap-dev openssl-dev
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y sqlite3 libsasl2-dev python3-dev libldap2-dev libssl-dev
 
 RUN mkdir -p $APPLICATION_ROOT_PATH
 RUN mkdir -p $VAR_PATH
