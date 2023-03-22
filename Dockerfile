@@ -17,7 +17,6 @@ COPY src/server/requirements.txt /tmp/requirements.txt
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -r /tmp/requirements.txt
-RUN pip3 install bcrypt secrets
 
 COPY src $APPLICATION_ROOT_PATH/src
 COPY res $APPLICATION_ROOT_PATH/res
