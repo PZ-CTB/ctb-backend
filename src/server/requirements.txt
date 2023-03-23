@@ -4,3 +4,4 @@ pandas~=1.5.3
 pyopenssl~=23.0.0
 pyjwt~=2.6.0
 uuid~=1.30
+flask-cors~=3.0.10
