@@ -14,7 +14,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from .database_provider import getDatabaseConnection
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:8000", "https://ctb-agh.netlify.app/"])
+CORS(app, origins=["http://localhost:3000/", "https://ctb-agh.netlify.app/"])
 # Generetion method -> uuid.uuid4().hex
 app.config["SECRET_KEY"] = "55cfba6d5bd6405c8e9b7b681f6b8835"
 
