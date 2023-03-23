@@ -214,7 +214,7 @@ def login() -> Response:
             app.config["SECRET_KEY"],
         )
 
-        return make_response({"AUTH-TOKEN": token}, 201)
+        return make_response({"auth_token": token}, 201)
 
     return make_response(
         {"message": "Could not verify"},
@@ -323,7 +323,7 @@ def refresh(unique_id: str) -> Response:
     except SqlError as e:
         return make_response({"message": f"Database connection error: {e}"}, 501)
 
-    return make_response({"AUTH-TOKEN": new_token}, 201)
+    return make_response({"auth_token": new_token}, 201)
 
 
 @app.route("/chart")
