@@ -335,8 +335,6 @@ def refresh(unique_id: str) -> Response:
 def chart() -> Response:
     """Chart data retrieval endpoint."""
     args = request.args
-    aggregate_param = int(args.get("aggregate", 1))
-    aggregate_seconds = int(aggregate_param) * 3600 * 24
     from_param = args.get("from")
     to_param = args.get("to")
     if from_param == None or to_param == None:
@@ -345,6 +343,7 @@ def chart() -> Response:
     db = getDatabaseConnection()
     cur = db.cursor()
     filtered_list = []
+    aggregate_param = int(args.get("aggregate", 1))
 
     if aggregate_param == 1:
         cur.execute(
@@ -355,6 +354,7 @@ def chart() -> Response:
         )
         filtered_list = [{"date": date, "avg": avg} for date, avg in cur]
     else:
+        aggregate_seconds = int(aggregate_param) * 3600 * 24
         cur.execute(
             """ SELECT MIN(date), AVG(value), MIN(value), MAX(value) FROM exchange_rate_history
                         WHERE date BETWEEN ? and ?
