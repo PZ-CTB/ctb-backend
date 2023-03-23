@@ -13,8 +13,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .database_provider import getDatabaseConnection
 
-from .database_provider import getDatabaseConnection
-
 data = dict()
 with open("./res/datasets/dummy_data.json", "r") as file:
     data = json.loads(file.read())
