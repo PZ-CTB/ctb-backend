@@ -305,7 +305,7 @@ def refresh(unique_id: str) -> Response:
             {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
         )
 
-    user_email = user_information[0][0]
+    user_email: str = user_information[0][0]
 
     new_token: str = jwt.encode(
         {
