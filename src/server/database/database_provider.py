@@ -8,7 +8,19 @@ from . import DatabaseResponse, Message
 
 
 class DatabaseProvider:
-    """Interface to SQL database."""
+    """Interface to SQL database.
+
+    Example usage:
+        DatabaseProvider.initialize()  # init database
+        age: int = 66
+        with DatabaseProvider.query(
+            "SELECT name FROM person WHERE age=?", (age,)
+        ) as response:
+            if response.message is Message.OK:
+                name: list[str] = response.data
+            else:
+                # handle query failure
+    """
 
     connection: sqlite3.Connection = sqlite3.Connection(":memory:")
     database_source: str = ""
@@ -29,7 +41,15 @@ class DatabaseProvider:
     @classmethod
     @contextmanager
     def query(cls, query: str, params: tuple = ()) -> Generator[DatabaseResponse, None, None]:
-        """Interface that allows safe query execution in database."""
+        """Interface that allows safe query execution in database.
+
+        Args:
+            query (str): Query to be executed in the database.
+            params (tuple, optional): Parameters passed to sqlite3 query string. Defaults to ().
+
+        Yields:
+            DatabaseResponse: Batch containing query execution status and received data (if any).
+        """
         with cls._try_get_cursor() as cursor:
             if cursor is None:
                 yield DatabaseResponse(Message.NO_CONNECTION, [])
