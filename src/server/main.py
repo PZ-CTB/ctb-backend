@@ -1,8 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
 from functools import wraps
-from sqlite3 import Connection, Cursor
-from sqlite3 import Error as SqlError
 from typing import Any, Callable
 from uuid import UUID
 
@@ -12,7 +10,9 @@ from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import QUERIES
-from .database_provider import get_database_connection
+from .database import DatabaseProvider, Message
+
+DatabaseProvider.initialize()
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000/", "https://ctb-agh.netlify.app/"])
@@ -57,77 +57,56 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
                 {"WWW-Authenticate": 'Basic realm ="Token is invalid!"'},
             )
 
-        try:
-            connection: Connection = get_database_connection()
-            cursor: Cursor = connection.cursor()
-            cursor.execute(QUERIES.SELECT_USER_UUID, (data["uuid"],))
-            user_information: list[tuple[str]] = cursor.fetchall()
-            connection.close()
-        except SqlError as e:
-            return make_response({"message": f"Database connection error: {e}"}, 500)
+        user_uuid: str = data["uuid"]
 
-        if not user_information:
+        with DatabaseProvider.query(QUERIES.SELECT_USER_UUID, (user_uuid,)) as response:
+            if response.message is not Message.OK:
+                return make_response({"message": f"Internal error: {response.message}"}, 500)
+            user_exists: bool = response.data != []
+
+        if not user_exists:
             return make_response(
                 {"message": "User does not exist"},
                 401,
                 {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
             )
 
-        # Retrieve user uuid
-        unique_id: str = user_information[0][0]
-
         # Returns the current logged-in users context to the routes
-        return fun(unique_id, *args, **kwargs)
+        return fun(user_uuid, *args, **kwargs)
 
     return decorated
 
 
-def revoke_token(token: str) -> None:
+def revoke_token(token: str) -> Message:
     """Revoking activated token."""
     decoded_token: dict[str, Any] = jwt.decode(
         token, app.config["SECRET_KEY"], algorithms=["HS256"]
     )
     expiry: datetime = datetime.fromtimestamp(decoded_token["exp"])
 
-    # Saving revoked token into the database
-    try:
-        connection: Connection = get_database_connection()
-        connection.execute(
-            QUERIES.INSERT_REVOKED_TOKEN,
-            (
-                token,
-                expiry,
-            ),
-        )
-        connection.commit()
-        connection.close()
-    except SqlError as e:
-        raise SqlError(f"Database connection error: {str(e)}") from e
+    with DatabaseProvider.query(QUERIES.INSERT_REVOKED_TOKEN, (token, expiry)) as response:
+        return response.message
 
 
 def is_token_revoked(token: str) -> bool:
     """Check if token is revoked."""
-    try:
-        connection: Connection = get_database_connection()
-        result: Cursor = connection.execute(
-            QUERIES.SELECT_REVOKED_TOKEN,
-            (
-                token,
-                datetime.utcnow(),
-            ),
-        )
-        is_revoked: bool = result.fetchone() is not None
-        connection.close()
-    except SqlError:
-        return True
-
-    return is_revoked
+    with DatabaseProvider.query(
+        QUERIES.SELECT_REVOKED_TOKEN,
+        (
+            token,
+            datetime.utcnow(),
+        ),
+    ) as response:
+        if response.message is not Message.OK:
+            return True
+        is_revoked: bool = response.data != []
+        return is_revoked
 
 
 @app.route("/register", methods=["POST"])
 def register() -> Response:
     """Registration endpoint."""
-    new_user: dict[str, str] = request.json
+    new_user: dict[str, str] = request.get_json()
 
     unique_id: UUID = uuid.uuid4()
     email: str = new_user.get("email", "")
@@ -136,38 +115,26 @@ def register() -> Response:
     if not email or not password:
         return make_response({"message": "Invalid Json format"}, 202)
 
-    try:
-        connection: Connection = get_database_connection()
-        cursor: Cursor = connection.cursor()
-        cursor.execute(QUERIES.SELECT_USER_EMAIL, (email,))
-        user_information: list[tuple] = cursor.fetchall()
-        connection.close()
-    except SqlError as e:
-        return make_response({"message": f"Database connection error: {e}"}, 501)
+    with DatabaseProvider.query(QUERIES.SELECT_USER_EMAIL, (email,)) as response:
+        if response.message is not Message.OK:
+            return make_response({"message": f"Internal error: {response.message}"}, 501)
 
-    if user_information:
+        user_exists: bool = response.data != []
+
+    if user_exists:
         return make_response(
             {"message": "User already exists. Please Log in."},
             202,
             {"WWW-Authenticate": "User already exists. Please Log in."},
         )
 
-    try:
-        # Already defined: connection, sql, cursor
-        connection = get_database_connection()
-        cursor = connection.cursor()
-        cursor.execute(
-            QUERIES.INSERT_USER,
-            (
-                str(unique_id),
-                email,
-                generate_password_hash(password),
-            ),
-        )
-        connection.commit()
-        connection.close()
-    except SqlError as e:
-        return make_response({"message": f"Database connection error: {e}"}, 501)
+    with DatabaseProvider.query(
+        QUERIES.INSERT_USER,
+        (str(unique_id), email, generate_password_hash(password)),
+    ) as response:
+        if response.message is not Message.OK:
+            print(f"ERROR: server.register(): {response.message}")
+            return make_response({"message": f"Internal error: {response.message}"}, 501)
 
     return make_response({"message": "Successfully registered"}, 201)
 
@@ -175,7 +142,7 @@ def register() -> Response:
 @app.route("/login", methods=["POST"])
 def login() -> Response:
     """Login endpoint."""
-    auth: dict[str, Any] = request.json
+    auth: dict[str, Any] = request.get_json()
 
     email: str = auth.get("email", "")
     password: str = auth.get("password", "")
@@ -183,14 +150,11 @@ def login() -> Response:
     if not email or not password:
         return make_response({"message": "Invalid Json format"}, 202)
 
-    try:
-        connection: Connection = get_database_connection()
-        cursor: Cursor = connection.cursor()
-        cursor.execute(QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL, (email,))
-        user_information: list[tuple[str, str, str]] = cursor.fetchall()
-        connection.close()
-    except SqlError as e:
-        return make_response({"message": f"Database connection error: {e}"}, 501)
+    with DatabaseProvider.query(QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL, (email,)) as response:
+        if response.message is not Message.OK:
+            return make_response({"message": f"Internal error: {response.message}"}, 501)
+
+        user_information: list[tuple[str, str, str]] = response.data
 
     if not user_information:
         return make_response(
@@ -226,14 +190,11 @@ def login() -> Response:
 @token_required
 def me(unique_id: str) -> Response:
     """User's information endpoint."""
-    try:
-        connection: Connection = get_database_connection()
-        cursor: Cursor = connection.cursor()
-        cursor.execute(QUERIES.SELECT_USER_DATA_BY_UUID, (unique_id,))
-        user_information: list = cursor.fetchall()
-        connection.close()
-    except SqlError as e:
-        return make_response({"message": f"Database connection error: {e}"}, 501)
+    with DatabaseProvider.query(QUERIES.SELECT_USER_DATA_BY_UUID, (unique_id,)) as response:
+        if response.message is not Message.OK:
+            return make_response({"message": f"Internal error: {response.message}"}, 501)
+
+        user_information: list = response.data
 
     if not user_information:
         return make_response(
@@ -272,10 +233,8 @@ def logout(_unique_id: str) -> Response:
             {"WWW-Authenticate": 'Basic realm ="Token already revoked!"'},
         )
 
-    try:
-        revoke_token(token)
-    except SqlError as e:
-        return make_response({"message": f"Database connection error: {e}"}, 501)
+    if revoke_token(token) is not Message.OK:
+        return make_response({"message": "Internal error"}, 501)
 
     return make_response({"message": "User is successfully logged out"}, 201)
 
@@ -284,14 +243,11 @@ def logout(_unique_id: str) -> Response:
 @token_required
 def refresh(unique_id: str) -> Response:
     """Token refresh endpoint."""
-    try:
-        connection: Connection = get_database_connection()
-        cursor: Cursor = connection.cursor()
-        cursor.execute(QUERIES.SELECT_USER_EMAIL_BY_UUID, (unique_id,))
-        user_information: list[tuple[str, str]] = cursor.fetchall()
-        connection.close()
-    except SqlError as e:
-        return make_response({"message": f"Database connection error: {e}"}, 500)
+    with DatabaseProvider.query(QUERIES.SELECT_USER_EMAIL_BY_UUID, (unique_id,)) as response:
+        if response.message is not Message.OK:
+            return make_response({"message": f"Internal error: {response.message}"}, 500)
+
+        user_information: list[tuple[str]] = response.data
 
     if not user_information:
         return make_response(
@@ -313,10 +269,9 @@ def refresh(unique_id: str) -> Response:
 
     # Token exists -> checked by decorator
     token: str = request.headers["x-access-token"]
-    try:
-        revoke_token(token)
-    except SqlError as e:
-        return make_response({"message": f"Database connection error: {e}"}, 501)
+    revoke_result: Message = revoke_token(token)
+    if revoke_result is not Message.OK:
+        return make_response({"message": f"Internal error: {revoke_result}"}, 501)
 
     return make_response({"auth_token": new_token}, 201)
 
