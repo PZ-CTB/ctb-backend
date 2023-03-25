@@ -10,7 +10,7 @@ class DatabaseResponse:
     Otherwise, there has been an internal error.
 
     On 'SELECT' queries, DatabaseResponse.data field is expected to hold some meaningful
-    information. On 'INSERT" queries, usually this field remains empty. It is also expectable to be
+    information. On 'INSERT' queries, usually this field remains empty. It is also expectable to be
     empty on an error.
     """
 

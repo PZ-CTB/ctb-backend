@@ -40,7 +40,9 @@ class DatabaseProvider:
 
     @classmethod
     @contextmanager
-    def query(cls, query: str, params: tuple = ()) -> Generator[DatabaseResponse, None, None]:
+    def query(
+        cls, query: str, params: tuple | list = ()
+    ) -> Generator[DatabaseResponse, None, None]:
         """Interface that allows safe query execution in database.
 
         Args:
@@ -57,10 +59,7 @@ class DatabaseProvider:
             else:
                 try:
                     print(f"INFO: {query=}, {params=}")
-                    if params:
-                        cursor.execute(query, params)
-                    else:
-                        cursor.execute(query)
+                    cursor.execute(query, params)
                     data: list = cursor.fetchall()
                     yield DatabaseResponse(Message.OK, data)
                 except sqlite3.IntegrityError as err:
