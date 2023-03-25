@@ -12,7 +12,7 @@ pretty = true
 disallow_untyped_defs = true
 
 [tool.pydocstyle]
-ignore = ["D100", "D104", "D203", "D213"]
+ignore = ["D100", "D104", "D203", "D213", "D406", "D407"]
 
 [tool.pylint]
 max-line-length = 100

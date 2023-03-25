@@ -49,6 +49,7 @@ class DatabaseProvider:
 
         Yields:
             DatabaseResponse: Batch containing query execution status and received data (if any).
+
         """
         with cls._try_get_cursor() as cursor:
             if cursor is None:
