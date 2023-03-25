@@ -11,11 +11,12 @@ from flask import Flask, Response, make_response, request
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from .database_provider import getDatabaseConnection
+from . import QUERIES
+from .database_provider import get_database_connection
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000/", "https://ctb-agh.netlify.app/"])
-# Generetion method -> uuid.uuid4().hex
+# Generation method -> uuid.uuid4().hex
 app.config["SECRET_KEY"] = "55cfba6d5bd6405c8e9b7b681f6b8835"
 
 
@@ -57,11 +58,10 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
             )
 
         try:
-            connection: Connection = getDatabaseConnection()
-            sql: str = "SELECT uuid, email FROM users WHERE uuid=?"
+            connection: Connection = get_database_connection()
             cursor: Cursor = connection.cursor()
-            cursor.execute(sql, (data["uuid"],))
-            user_information: list[tuple[str, str]] = cursor.fetchall()
+            cursor.execute(QUERIES.SELECT_USER_UUID, (data["uuid"],))
+            user_information: list[tuple[str]] = cursor.fetchall()
             connection.close()
         except SqlError as e:
             return make_response({"message": f"Database connection error: {e}"}, 500)
@@ -91,9 +91,9 @@ def revoke_token(token: str) -> None:
 
     # Saving revoked token into the database
     try:
-        connection: Connection = getDatabaseConnection()
+        connection: Connection = get_database_connection()
         connection.execute(
-            "INSERT INTO revoked_tokens (token, expiry) VALUES (?, ?)",
+            QUERIES.INSERT_REVOKED_TOKEN,
             (
                 token,
                 expiry,
@@ -108,9 +108,9 @@ def revoke_token(token: str) -> None:
 def is_token_revoked(token: str) -> bool:
     """Check if token is revoked."""
     try:
-        connection: Connection = getDatabaseConnection()
+        connection: Connection = get_database_connection()
         result: Cursor = connection.execute(
-            "SELECT token FROM revoked_tokens WHERE token=? AND expiry > ?",
+            QUERIES.SELECT_REVOKED_TOKEN,
             (
                 token,
                 datetime.utcnow(),
@@ -137,10 +137,9 @@ def register() -> Response:
         return make_response({"message": "Invalid Json format"}, 202)
 
     try:
-        connection: Connection = getDatabaseConnection()
-        sql: str = "SELECT * FROM users WHERE email=?"
+        connection: Connection = get_database_connection()
         cursor: Cursor = connection.cursor()
-        cursor.execute(sql, (email,))
+        cursor.execute(QUERIES.SELECT_USER_EMAIL, (email,))
         user_information: list[tuple] = cursor.fetchall()
         connection.close()
     except SqlError as e:
@@ -155,11 +154,10 @@ def register() -> Response:
 
     try:
         # Already defined: connection, sql, cursor
-        connection = getDatabaseConnection()
-        sql = "INSERT INTO users(uuid, email, password_hash) VALUES (?, ?, ?)"
+        connection = get_database_connection()
         cursor = connection.cursor()
         cursor.execute(
-            sql,
+            QUERIES.INSERT_USER,
             (
                 str(unique_id),
                 email,
@@ -186,10 +184,9 @@ def login() -> Response:
         return make_response({"message": "Invalid Json format"}, 202)
 
     try:
-        connection: Connection = getDatabaseConnection()
-        sql: str = "SELECT uuid, email, password_hash FROM users WHERE email=?"
+        connection: Connection = get_database_connection()
         cursor: Cursor = connection.cursor()
-        cursor.execute(sql, (email,))
+        cursor.execute(QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL, (email,))
         user_information: list[tuple[str, str, str]] = cursor.fetchall()
         connection.close()
     except SqlError as e:
@@ -230,10 +227,9 @@ def login() -> Response:
 def me(unique_id: str) -> Response:
     """User's information endpoint."""
     try:
-        connection: Connection = getDatabaseConnection()
-        sql = "SELECT email, wallet_usd, wallet_btc FROM users WHERE uuid=?"
+        connection: Connection = get_database_connection()
         cursor: Cursor = connection.cursor()
-        cursor.execute(sql, (unique_id,))
+        cursor.execute(QUERIES.SELECT_USER_DATA_BY_UUID, (unique_id,))
         user_information: list = cursor.fetchall()
         connection.close()
     except SqlError as e:
@@ -289,16 +285,13 @@ def logout(_unique_id: str) -> Response:
 def refresh(unique_id: str) -> Response:
     """Token refresh endpoint."""
     try:
-        connection: Connection = getDatabaseConnection()
-        sql: str = "SELECT email FROM users WHERE uuid=?"
+        connection: Connection = get_database_connection()
         cursor: Cursor = connection.cursor()
-        cursor.execute(sql, (unique_id,))
+        cursor.execute(QUERIES.SELECT_USER_EMAIL_BY_UUID, (unique_id,))
         user_information: list[tuple[str, str]] = cursor.fetchall()
         connection.close()
     except SqlError as e:
         return make_response({"message": f"Database connection error: {e}"}, 500)
-
-    user_email: str = ""
 
     if not user_information:
         return make_response(
@@ -307,7 +300,7 @@ def refresh(unique_id: str) -> Response:
             {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
         )
 
-    user_email = user_information[0][0]
+    user_email: str = user_information[0][0]
 
     new_token: str = jwt.encode(
         {
