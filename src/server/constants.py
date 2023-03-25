@@ -1,6 +1,8 @@
 import os
+from dataclasses import dataclass
 
 
+@dataclass(frozen=True)
 class PATHS:
     """Paths (constants) to any resources in the project."""
 
@@ -15,6 +17,7 @@ class PATHS:
     DATABASE = VAR_PATH + "database_ctb.db"
 
 
+@dataclass(frozen=True)
 class QUERIES:
     """All SQL queries used in the project."""
 
