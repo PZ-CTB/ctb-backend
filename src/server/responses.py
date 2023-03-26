@@ -1,24 +1,19 @@
-from flask import make_response, Response
+from flask import Response, make_response
 from jwt import InvalidTokenError
 
 from .database import Message
 
 
 def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
-    """200: /me endpoint response"""
+    """200: /me endpoint response."""
     return make_response(
-        {
-            "uuid": uuid,
-            "email": email,
-            "wallet_usd": wallet_usd,
-            "wallet_btc": wallet_btc
-        },
+        {"uuid": uuid, "email": email, "wallet_usd": wallet_usd, "wallet_btc": wallet_btc},
         200,
     )
 
 
 def auth_token(token: str) -> Response:
-    """201: returning auth token to user on login or refresh"""
+    """201: returning auth token to user on login or refresh."""
     return make_response(
         {"auth_token": token},
         201,
@@ -26,7 +21,7 @@ def auth_token(token: str) -> Response:
 
 
 def successfully_registered() -> Response:
-    """201: successfully registered"""
+    """201: successfully registered."""
     return make_response(
         {"message": "Successfully registered"},
         201,
@@ -34,7 +29,7 @@ def successfully_registered() -> Response:
 
 
 def successfully_logged_out() -> Response:
-    """201: successfully logged out"""
+    """201: successfully logged out."""
     return make_response(
         {"message": "User is successfully logged out"},
         201,
@@ -42,7 +37,7 @@ def successfully_logged_out() -> Response:
 
 
 def user_already_exists() -> Response:
-    """202: can't register as user already exists, login required instead"""
+    """202: can't register as user already exists, login required instead."""
     return make_response(
         {"message": "User already exists"},
         202,
@@ -51,7 +46,7 @@ def user_already_exists() -> Response:
 
 
 def invalid_json_format() -> Response:
-    """400: json parser could not parse the request"""
+    """400: json parser could not parse the request."""
     return make_response(
         {"message": "Invalid Json format"},
         400,
@@ -59,7 +54,7 @@ def invalid_json_format() -> Response:
 
 
 def token_missing() -> Response:
-    """401: token was not passed with request"""
+    """401: token was not passed with request."""
     return make_response(
         {"message": "Token is missing"},
         401,
@@ -68,7 +63,7 @@ def token_missing() -> Response:
 
 
 def token_revoked() -> Response:
-    """401: token was valid but has been revoked in the past"""
+    """401: token was valid but has been revoked in the past."""
     return make_response(
         {"message": "Token is revoked"},
         401,
@@ -77,7 +72,7 @@ def token_revoked() -> Response:
 
 
 def token_invalid(e: InvalidTokenError) -> Response:
-    """401: token is invalid"""
+    """401: token is invalid."""
     return make_response(
         {"message": f"Token is invalid: {e}"},
         401,
@@ -86,7 +81,7 @@ def token_invalid(e: InvalidTokenError) -> Response:
 
 
 def token_already_revoked() -> Response:
-    """401: logout useless, as token has already been revoked"""
+    """401: logout useless, as token has already been revoked."""
     return make_response(
         {"message": "Token already revoked"},
         401,
@@ -95,7 +90,7 @@ def token_already_revoked() -> Response:
 
 
 def user_does_not_exist() -> Response:
-    """401: user does not exist"""
+    """401: user does not exist."""
     return make_response(
         {"message": "User does not exist"},
         401,
@@ -104,7 +99,7 @@ def user_does_not_exist() -> Response:
 
 
 def could_not_verify() -> Response:
-    """403: user provided wrong password"""
+    """403: user provided wrong password."""
     return make_response(
         {"message": "Could not verify"},
         403,
@@ -113,7 +108,7 @@ def could_not_verify() -> Response:
 
 
 def internal_database_error(message: Message) -> Response:
-    """500: DatabaseProvider returned message code other than OK"""
+    """500: DatabaseProvider returned message code other than OK."""
     return make_response(
         {"message": f"Internal error: {message}"},
         500,

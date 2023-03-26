@@ -9,7 +9,7 @@ from flask import Flask, Response, request
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from . import responses, QUERIES
+from . import QUERIES, responses
 from .database import DatabaseProvider, Message
 
 DatabaseProvider.initialize()
@@ -20,7 +20,7 @@ CORS(app, origins=["http://localhost:3000/", "https://ctb-agh.netlify.app/"])
 app.config["SECRET_KEY"] = "55cfba6d5bd6405c8e9b7b681f6b8835"
 
 
-def token_required(fun: Callable[[str, str, ...], Response]) -> Callable[..., Response]:
+def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
     """Validate received token."""
 
     @wraps(fun)
