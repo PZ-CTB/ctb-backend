@@ -36,7 +36,7 @@ class DatabaseProvider:
                 print("INFO: connecting to in-memory database as fallback")
                 cls.database_source = ":memory:"
                 cls._create_database()
-        cls._fill_database()
+            cls._fill_database()
 
     @classmethod
     @contextmanager
