@@ -1,10 +1,10 @@
-from flask import make_response
+from flask import make_response, Response
 from jwt import InvalidTokenError
 
 from .database import Message
 
 
-def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float):
+def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
     """200: /me endpoint response"""
     return make_response(
         {
@@ -17,7 +17,7 @@ def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float):
     )
 
 
-def auth_token(token: str):
+def auth_token(token: str) -> Response:
     """201: returning auth token to user on login or refresh"""
     return make_response(
         {"auth_token": token},
@@ -25,7 +25,7 @@ def auth_token(token: str):
     )
 
 
-def successfully_registered():
+def successfully_registered() -> Response:
     """201: successfully registered"""
     return make_response(
         {"message": "Successfully registered"},
@@ -33,7 +33,7 @@ def successfully_registered():
     )
 
 
-def successfully_logged_out():
+def successfully_logged_out() -> Response:
     """201: successfully logged out"""
     return make_response(
         {"message": "User is successfully logged out"},
@@ -41,7 +41,7 @@ def successfully_logged_out():
     )
 
 
-def user_already_exists():
+def user_already_exists() -> Response:
     """202: can't register as user already exists, login required instead"""
     return make_response(
         {"message": "User already exists"},
@@ -50,7 +50,7 @@ def user_already_exists():
     )
 
 
-def invalid_json_format():
+def invalid_json_format() -> Response:
     """400: json parser could not parse the request"""
     return make_response(
         {"message": "Invalid Json format"},
@@ -58,7 +58,7 @@ def invalid_json_format():
     )
 
 
-def token_missing():
+def token_missing() -> Response:
     """401: token was not passed with request"""
     return make_response(
         {"message": "Token is missing"},
@@ -67,7 +67,7 @@ def token_missing():
     )
 
 
-def token_revoked():
+def token_revoked() -> Response:
     """401: token was valid but has been revoked in the past"""
     return make_response(
         {"message": "Token is revoked"},
@@ -76,7 +76,7 @@ def token_revoked():
     )
 
 
-def token_invalid(e: InvalidTokenError):
+def token_invalid(e: InvalidTokenError) -> Response:
     """401: token is invalid"""
     return make_response(
         {"message": f"Token is invalid: {e}"},
@@ -85,7 +85,7 @@ def token_invalid(e: InvalidTokenError):
     )
 
 
-def token_already_revoked():
+def token_already_revoked() -> Response:
     """401: logout useless, as token has already been revoked"""
     return make_response(
         {"message": "Token already revoked"},
@@ -94,7 +94,7 @@ def token_already_revoked():
     )
 
 
-def user_does_not_exist():
+def user_does_not_exist() -> Response:
     """401: user does not exist"""
     return make_response(
         {"message": "User does not exist"},
@@ -103,7 +103,7 @@ def user_does_not_exist():
     )
 
 
-def could_not_verify():
+def could_not_verify() -> Response:
     """403: user provided wrong password"""
     return make_response(
         {"message": "Could not verify"},
@@ -112,7 +112,7 @@ def could_not_verify():
     )
 
 
-def internal_database_error(message: Message):
+def internal_database_error(message: Message) -> Response:
     """500: DatabaseProvider returned message code other than OK"""
     return make_response(
         {"message": f"Internal error: {message}"},
