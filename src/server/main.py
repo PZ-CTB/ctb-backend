@@ -185,7 +185,8 @@ def logout(_unique_id: str, token: str) -> Response:
     if is_token_revoked(token):
         return responses.token_already_revoked()
 
-    if message := revoke_token(token) is not Message.OK:
+    message: Message = revoke_token(token)
+    if message is not Message.OK:
         return responses.internal_database_error(message)
 
     return responses.successfully_logged_out()
