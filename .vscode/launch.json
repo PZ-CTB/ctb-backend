@@ -1,0 +1,42 @@
+{
+    "configurations": [
+        {
+            "name": "Flask Server (native, memory db)",
+            "type": "python",
+            "request": "launch",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "${workspaceFolder}/src/server/main.py",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload"
+            ],
+            "jinja": true,
+        },
+        {
+            "name": "Flask Server (native, file db)",
+            "type": "python",
+            "request": "launch",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "${workspaceFolder}/src/server/main.py",
+                "FLASK_DEBUG": "1",
+                "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
+                "VAR_PATH": "${workspaceFolder}/"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload"
+            ],
+            "jinja": true,
+        }
+    ]
+}
