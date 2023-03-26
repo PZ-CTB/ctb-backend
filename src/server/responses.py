@@ -1,8 +1,6 @@
 from flask import Response, make_response
 from jwt import InvalidTokenError
 
-from .database import Message
-
 
 def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
     """200: /me endpoint response."""
@@ -107,7 +105,7 @@ def could_not_verify() -> Response:
     )
 
 
-def internal_database_error(message: Message) -> Response:
+def internal_database_error(message: str) -> Response:
     """500: DatabaseProvider returned message code other than OK."""
     return make_response(
         {"message": f"Internal error: {message}"},
