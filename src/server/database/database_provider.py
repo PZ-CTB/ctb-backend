@@ -22,6 +22,7 @@ class DatabaseProvider:
                 # handle query failure
     """
 
+    # predeclaration on the class level
     connection: sqlite3.Connection = sqlite3.Connection(":memory:")
     database_source: str = ""
 
@@ -30,12 +31,20 @@ class DatabaseProvider:
         """Initialize connection to the database."""
         cls.database_source = PATHS.DATABASE
 
+        db_needs_setup: bool = False
         if not os.path.exists(cls.database_source):
-            result = cls._create_database()
-            if result is Message.NO_CONNECTION:
-                print("INFO: connecting to in-memory database as fallback")
-                cls.database_source = ":memory:"
-                cls._create_database()
+            db_needs_setup = True
+
+        result: Message = cls._connect_to_database()
+        if result is not Message.OK:
+            print(f"WARNING: cannot connect to a file database: {result}")
+            print("INFO: connecting to in-memory database as fallback")
+            cls.database_source = ":memory:"
+            result = cls._connect_to_database()
+            if result is not Message.OK:
+                raise RuntimeError(f"Can't connect to in-memory database: {result}")
+
+        if db_needs_setup:
             cls._fill_database()
 
     @classmethod
@@ -71,7 +80,7 @@ class DatabaseProvider:
                 except sqlite3.Error as err:
                     print(f"ERROR: {err}")
                     yield DatabaseResponse(Message.UNKNOWN_ERROR, [])
-                finally:
+                else:
                     print(f"INFO: successfully executed a query: '{query}'")
 
     @classmethod
@@ -90,7 +99,7 @@ class DatabaseProvider:
                 cls.connection.commit()
 
     @classmethod
-    def _create_database(cls) -> Message:
+    def _connect_to_database(cls) -> Message:
         try:
             print(f"INFO: {cls.database_source=}")
             cls.connection = sqlite3.connect(cls.database_source, check_same_thread=False)
