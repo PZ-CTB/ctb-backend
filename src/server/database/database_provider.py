@@ -4,22 +4,28 @@ from contextlib import contextmanager
 from typing import Generator, Optional
 
 from .. import PATHS
-from . import DatabaseResponse, Message
+from . import DatabaseHandler, Message
 
 
 class DatabaseProvider:
     """Interface to SQL database.
 
-    Example usage:
-        DatabaseProvider.initialize()  # init database
-        age: int = 66
-        with DatabaseProvider.query(
-            "SELECT name FROM person WHERE age=?", (age,)
-        ) as response:
-            if response.message is Message.OK:
-                name: list[str] = response.data
-            else:
-                # handle query failure
+    There are several steps that happen under the hood which user does not have to worry about:
+        - connection to file database (if exists);
+        - connection to in-memory database (in case file database failed);
+        - safe creation of cursor and transaction (with error handling);
+        - execution of queries that we submitted (with error handling);
+        - commit of changes in the actual database.
+
+    If an error occurs on one of the queries, any subsequent queries present in the same context
+    will not be executed.
+
+        with DatabaseProvider.handler() as handler:
+            handler().execute("SELECT name FROM person WHERE age=?", (age,))
+            name: list[str] = handler().fetchall()
+
+        if not handler.success:
+            # handle query failure
     """
 
     # predeclaration on the class level
@@ -49,39 +55,26 @@ class DatabaseProvider:
 
     @classmethod
     @contextmanager
-    def query(
-        cls, query: str, params: tuple | list = ()
-    ) -> Generator[DatabaseResponse, None, None]:
-        """Interface that allows safe query execution in database.
-
-        Args:
-            query (str): Query to be executed in the database.
-            params (tuple, optional): Parameters passed to sqlite3 query string. Defaults to ().
+    def handler(cls) -> Generator[DatabaseHandler, None, None]:
+        """Interface that allows safe query execution in the database.
 
         Yields:
-            DatabaseResponse: Batch containing query execution status and received data (if any).
+            DatabaseHandler: Handler consisting of cursor and query execution status (Message).
 
         """
         with cls._try_get_cursor() as cursor:
-            if cursor is None:
-                yield DatabaseResponse(Message.NO_CONNECTION, [])
-            else:
+            if cursor is not None:
+                handler: DatabaseHandler = DatabaseHandler(cursor, Message.OK)
                 try:
-                    print(f"INFO: {query=}, {params=}")
-                    cursor.execute(query, params)
-                    data: list = cursor.fetchall()
-                    yield DatabaseResponse(Message.OK, data)
-                except sqlite3.IntegrityError as err:
-                    print(f"ERROR: {err}")
-                    yield DatabaseResponse(Message.INVALID_SQL, [])
-                except sqlite3.ProgrammingError as err:
-                    print(f"ERROR: {err}")
-                    yield DatabaseResponse(Message.INVALID_BINDINGS, [])
-                except sqlite3.Error as err:
-                    print(f"ERROR: {err}")
-                    yield DatabaseResponse(Message.UNKNOWN_ERROR, [])
+                    yield handler
+                except sqlite3.IntegrityError:
+                    handler.message = Message.INVALID_SQL
+                except sqlite3.ProgrammingError:
+                    handler.message = Message.INVALID_BINDINGS
+                except sqlite3.Error:
+                    handler.message = Message.UNKNOWN_ERROR
                 else:
-                    print(f"INFO: successfully executed a query: '{query}'")
+                    handler.message = Message.OK
 
     @classmethod
     @contextmanager
@@ -91,11 +84,13 @@ class DatabaseProvider:
             cursor = cls.connection.cursor()
             yield cursor
         except sqlite3.Error as err:
-            print(f"ERROR: {err}")
+            print(f"ERROR: sqlite3.Cursor creation -- {err}")
             yield None
         finally:
             if cursor is not None:
+                print("DEBUG: closing sqlite3.Cursor")
                 cursor.close()
+                print("DEBUG: committing sqlite3 changes")
                 cls.connection.commit()
 
     @classmethod

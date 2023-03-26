@@ -59,10 +59,12 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
 
         user_uuid: str = data["uuid"]
 
-        with DatabaseProvider.query(QUERIES.SELECT_USER_UUID, (user_uuid,)) as response:
-            if response.message is not Message.OK:
-                return make_response({"message": f"Internal error: {response.message}"}, 500)
-            user_exists: bool = response.data != []
+        with DatabaseProvider.handler() as handler:
+            handler().execute(QUERIES.SELECT_USER_UUID, (user_uuid,))
+            response = handler().fetchall()
+        if not handler.success:
+            return make_response({"message": f"Internal error: {handler.message}"}, 500)
+        user_exists: bool = response != []
 
         if not user_exists:
             return make_response(
@@ -84,23 +86,19 @@ def revoke_token(token: str) -> Message:
     )
     expiry: datetime = datetime.fromtimestamp(decoded_token["exp"])
 
-    with DatabaseProvider.query(QUERIES.INSERT_REVOKED_TOKEN, (token, expiry)) as response:
-        return response.message
+    with DatabaseProvider.handler() as handler:
+        handler().execute(QUERIES.INSERT_REVOKED_TOKEN, (token, expiry))
+    return handler.message
 
 
 def is_token_revoked(token: str) -> bool:
     """Check if token is revoked."""
-    with DatabaseProvider.query(
-        QUERIES.SELECT_REVOKED_TOKEN,
-        (
-            token,
-            datetime.utcnow(),
-        ),
-    ) as response:
-        if response.message is not Message.OK:
-            return True
-        is_revoked: bool = response.data != []
-        return is_revoked
+    with DatabaseProvider.handler() as handler:
+        handler().execute(QUERIES.SELECT_REVOKED_TOKEN, (token, datetime.utcnow()))
+        is_revoked: bool = handler().fetchall() != []
+    if not handler.success:
+        return True
+    return is_revoked
 
 
 @app.route("/register", methods=["POST"])
@@ -115,11 +113,12 @@ def register() -> Response:
     if not email or not password:
         return make_response({"message": "Invalid Json format"}, 202)
 
-    with DatabaseProvider.query(QUERIES.SELECT_USER_EMAIL, (email,)) as response:
-        if response.message is not Message.OK:
-            return make_response({"message": f"Internal error: {response.message}"}, 501)
+    with DatabaseProvider.handler() as handler:
+        handler().execute(QUERIES.SELECT_USER_EMAIL, (email,))
+        user_exists: bool = handler().fetchall() != []
 
-        user_exists: bool = response.data != []
+    if not handler.success:
+        return make_response({"message": f"Internal error: {handler.message}"}, 501)
 
     if user_exists:
         return make_response(
@@ -128,13 +127,13 @@ def register() -> Response:
             {"WWW-Authenticate": "User already exists. Please Log in."},
         )
 
-    with DatabaseProvider.query(
-        QUERIES.INSERT_USER,
-        (str(unique_id), email, generate_password_hash(password)),
-    ) as response:
-        if response.message is not Message.OK:
-            print(f"ERROR: server.register(): {response.message}")
-            return make_response({"message": f"Internal error: {response.message}"}, 501)
+    with DatabaseProvider.handler() as handler:
+        handler().execute(
+            QUERIES.INSERT_USER, (str(unique_id), email, generate_password_hash(password))
+        )
+    if not handler.success:
+        print(f"ERROR: server.register(): {handler.message}")
+        return make_response({"message": f"Internal error: {handler.message}"}, 501)
 
     return make_response({"message": "Successfully registered"}, 201)
 
@@ -150,11 +149,12 @@ def login() -> Response:
     if not email or not password:
         return make_response({"message": "Invalid Json format"}, 202)
 
-    with DatabaseProvider.query(QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL, (email,)) as response:
-        if response.message is not Message.OK:
-            return make_response({"message": f"Internal error: {response.message}"}, 501)
+    with DatabaseProvider.handler() as handler:
+        handler().execute(QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL, (email,))
+        user_information: list[tuple[str, str, str]] = handler().fetchall()
 
-        user_information: list[tuple[str, str, str]] = response.data
+    if not handler.success:
+        return make_response({"message": f"Internal error: {handler.message}"}, 501)
 
     if not user_information:
         return make_response(
@@ -190,11 +190,14 @@ def login() -> Response:
 @token_required
 def me(unique_id: str) -> Response:
     """User's information endpoint."""
-    with DatabaseProvider.query(QUERIES.SELECT_USER_DATA_BY_UUID, (unique_id,)) as response:
-        if response.message is not Message.OK:
-            return make_response({"message": f"Internal error: {response.message}"}, 501)
+    with DatabaseProvider.handler() as handler:
+        handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (unique_id,))
+        user_information: list = handler().fetchall()
+        print(f"{user_information=}")
+    print(f"{user_information=}")
 
-        user_information: list = response.data
+    if not handler.success:
+        return make_response({"message": f"Internal error: {handler.message}"}, 501)
 
     if not user_information:
         return make_response(
@@ -243,11 +246,12 @@ def logout(_unique_id: str) -> Response:
 @token_required
 def refresh(unique_id: str) -> Response:
     """Token refresh endpoint."""
-    with DatabaseProvider.query(QUERIES.SELECT_USER_EMAIL_BY_UUID, (unique_id,)) as response:
-        if response.message is not Message.OK:
-            return make_response({"message": f"Internal error: {response.message}"}, 500)
+    with DatabaseProvider.handler() as handler:
+        handler().execute(QUERIES.SELECT_USER_EMAIL_BY_UUID, (unique_id,))
+        user_information: list[tuple[str]] = handler().fetchall()
 
-        user_information: list[tuple[str]] = response.data
+    if not handler.success:
+        return make_response({"message": f"Internal error: {handler.message}"}, 500)
 
     if not user_information:
         return make_response(
