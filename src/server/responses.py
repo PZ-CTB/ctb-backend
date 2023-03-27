@@ -1,5 +1,4 @@
 from flask import Response, make_response
-from jwt import InvalidTokenError
 
 from .database import Message
 
@@ -37,11 +36,11 @@ def successfully_logged_out() -> Response:
 
 
 def user_already_exists() -> Response:
-    """202: can't register as user already exists, login required instead."""
+    """202: can't register because user already exists, login required instead."""
     return make_response(
         {"message": "User already exists"},
         202,
-        {"WWW-Authenticate": "User already exists. Please Log in."},
+        {"WWW-Authenticate": "User already exists"},
     )
 
 
@@ -53,48 +52,12 @@ def invalid_json_format() -> Response:
     )
 
 
-def token_missing() -> Response:
-    """401: token was not passed with request."""
+def unauthorized() -> Response:
+    """401: generic problem with authorization or token."""
     return make_response(
-        {"message": "Token is missing"},
+        {"message": "Not authorized to perform this action"},
         401,
-        {"WWW-Authenticate": 'Basic realm ="Token is missing!"'},
-    )
-
-
-def token_revoked() -> Response:
-    """401: token was valid but has been revoked in the past."""
-    return make_response(
-        {"message": "Token is revoked"},
-        401,
-        {"WWW-Authenticate": 'Basic realm ="Token is revoked!"'},
-    )
-
-
-def token_invalid(e: InvalidTokenError) -> Response:
-    """401: token is invalid."""
-    return make_response(
-        {"message": f"Token is invalid: {e}"},
-        401,
-        {"WWW-Authenticate": 'Basic realm ="Token is invalid!"'},
-    )
-
-
-def token_already_revoked() -> Response:
-    """401: logout useless, as token has already been revoked."""
-    return make_response(
-        {"message": "Token already revoked"},
-        401,
-        {"WWW-Authenticate": 'Basic realm ="Token already revoked!"'},
-    )
-
-
-def user_does_not_exist() -> Response:
-    """401: user does not exist."""
-    return make_response(
-        {"message": "User does not exist"},
-        401,
-        {"WWW-Authenticate": 'Basic realm ="User does not exist!"'},
+        {"WWW-Authenticate", 'Basic realm ="Not authorized to perform this action!"'}
     )
 
 

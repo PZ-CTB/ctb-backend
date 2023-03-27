@@ -31,19 +31,16 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
         if "x-access-token" in request.headers:
             token = request.headers["x-access-token"]
 
-        # If the token is not passed return message and exit function
-        if not token:
-            return responses.token_missing()
-
-        # If the token is revoked return message and exit function
-        if is_token_revoked(token):
-            return responses.token_revoked()
+        # If the token is missing or revoked passed return message and exit function
+        if not token or is_token_revoked(token):
+            return responses.unauthorized()
 
         # Decode the token and retrieve the information contained in it
         try:
             data: dict[str, Any] = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
         except jwt.InvalidTokenError as e:
-            return responses.token_invalid(e)
+            print(f"ERROR: server.token_required(): {e}")
+            return responses.unauthorized()
 
         user_uuid: str = data["uuid"]
 
@@ -55,7 +52,7 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
         user_exists: bool = response != []
 
         if not user_exists:
-            return responses.user_does_not_exist()
+            return responses.unauthorized()
 
         # Returns the current logged-in users context to the routes
         return fun(user_uuid, token, *args, **kwargs)
@@ -137,7 +134,7 @@ def login() -> Response:
         return responses.internal_database_error(handler.message)
 
     if not user_information:
-        return responses.user_does_not_exist()
+        return responses.unauthorized()
 
     user_uuid: str = user_information[0][0]  # uuid
     user_email: str = user_information[0][1]  # email
@@ -172,7 +169,7 @@ def me(unique_id: str, _token: str) -> Response:
         return responses.internal_database_error(handler.message)
 
     if not user_information:
-        return responses.user_does_not_exist()
+        return responses.unauthorized()
 
     email: str = user_information[0][0]
     wallet_usd: float = user_information[0][1]
@@ -186,7 +183,7 @@ def me(unique_id: str, _token: str) -> Response:
 def logout(_unique_id: str, token: str) -> Response:
     """Logout endpoint."""
     if is_token_revoked(token):
-        return responses.token_already_revoked()
+        return responses.unauthorized()
 
     if (message := revoke_token(token)) is not Message.OK:
         return responses.internal_database_error(message)
@@ -206,7 +203,7 @@ def refresh(unique_id: str, token: str) -> Response:
         return responses.internal_database_error(handler.message)
 
     if not user_information:
-        return responses.user_does_not_exist()
+        return responses.unauthorized()
 
     user_email: str = user_information[0][0]
 
