@@ -68,7 +68,7 @@ def _get_vector_length(numOfDays: int, ageLimit: int) -> int:
     return length * NO_VALUES + 1  # accounting for additional month value
 
 
-def get_vector_columns(dateStart: datetime, dateEnd: datetime, ageLimit=10: int) -> int:
+def get_vector_columns(dateStart: datetime, dateEnd: datetime, ageLimit=10) -> int:
     """Get length of vector after compression of data."""
     return _get_vector_length(_get_no_days(dateStart, dateEnd), ageLimit)
 
