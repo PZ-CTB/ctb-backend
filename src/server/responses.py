@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Callable, Any
+from typing import Any, Callable
 
 from flask import Response, make_response
 
@@ -81,7 +81,7 @@ def _internal_database_error(message: Message) -> Response:
     )
 
 
-class RESPONSES(Callable, Enum):
+class RESPONSES(Enum):
     """All HTTP responses used in the project."""
 
     ME: Callable = _me
@@ -94,6 +94,6 @@ class RESPONSES(Callable, Enum):
     COULD_NOT_VERIFY: Callable = _could_not_verify
     INTERNAL_DATABASE_ERROR: Callable = _internal_database_error
 
-    def __call__(self, *args, **kwargs) -> Any:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """Call the function."""
         self.value(*args, **kwargs)
