@@ -73,7 +73,7 @@ def get_vector_columns(dateStart: datetime, dateEnd: datetime, ageLimit=10) -> i
     return _get_vector_length(_get_no_days(dateStart, dateEnd), ageLimit)
 
 
-def get_vector(dateStart: datetime, dateEnd: datetime, ageLimit=10: int) -> TUPLE[np.ndarray, np.ndarray]
+def get_vector(dateStart: datetime, dateEnd: datetime, ageLimit=10) -> TUPLE[np.ndarray, np.ndarray]
     """Generate vectors for learning."""
     if not _correct_date(dateStart, dateEnd):
         raise Exception("Invalid data")
@@ -132,7 +132,7 @@ def get_vector(dateStart: datetime, dateEnd: datetime, ageLimit=10: int) -> TUPL
     return vector, y_value
 
 
-def get_vectorS(dateStart: datetime, dateEnd: datetime, noRows: int, ageLimit=10: int) -> TUPLE[np.ndarray, np.ndarray]:
+def get_vectorS(dateStart: datetime, dateEnd: datetime, noRows: int, ageLimit=10) -> TUPLE[np.ndarray, np.ndarray]:
     """Get set of vectors and array of expected values."""
     length = get_vector_columns(dateStart, dateEnd, ageLimit)
     vectors = np.zeros((noRows, length))
