@@ -4,15 +4,15 @@ import sqlite3
 from . import PATHS
 
 
-def getDatabaseConnection() -> sqlite3.Connection:
+def get_database_connection() -> sqlite3.Connection:
     """Return connected transaction tunnel to the database."""
     return sqlite3.connect(PATHS.DATABASE)
 
 
-def _initDatabase() -> None:
+def _init_database() -> None:
     """Create SQLite3 database and insert some default historic data."""
     if not os.path.exists(PATHS.DATABASE):
-        connection = getDatabaseConnection()
+        connection = get_database_connection()
         cursor = connection.cursor()
         with open(file=PATHS.DATABASE_SCHEMA, encoding="utf-8") as f:
             cursor.executescript(f.read())
@@ -23,4 +23,4 @@ def _initDatabase() -> None:
         connection.close()
 
 
-_initDatabase()
+_init_database()
