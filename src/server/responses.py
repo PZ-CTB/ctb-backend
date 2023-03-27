@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Callable
+from typing import Callable, Any
 
 from flask import Response, make_response
 
