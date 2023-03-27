@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from server.database_provider import get_database_connection
+from src.server.database_provider import get_database_connection
 
 # CONST
 NO_VALUES = 3
 
 
 # collect data from database
-def _get_data():
+def _get_data() -> LIST[TUPLE[str,float]]:
     connection = get_database_connection()
     cursor = connection.cursor()
     sql_data = """
@@ -29,7 +29,7 @@ def _get_data():
 
 
 # returns index of data with matching date
-def _for_date(date, data):
+def _for_date(date: datetime, data: LIST[TUPLE[str, float]]) -> int:
     for i in range(round(len(data) / 2)):
         if date == datetime.strptime(data[i][0], "%Y-%m-%d"):
             return i
@@ -37,25 +37,25 @@ def _for_date(date, data):
 
 
 # returns two indexes of data with matching dates
-def _get_index_start_end(dateStart, dateEnd, data):
+def _get_index_start_end(dateStart: datetime, dateEnd: datetime, data: LIST[TUPLE[str, float]]) -> TUPLE[int,int]:
     indexStart = _for_date(dateStart, data)
     indexEnd = _for_date(dateEnd, data)
     return indexStart, indexEnd
 
 
-def _correct_date(dateStart, dateEnd):
+def _correct_date(dateStart: datetime, dateEnd: datetime) -> bool:
     if dateStart > dateEnd:
         return False
     return True
 
 
 # returns number of days between given dates
-def _get_no_days(dateStart, dateEnd):
+def _get_no_days(dateStart: datetime, dateEnd: datetime) -> int:
     return (dateEnd - dateStart).days + 1
 
 
 # returns length of vector after compression of data
-def _get_vector_length(numOfDays, ageLimit):
+def _get_vector_length(numOfDays: int, ageLimit: int) -> int:
     length = 0
     age = 0
     lengthInDays = 1
@@ -68,17 +68,13 @@ def _get_vector_length(numOfDays, ageLimit):
     return length * NO_VALUES + 1  # accounting for additional month value
 
 
-def get_vector_columns(dateStart, dateEnd, ageLimit=10):
+def get_vector_columns(dateStart: datetime, dateEnd: datetime, ageLimit=10: int) -> int:
     """Get length of vector after compression of data."""
     return _get_vector_length(_get_no_days(dateStart, dateEnd), ageLimit)
 
 
-def get_vector(dateStart, dateEnd, ageLimit=10):
-    """Generate vectors for learning.
-
-    Returns single vector with compressed data
-    and single expected value dateStart, dataEnd = datetime(year, month, day).
-    """
+def get_vector(dateStart: datetime, dateEnd: datetime, ageLimit=10: int) -> TUPLE[np.ndarray, np.ndarray]
+    """Generate vectors for learning."""
     if not _correct_date(dateStart, dateEnd):
         raise Exception("Invalid data")
 
@@ -104,14 +100,14 @@ def get_vector(dateStart, dateEnd, ageLimit=10):
     for i in range(noDays):
         if counter == 0:
             # values as in data file
-            tempData[0] = data[i][1]  # High
-            tempData[1] = data[i][1]  # Avg
-            tempData[2] = data[i][1]  # Low
+            tempData[0] = data[i + indexStart][1]  # High
+            tempData[1] = data[i + indexStart][1]  # Avg
+            tempData[2] = data[i + indexStart][1]  # Low
         else:
             # values of multiple days streamlined into one
-            tempData[0] = max(data[i][1], tempData[0])  # High
-            tempData[1] = (data[i][1] + tempData[1]) / 2  # Avg
-            tempData[2] = min(data[i][1], tempData[2])  # Low
+            tempData[0] = max(data[i + indexStart][1], tempData[0])  # High
+            tempData[1] = (data[i + indexStart][1] + tempData[1]) / 2  # Avg
+            tempData[2] = min(data[i + indexStart][1], tempData[2])  # Low
 
         # after performing above operations day is added to the count
         counter += 1
@@ -136,11 +132,11 @@ def get_vector(dateStart, dateEnd, ageLimit=10):
     return vector, y_value
 
 
-def get_vectorS(dateStart, dateEnd, noRows, ageLimit=10):
+def get_vectorS(dateStart: datetime, dateEnd: datetime, noRows: int, ageLimit=10: int) -> TUPLE[np.ndarray, np.ndarray]:
     """Get set of vectors and array of expected values."""
     length = get_vector_columns(dateStart, dateEnd, ageLimit)
     vectors = np.zeros((noRows, length))
-    y_values = np.zeros((noRows, length))
+    y_values = np.zeros((noRows, 1))
     for i in range(noRows):
         timeshift = timedelta(days=i)
         vectors[i], y_values[i] = get_vector(dateStart + timeshift, dateEnd + timeshift)
