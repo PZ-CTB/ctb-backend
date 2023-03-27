@@ -11,7 +11,7 @@ NO_VALUES = 3
 
 
 # collect data from database
-def _get_data() -> LIST[TUPLE[str,float]]:
+def _get_data() -> list[tuple[str,float]]:
     connection = get_database_connection()
     cursor = connection.cursor()
     sql_data = """
@@ -29,7 +29,7 @@ def _get_data() -> LIST[TUPLE[str,float]]:
 
 
 # returns index of data with matching date
-def _for_date(date: datetime, data: LIST[TUPLE[str, float]]) -> int:
+def _for_date(date: datetime, data: list[tuple[str, float]]) -> int:
     for i in range(round(len(data) / 2)):
         if date == datetime.strptime(data[i][0], "%Y-%m-%d"):
             return i
@@ -37,7 +37,7 @@ def _for_date(date: datetime, data: LIST[TUPLE[str, float]]) -> int:
 
 
 # returns two indexes of data with matching dates
-def _get_index_start_end(dateStart: datetime, dateEnd: datetime, data: LIST[TUPLE[str, float]]) -> TUPLE[int,int]:
+def _get_index_start_end(dateStart: datetime, dateEnd: datetime, data: list[tuple[str, float]]) -> tuple[int,int]:
     indexStart = _for_date(dateStart, data)
     indexEnd = _for_date(dateEnd, data)
     return indexStart, indexEnd
@@ -63,7 +63,7 @@ def _get_vector_length(numOfDays: int, ageLimit: int) -> int:
         length += 1
         age += 1
         numOfDays -= lengthInDays
-        if age % 10 == 0:
+        if age % ageLimit == 0:
             lengthInDays += 1
     return length * NO_VALUES + 1  # accounting for additional month value
 
@@ -73,7 +73,7 @@ def get_vector_columns(dateStart: datetime, dateEnd: datetime, ageLimit=10) -> i
     return _get_vector_length(_get_no_days(dateStart, dateEnd), ageLimit)
 
 
-def get_vector(dateStart: datetime, dateEnd: datetime, ageLimit=10) -> TUPLE[np.ndarray, np.ndarray]:
+def get_vector(dateStart: datetime, dateEnd: datetime, ageLimit=10) -> tuple[np.ndarray, np.ndarray]:
     """Generate vectors for learning."""
     if not _correct_date(dateStart, dateEnd):
         raise Exception("Invalid data")
@@ -132,7 +132,7 @@ def get_vector(dateStart: datetime, dateEnd: datetime, ageLimit=10) -> TUPLE[np.
     return vector, y_value
 
 
-def get_vectorS(dateStart: datetime, dateEnd: datetime, noRows: int, ageLimit=10) -> TUPLE[np.ndarray, np.ndarray]:
+def get_vectorS(dateStart: datetime, dateEnd: datetime, noRows: int, ageLimit=10) -> tuple[np.ndarray, np.ndarray]:
     """Get set of vectors and array of expected values."""
     length = get_vector_columns(dateStart, dateEnd, ageLimit)
     vectors = np.zeros((noRows, length))
