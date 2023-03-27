@@ -15,7 +15,7 @@ from . import QUERIES
 from .database_provider import get_database_connection
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000/", "https://ctb-agh.netlify.app/"])
+CORS(app, origins=["http://localhost:3000", "https://ctb-agh.netlify.app"])
 # Generation method -> uuid.uuid4().hex
 app.config["SECRET_KEY"] = "55cfba6d5bd6405c8e9b7b681f6b8835"
 
