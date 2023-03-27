@@ -9,7 +9,7 @@ from flask import Flask, Response, request
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from . import QUERIES, responses
+from . import QUERIES, RESPONSES
 from .database import DatabaseProvider, Message
 
 DatabaseProvider.initialize()
@@ -33,14 +33,14 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
 
         # If the token is missing or revoked passed return message and exit function
         if not token or is_token_revoked(token):
-            return responses.unauthorized()
+            return RESPONSES.UNAUTHORIZED()
 
         # Decode the token and retrieve the information contained in it
         try:
             data: dict[str, Any] = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
         except jwt.InvalidTokenError as e:
             print(f"ERROR: server.token_required(): {e}")
-            return responses.unauthorized()
+            return RESPONSES.UNAUTHORIZED()
 
         user_uuid: str = data["uuid"]
 
@@ -48,11 +48,11 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
             handler().execute(QUERIES.SELECT_USER_UUID, (user_uuid,))
             response = handler().fetchall()
         if not handler.success:
-            return responses.internal_database_error(handler.message)
+            return RESPONSES.INTERNAL_DATABASE_ERROR(handler.message)
         user_exists: bool = response != []
 
         if not user_exists:
-            return responses.unauthorized()
+            return RESPONSES.UNAUTHORIZED()
 
         # Returns the current logged-in users context to the routes
         return fun(user_uuid, token, *args, **kwargs)
@@ -92,17 +92,17 @@ def register() -> Response:
     password: str = new_user.get("password", "")
 
     if not email or not password:
-        return responses.invalid_json_format()
+        return RESPONSES.INVALID_JSON_FORMAT()
 
     with DatabaseProvider.handler() as handler:
         handler().execute(QUERIES.SELECT_USER_EMAIL, (email,))
         user_exists: bool = handler().fetchall() != []
 
     if not handler.success:
-        return responses.internal_database_error(handler.message)
+        return RESPONSES.INTERNAL_DATABASE_ERROR(handler.message)
 
     if user_exists:
-        return responses.user_already_exists()
+        return RESPONSES.USER_ALREADY_EXISTS()
 
     with DatabaseProvider.handler() as handler:
         handler().execute(
@@ -110,9 +110,9 @@ def register() -> Response:
         )
     if not handler.success:
         print(f"ERROR: server.register(): {handler.message}")
-        return responses.internal_database_error(handler.message)
+        return RESPONSES.INTERNAL_DATABASE_ERROR(handler.message)
 
-    return responses.successfully_registered()
+    return RESPONSES.SUCCESSFULLY_REGISTERED()
 
 
 @app.route("/login/", methods=["POST"])
@@ -124,17 +124,17 @@ def login() -> Response:
     password: str = auth.get("password", "")
 
     if not email or not password:
-        return responses.invalid_json_format()
+        return RESPONSES.INVALID_JSON_FORMAT()
 
     with DatabaseProvider.handler() as handler:
         handler().execute(QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL, (email,))
         user_information: list[tuple[str, str, str]] = handler().fetchall()
 
     if not handler.success:
-        return responses.internal_database_error(handler.message)
+        return RESPONSES.INTERNAL_DATABASE_ERROR(handler.message)
 
     if not user_information:
-        return responses.unauthorized()
+        return RESPONSES.UNAUTHORIZED()
 
     user_uuid: str = user_information[0][0]  # uuid
     user_email: str = user_information[0][1]  # email
@@ -150,9 +150,9 @@ def login() -> Response:
             app.config["SECRET_KEY"],
         )
 
-        return responses.auth_token(token)
+        return RESPONSES.AUTH_TOKEN(token)
 
-    return responses.could_not_verify()
+    return RESPONSES.COULD_NOT_VERIFY()
 
 
 @app.route("/me/", methods=["GET"])
@@ -166,16 +166,16 @@ def me(unique_id: str, _token: str) -> Response:
     print(f"{user_information=}")
 
     if not handler.success:
-        return responses.internal_database_error(handler.message)
+        return RESPONSES.INTERNAL_DATABASE_ERROR(handler.message)
 
     if not user_information:
-        return responses.unauthorized()
+        return RESPONSES.UNAUTHORIZED()
 
     email: str = user_information[0][0]
     wallet_usd: float = user_information[0][1]
     wallet_btc: float = user_information[0][2]
 
-    return responses.me(unique_id, email, wallet_usd, wallet_btc)
+    return RESPONSES.ME(unique_id, email, wallet_usd, wallet_btc)
 
 
 @app.route("/logout/", methods=["POST"])
@@ -183,12 +183,12 @@ def me(unique_id: str, _token: str) -> Response:
 def logout(_unique_id: str, token: str) -> Response:
     """Logout endpoint."""
     if is_token_revoked(token):
-        return responses.unauthorized()
+        return RESPONSES.UNAUTHORIZED()
 
     if (message := revoke_token(token)) is not Message.OK:
-        return responses.internal_database_error(message)
+        return RESPONSES.INTERNAL_DATABASE_ERROR(message)
 
-    return responses.successfully_logged_out()
+    return RESPONSES.SUCCESSFULLY_LOGGED_OUT()
 
 
 @app.route("/refresh/", methods=["POST"])
@@ -200,10 +200,10 @@ def refresh(unique_id: str, token: str) -> Response:
         user_information: list[tuple[str]] = handler().fetchall()
 
     if not handler.success:
-        return responses.internal_database_error(handler.message)
+        return RESPONSES.INTERNAL_DATABASE_ERROR(handler.message)
 
     if not user_information:
-        return responses.unauthorized()
+        return RESPONSES.UNAUTHORIZED()
 
     user_email: str = user_information[0][0]
 
@@ -218,9 +218,9 @@ def refresh(unique_id: str, token: str) -> Response:
 
     revoke_result: Message = revoke_token(token)
     if revoke_result is not Message.OK:
-        return responses.internal_database_error(revoke_result)
+        return RESPONSES.INTERNAL_DATABASE_ERROR(revoke_result)
 
-    return responses.auth_token(new_token)
+    return RESPONSES.AUTH_TOKEN(new_token)
 
 
 @app.route("/chart/")

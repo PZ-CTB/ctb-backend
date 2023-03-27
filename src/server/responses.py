@@ -1,9 +1,12 @@
+from enum import Enum
+from typing import Callable
+
 from flask import Response, make_response
 
 from .database import Message
 
 
-def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
+def _me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
     """200: /me endpoint response."""
     return make_response(
         {"uuid": uuid, "email": email, "wallet_usd": wallet_usd, "wallet_btc": wallet_btc},
@@ -11,7 +14,7 @@ def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
     )
 
 
-def auth_token(token: str) -> Response:
+def _auth_token(token: str) -> Response:
     """201: returning auth token to user on login or refresh."""
     return make_response(
         {"auth_token": token},
@@ -19,7 +22,7 @@ def auth_token(token: str) -> Response:
     )
 
 
-def successfully_registered() -> Response:
+def _successfully_registered() -> Response:
     """201: successfully registered."""
     return make_response(
         {"message": "Successfully registered"},
@@ -27,7 +30,7 @@ def successfully_registered() -> Response:
     )
 
 
-def successfully_logged_out() -> Response:
+def _successfully_logged_out() -> Response:
     """201: successfully logged out."""
     return make_response(
         {"message": "User is successfully logged out"},
@@ -35,7 +38,7 @@ def successfully_logged_out() -> Response:
     )
 
 
-def user_already_exists() -> Response:
+def _user_already_exists() -> Response:
     """202: can't register because user already exists, login required instead."""
     return make_response(
         {"message": "User already exists"},
@@ -44,7 +47,7 @@ def user_already_exists() -> Response:
     )
 
 
-def invalid_json_format() -> Response:
+def _invalid_json_format() -> Response:
     """400: json parser could not parse the request."""
     return make_response(
         {"message": "Invalid Json format"},
@@ -52,7 +55,7 @@ def invalid_json_format() -> Response:
     )
 
 
-def unauthorized() -> Response:
+def _unauthorized() -> Response:
     """401: generic problem with authorization or token."""
     return make_response(
         {"message": "Not authorized to perform this action"},
@@ -61,7 +64,7 @@ def unauthorized() -> Response:
     )
 
 
-def could_not_verify() -> Response:
+def _could_not_verify() -> Response:
     """403: user provided wrong password."""
     return make_response(
         {"message": "Could not verify"},
@@ -70,9 +73,25 @@ def could_not_verify() -> Response:
     )
 
 
-def internal_database_error(message: Message) -> Response:
+def _internal_database_error(message: Message) -> Response:
     """500: DatabaseProvider returned message code other than OK."""
     return make_response(
         {"message": f"Internal error: {message}"},
         500,
     )
+
+
+class RESPONSES(Callable, Enum):
+    """All HTTP responses used in the project."""
+    ME: Callable = _me
+    AUTH_TOKEN: Callable = _auth_token
+    SUCCESSFULLY_REGISTERED: Callable = _successfully_registered
+    SUCCESSFULLY_LOGGED_OUT: Callable = _successfully_logged_out
+    USER_ALREADY_EXISTS: Callable = _user_already_exists
+    INVALID_JSON_FORMAT: Callable = _invalid_json_format
+    UNAUTHORIZED: Callable = _unauthorized
+    COULD_NOT_VERIFY: Callable = _could_not_verify
+    INTERNAL_DATABASE_ERROR: Callable = _internal_database_error
+
+    def __call__(self, *args, **kwargs):
+        self.value(*args, **kwargs)
