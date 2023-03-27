@@ -73,7 +73,7 @@ def get_vector_columns(dateStart: datetime, dateEnd: datetime, ageLimit=10) -> i
     return _get_vector_length(_get_no_days(dateStart, dateEnd), ageLimit)
 
 
-def get_vector(dateStart: datetime, dateEnd: datetime, ageLimit=10) -> TUPLE[np.ndarray, np.ndarray]
+def get_vector(dateStart: datetime, dateEnd: datetime, ageLimit=10) -> TUPLE[np.ndarray, np.ndarray]:
     """Generate vectors for learning."""
     if not _correct_date(dateStart, dateEnd):
         raise Exception("Invalid data")
