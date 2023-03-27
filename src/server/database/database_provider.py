@@ -4,24 +4,31 @@ from contextlib import contextmanager
 from typing import Generator, Optional
 
 from .. import PATHS
-from . import DatabaseResponse, Message
+from . import DatabaseHandler, Message
 
 
 class DatabaseProvider:
     """Interface to SQL database.
 
-    Example usage:
-        DatabaseProvider.initialize()  # init database
-        age: int = 66
-        with DatabaseProvider.query(
-            "SELECT name FROM person WHERE age=?", (age,)
-        ) as response:
-            if response.message is Message.OK:
-                name: list[str] = response.data
-            else:
-                # handle query failure
+    There are several steps that happen under the hood which user does not have to worry about:
+        - connection to file database (if exists);
+        - connection to in-memory database (in case file database failed);
+        - safe creation of cursor and transaction (with error handling);
+        - execution of queries that we submitted (with error handling);
+        - commit of changes in the actual database.
+
+    If an error occurs on one of the queries, any subsequent queries present in the same context
+    will not be executed.
+
+        with DatabaseProvider.handler() as handler:
+            handler().execute("SELECT name FROM person WHERE age=?", (age,))
+            name: list[str] = handler().fetchall()
+
+        if not handler.success:
+            # handle query failure
     """
 
+    # predeclaration on the class level
     connection: sqlite3.Connection = sqlite3.Connection(":memory:")
     database_source: str = ""
 
@@ -30,49 +37,44 @@ class DatabaseProvider:
         """Initialize connection to the database."""
         cls.database_source = PATHS.DATABASE
 
+        db_needs_setup: bool = False
         if not os.path.exists(cls.database_source):
-            result = cls._create_database()
-            if result is Message.NO_CONNECTION:
-                print("INFO: connecting to in-memory database as fallback")
-                cls.database_source = ":memory:"
-                cls._create_database()
+            db_needs_setup = True
+
+        result: Message = cls._connect_to_database()
+        if result is not Message.OK:
+            print(f"WARNING: cannot connect to a file database: {result}")
+            print("INFO: connecting to in-memory database as fallback")
+            cls.database_source = ":memory:"
+            result = cls._connect_to_database()
+            if result is not Message.OK:
+                raise RuntimeError(f"Can't connect to in-memory database: {result}")
+
+        if db_needs_setup:
             cls._fill_database()
 
     @classmethod
     @contextmanager
-    def query(
-        cls, query: str, params: tuple | list = ()
-    ) -> Generator[DatabaseResponse, None, None]:
-        """Interface that allows safe query execution in database.
-
-        Args:
-            query (str): Query to be executed in the database.
-            params (tuple, optional): Parameters passed to sqlite3 query string. Defaults to ().
+    def handler(cls) -> Generator[DatabaseHandler, None, None]:
+        """Interface that allows safe query execution in the database.
 
         Yields:
-            DatabaseResponse: Batch containing query execution status and received data (if any).
+            DatabaseHandler: Handler consisting of cursor and query execution status (Message).
 
         """
         with cls._try_get_cursor() as cursor:
-            if cursor is None:
-                yield DatabaseResponse(Message.NO_CONNECTION, [])
-            else:
+            if cursor is not None:
+                handler: DatabaseHandler = DatabaseHandler(cursor, Message.OK)
                 try:
-                    print(f"INFO: {query=}, {params=}")
-                    cursor.execute(query, params)
-                    data: list = cursor.fetchall()
-                    yield DatabaseResponse(Message.OK, data)
-                except sqlite3.IntegrityError as err:
-                    print(f"ERROR: {err}")
-                    yield DatabaseResponse(Message.INVALID_SQL, [])
-                except sqlite3.ProgrammingError as err:
-                    print(f"ERROR: {err}")
-                    yield DatabaseResponse(Message.INVALID_BINDINGS, [])
-                except sqlite3.Error as err:
-                    print(f"ERROR: {err}")
-                    yield DatabaseResponse(Message.UNKNOWN_ERROR, [])
-                finally:
-                    print(f"INFO: successfully executed a query: '{query}'")
+                    yield handler
+                except sqlite3.IntegrityError:
+                    handler.message = Message.INVALID_SQL
+                except sqlite3.ProgrammingError:
+                    handler.message = Message.INVALID_BINDINGS
+                except sqlite3.Error:
+                    handler.message = Message.UNKNOWN_ERROR
+                else:
+                    handler.message = Message.OK
 
     @classmethod
     @contextmanager
@@ -82,15 +84,17 @@ class DatabaseProvider:
             cursor = cls.connection.cursor()
             yield cursor
         except sqlite3.Error as err:
-            print(f"ERROR: {err}")
+            print(f"ERROR: sqlite3.Cursor creation -- {err}")
             yield None
         finally:
             if cursor is not None:
+                print("DEBUG: closing sqlite3.Cursor")
                 cursor.close()
+                print("DEBUG: committing sqlite3 changes")
                 cls.connection.commit()
 
     @classmethod
-    def _create_database(cls) -> Message:
+    def _connect_to_database(cls) -> Message:
         try:
             print(f"INFO: {cls.database_source=}")
             cls.connection = sqlite3.connect(cls.database_source, check_same_thread=False)

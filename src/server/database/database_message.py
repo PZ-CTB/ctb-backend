@@ -16,3 +16,7 @@ class Message(IntEnum):
     def __repr__(self) -> str:
         """Display enum variables with their names and values."""
         return f"{self.name}({self.value})"
+
+    def __str__(self) -> str:
+        """Convert enum variables with their names and values to string."""
+        return f"{self.name}({self.value})"
