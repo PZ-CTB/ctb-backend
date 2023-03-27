@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-from database_provider import get_database_connection
+
+from server.database_provider import get_database_connection
 
 # CONST
 NO_VALUES = 3
@@ -67,16 +68,19 @@ def _get_vector_length(numOfDays, ageLimit):
     return length * NO_VALUES + 1  # accounting for additional month value
 
 
-# returns length of vector after compression of data
 def get_vector_columns(dateStart, dateEnd, ageLimit=10):
+    """Get length of vector after compression of data."""
     return _get_vector_length(_get_no_days(dateStart, dateEnd), ageLimit)
 
 
-# returns single vector with compressed data and single expected value
-# dateStart, dataEnd = datetime(year, month, day)
 def get_vector(dateStart, dateEnd, ageLimit=10):
+    """Generate vectors for learning.
+
+    Returns single vector with compressed data
+    and single expected value dateStart, dataEnd = datetime(year, month, day).
+    """
     if not _correct_date(dateStart, dateEnd):
-        return None
+        raise Exception("Invalid data")
 
     # data set consists of 3 values per day: High, Avg, Low
     data = _get_data()
@@ -132,8 +136,8 @@ def get_vector(dateStart, dateEnd, ageLimit=10):
     return vector, y_value
 
 
-# returns set of vectors and array of expected values
 def get_vectorS(dateStart, dateEnd, noRows, ageLimit=10):
+    """Get set of vectors and array of expected values."""
     length = get_vector_columns(dateStart, dateEnd, ageLimit)
     vectors = np.zeros((noRows, length))
     y_values = np.zeros((noRows, length))

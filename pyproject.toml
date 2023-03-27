@@ -1,0 +1,25 @@
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+skip = "__init__.py"
+
+[tool.mypy]
+ignore_missing_imports = true
+show_column_numbers = true
+pretty = true
+disallow_untyped_defs = true
+
+[tool.pydocstyle]
+ignore = ["D100", "D104", "D203", "D213"]
+
+[tool.pylint]
+max-line-length = 100
+disable = [
+    "C0103",  # not snake_case naming style
+    "C0114",  # missing module docstring
+    "C0116",  # missing method/class docstring
+    "R0902",  # too many instance attributes
+    "R0903" ] # too few public methods
+ignore = ["__init__.py"]

@@ -1,4 +1,7 @@
 {
+    "[jsonc]": {
+        "editor.formatOnSave": false,
+    },
     "[python]": {
         "editor.codeActionsOnSave": {
             "source.organizeImports": true
@@ -6,31 +9,19 @@
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.formatOnSave": true,
     },
-    "black-formatter.args": [
-        "--line-length", "100",
-    ],
-    "isort.args": [
-        "--profile", "black",
-        "--skip", "__init__.py"
-    ],
+    "files.eol": "\n",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+
     "python.analysis.typeCheckingMode": "basic",
-    "python.formatting.provider": "none",
     "python.languageServer": "Pylance",
-    "python.linting.flake8Args": [
-        "--max-line-length", "100",
-        "--skip", "__init__.py"
-    ],
-    "python.linting.flake8Enabled": true,
-    "python.linting.mypyArgs": [
-        "--follow-imports=silent",
-        "--ignore-missing-imports",
-        "--show-column-numbers",
-        "--no-pretty",
-        "--check-untyped-defs"
-    ],
+
     "python.linting.mypyEnabled": true,
-    "python.linting.pycodestyleArgs": [
-        "--max-line-length", "100"
-    ],
-    "python.linting.pycodestyleEnabled": true,
+    "python.linting.pydocstyleEnabled": true,
+
+    "black-formatter.args": [ "--config", "pyproject.toml" ],
+    "isort.args": [ "--settings-file", "pyproject.toml" ],
+    "python.linting.mypyArgs": [ "--config-file", "pyproject.toml" ],
+    "python.linting.pydocstyleArgs": [ "--config", "pyproject.toml" ],
 }
