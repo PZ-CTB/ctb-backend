@@ -82,7 +82,7 @@ def is_token_revoked(token: str) -> bool:
     return is_revoked
 
 
-@app.route("/register", methods=["POST"])
+@app.route("/register/", methods=["POST"])
 def register() -> Response:
     """Registration endpoint."""
     new_user: dict[str, str] = request.get_json()
@@ -115,7 +115,7 @@ def register() -> Response:
     return responses.successfully_registered()
 
 
-@app.route("/login", methods=["POST"])
+@app.route("/login/", methods=["POST"])
 def login() -> Response:
     """Login endpoint."""
     auth: dict[str, Any] = request.get_json()
@@ -155,7 +155,7 @@ def login() -> Response:
     return responses.could_not_verify()
 
 
-@app.route("/me", methods=["GET"])
+@app.route("/me/", methods=["GET"])
 @token_required
 def me(unique_id: str, _token: str) -> Response:
     """User's information endpoint."""
@@ -178,7 +178,7 @@ def me(unique_id: str, _token: str) -> Response:
     return responses.me(unique_id, email, wallet_usd, wallet_btc)
 
 
-@app.route("/logout", methods=["POST"])
+@app.route("/logout/", methods=["POST"])
 @token_required
 def logout(_unique_id: str, token: str) -> Response:
     """Logout endpoint."""
@@ -191,7 +191,7 @@ def logout(_unique_id: str, token: str) -> Response:
     return responses.successfully_logged_out()
 
 
-@app.route("/refresh", methods=["POST"])
+@app.route("/refresh/", methods=["POST"])
 @token_required
 def refresh(unique_id: str, token: str) -> Response:
     """Token refresh endpoint."""
@@ -223,19 +223,19 @@ def refresh(unique_id: str, token: str) -> Response:
     return responses.auth_token(new_token)
 
 
-@app.route("/chart")
+@app.route("/chart/")
 def chart() -> str:
     """Chart data retrieval endpoint."""
     return "chart"
 
 
-@app.route("/future_value")
+@app.route("/future_value/")
 def future_value() -> str:
     """Model data estimation endpoint."""
     return "future_value"
 
 
-@app.route("/change_password")
+@app.route("/change_password/")
 def change_password() -> str:
     """User's password change endpoint."""
     return "change_password"
