@@ -33,14 +33,14 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
 
         # If the token is missing or revoked passed return message and exit function
         if not token or is_token_revoked(token):
-            return Responses.unauthorized()
+            return Responses.unauthorized_error()
 
         # Decode the token and retrieve the information contained in it
         try:
             data: dict[str, Any] = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
         except jwt.InvalidTokenError as e:
             print(f"ERROR: server.token_required(): {e}")
-            return Responses.unauthorized()
+            return Responses.unauthorized_error()
 
         user_uuid: str = data["uuid"]
 
@@ -52,7 +52,7 @@ def token_required(fun: Callable[..., Response]) -> Callable[..., Response]:
         user_exists: bool = response != []
 
         if not user_exists:
-            return Responses.unauthorized()
+            return Responses.unauthorized_error()
 
         # Returns the current logged-in users context to the routes
         return fun(user_uuid, token, *args, **kwargs)
@@ -92,7 +92,7 @@ def register() -> Response:
     password: str = new_user.get("password", "")
 
     if not email or not password:
-        return Responses.invalid_json_format()
+        return Responses.invalid_json_format_error()
 
     with DatabaseProvider.handler() as handler:
         handler().execute(QUERIES.SELECT_USER_EMAIL, (email,))
@@ -124,7 +124,7 @@ def login() -> Response:
     password: str = auth.get("password", "")
 
     if not email or not password:
-        return Responses.invalid_json_format()
+        return Responses.invalid_json_format_error()
 
     with DatabaseProvider.handler() as handler:
         handler().execute(QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL, (email,))
@@ -134,7 +134,7 @@ def login() -> Response:
         return Responses.internal_database_error(handler.message)
 
     if not user_information:
-        return Responses.unauthorized()
+        return Responses.unauthorized_error()
 
     user_uuid: str = user_information[0][0]  # uuid
     user_email: str = user_information[0][1]  # email
@@ -152,7 +152,7 @@ def login() -> Response:
 
         return Responses.auth_token(token)
 
-    return Responses.could_not_verify()
+    return Responses.could_not_verify_error()
 
 
 @app.route("/me/", methods=["GET"])
@@ -169,7 +169,7 @@ def me(unique_id: str, _token: str) -> Response:
         return Responses.internal_database_error(handler.message)
 
     if not user_information:
-        return Responses.unauthorized()
+        return Responses.unauthorized_error()
 
     email: str = user_information[0][0]
     wallet_usd: float = user_information[0][1]
@@ -183,7 +183,7 @@ def me(unique_id: str, _token: str) -> Response:
 def logout(_unique_id: str, token: str) -> Response:
     """Logout endpoint."""
     if is_token_revoked(token):
-        return Responses.unauthorized()
+        return Responses.unauthorized_error()
 
     if (message := revoke_token(token)) is not Message.OK:
         return Responses.internal_database_error(message)
@@ -203,7 +203,7 @@ def refresh(unique_id: str, token: str) -> Response:
         return Responses.internal_database_error(handler.message)
 
     if not user_information:
-        return Responses.unauthorized()
+        return Responses.unauthorized_error()
 
     user_email: str = user_information[0][0]
 

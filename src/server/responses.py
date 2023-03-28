@@ -48,7 +48,7 @@ class Responses:
         )
 
     @staticmethod
-    def invalid_json_format() -> Response:
+    def invalid_json_format_error() -> Response:
         """400: json parser could not parse the request."""
         return make_response(
             {"message": "Invalid Json format"},
@@ -56,7 +56,7 @@ class Responses:
         )
 
     @staticmethod
-    def unauthorized() -> Response:
+    def unauthorized_error() -> Response:
         """401: generic problem with authorization or token."""
         return make_response(
             {"message": "Not authorized to perform this action"},
@@ -65,7 +65,7 @@ class Responses:
         )
 
     @staticmethod
-    def could_not_verify() -> Response:
+    def could_not_verify_error() -> Response:
         """403: user provided wrong password."""
         return make_response(
             {"message": "Could not verify"},
