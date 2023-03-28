@@ -74,9 +74,9 @@ class Responses:
         )
 
     @staticmethod
-    def internal_database_error(message: Message) -> Response:
-        """500: DatabaseProvider returned message code other than OK."""
+    def internal_database_error(_message: Message) -> Response:
+        """500: generic internal error."""
         return make_response(
-            {"message": f"Internal error: {message}"},
+            {"message": "Internal server error"},
             500,
         )
