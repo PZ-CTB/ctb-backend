@@ -38,23 +38,23 @@ class AuthController:
     @staticmethod
     @blueprint.route("/me", methods=["GET"])
     @TokenService.token_required
-    def me(unique_id: str, _token: str) -> Response:
+    def me(uuid: str, _token: str) -> Response:
         """User's information endpoint."""
-        return AuthService.me(unique_id)
+        return AuthService.me(uuid)
 
     @staticmethod
     @blueprint.route("/logout", methods=["POST"])
     @TokenService.token_required
-    def logout(_unique_id: str, token: str) -> Response:
+    def logout(_uuid: str, token: str) -> Response:
         """Logout endpoint."""
         return AuthService.logout(token)
 
     @staticmethod
     @blueprint.route("/refresh", methods=["POST"])
     @TokenService.token_required
-    def refresh(unique_id: str, token: str) -> Response:
+    def refresh(uuid: str, token: str) -> Response:
         """Token refresh endpoint."""
-        return TokenService.refresh(unique_id, token)
+        return TokenService.refresh(uuid, token)
 
     @staticmethod
     @blueprint.route("/change_password")

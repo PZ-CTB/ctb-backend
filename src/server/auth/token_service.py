@@ -39,7 +39,7 @@ class TokenService:
             try:
                 data: dict[str, Any] = jwt.decode(token, cls._secret, algorithms=["HS256"])
             except jwt.InvalidTokenError as e:
-                print(f"ERROR: server.token_required(): {e}")
+                print(f"ERROR: server.auth.token_service.token_required(): {e}")
                 return Responses.unauthorized_error()
 
             user_uuid: str = data["uuid"]
@@ -96,11 +96,11 @@ class TokenService:
         return is_revoked
 
     @classmethod
-    def get_token(cls, unique_id: str, email: str) -> str:
+    def get_token(cls, user_uuid: str, email: str) -> str:
         """Create and return new token.
 
         Args:
-            unique_id (str): user`s id,
+            user_uuid (str): user`s id,
             email (str): user`s email.
 
         Returns:
@@ -109,7 +109,7 @@ class TokenService:
         """
         return jwt.encode(
             {
-                "uuid": unique_id,
+                "uuid": user_uuid,
                 "email": email,
                 "exp": datetime.utcnow() + timedelta(minutes=cls._token_expiration_minutes),
             },
@@ -117,11 +117,11 @@ class TokenService:
         )
 
     @classmethod
-    def refresh(cls, unique_id: str, token: str) -> Response:
+    def refresh(cls, user_uuid: str, token: str) -> Response:
         """Refresh token.
 
         Args:
-            unique_id (str): user`s id,
+            user_uuid (str): user`s id,
             token (str): user`s token.
 
         Returns:
@@ -129,7 +129,7 @@ class TokenService:
 
         """
         with DatabaseProvider.handler() as handler:
-            handler().execute(QUERIES.SELECT_USER_EMAIL_BY_UUID, (unique_id,))
+            handler().execute(QUERIES.SELECT_USER_EMAIL_BY_UUID, (user_uuid,))
             user_information: list[tuple[str]] = handler().fetchall()
 
         if not handler.success:
@@ -140,7 +140,7 @@ class TokenService:
 
         user_email: str = user_information[0][0]
 
-        new_token: str = cls.get_token(unique_id, user_email)
+        new_token: str = cls.get_token(user_uuid, user_email)
 
         revoke_result: Message = cls.revoke_token(token)
         if revoke_result is not Message.OK:

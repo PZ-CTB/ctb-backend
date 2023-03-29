@@ -26,7 +26,7 @@ class AuthService:
             Response: successfully_registered if register succeed, appropriate error otherwise.
 
         """
-        unique_id: uuid.UUID = uuid.uuid4()
+        new_uuid: uuid.UUID = uuid.uuid4()
 
         if not email or not password:
             return Responses.invalid_json_format_error()
@@ -43,10 +43,10 @@ class AuthService:
 
         with DatabaseProvider.handler() as handler:
             handler().execute(
-                QUERIES.INSERT_USER, (str(unique_id), email, generate_password_hash(password))
+                QUERIES.INSERT_USER, (str(new_uuid), email, generate_password_hash(password))
             )
         if not handler.success:
-            print(f"ERROR: server.register(): {handler.message}")
+            print(f"ERROR: server.auth.auth_service.register(): {handler.message}")
             return Responses.internal_database_error(handler.message)
 
         return Responses.successfully_registered()
@@ -88,18 +88,18 @@ class AuthService:
         return Responses.could_not_verify_error()
 
     @classmethod
-    def me(cls, unique_id: str) -> Response:
+    def me(cls, user_uuid: str) -> Response:
         """Get user`s info.
 
         Args:
-            unique_id (str): user`s id.
+            user_uuid (str): user`s id.
 
         Returns:
             Response: user`s info if operation succeed, appropriate error otherwise.
 
         """
         with DatabaseProvider.handler() as handler:
-            handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (unique_id,))
+            handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (user_uuid,))
             user_information: list = handler().fetchall()
             print(f"{user_information=}")
         print(f"{user_information=}")
@@ -114,7 +114,7 @@ class AuthService:
         wallet_usd: float = user_information[0][1]
         wallet_btc: float = user_information[0][2]
 
-        return Responses.me(unique_id, email, wallet_usd, wallet_btc)
+        return Responses.me(user_uuid, email, wallet_usd, wallet_btc)
 
     @classmethod
     def logout(cls, token: str) -> Response:
