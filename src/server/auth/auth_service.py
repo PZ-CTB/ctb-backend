@@ -14,8 +14,8 @@ class AuthService:
     Handles various authentication tasks.
     """
 
-    @classmethod
-    def register(cls, email: str, password: str) -> Response:
+    @staticmethod
+    def register(email: str, password: str) -> Response:
         """Register method.
 
         Args:
@@ -51,8 +51,8 @@ class AuthService:
 
         return Responses.successfully_registered()
 
-    @classmethod
-    def login(cls, email: str, password: str) -> Response:
+    @staticmethod
+    def login(email: str, password: str) -> Response:
         """Login method.
 
         Args:
@@ -87,8 +87,8 @@ class AuthService:
 
         return Responses.could_not_verify_error()
 
-    @classmethod
-    def me(cls, user_uuid: str) -> Response:
+    @staticmethod
+    def me(user_uuid: str) -> Response:
         """Get user`s info.
 
         Args:
@@ -116,8 +116,8 @@ class AuthService:
 
         return Responses.me(user_uuid, email, wallet_usd, wallet_btc)
 
-    @classmethod
-    def logout(cls, token: str) -> Response:
+    @staticmethod
+    def logout(token: str) -> Response:
         """Logout method.
 
         Args:

@@ -18,6 +18,7 @@ class TokenService:
 
     _token_expiration_minutes: int = 30
     _secret: str = os.getenv("SECRET_KEY", "secret")
+    _algorithms: list[str] = ["HS256"]
 
     @classmethod
     def token_required(cls, fun: Callable[..., Response]) -> Callable[..., Response]:
@@ -37,7 +38,7 @@ class TokenService:
 
             # Decode the token and retrieve the information contained in it
             try:
-                data: dict[str, Any] = jwt.decode(token, cls._secret, algorithms=["HS256"])
+                data: dict[str, Any] = jwt.decode(token, cls._secret, algorithms=cls._algorithms)
             except jwt.InvalidTokenError as e:
                 print(f"ERROR: server.auth.token_service.token_required(): {e}")
                 return Responses.unauthorized_error()
@@ -70,7 +71,7 @@ class TokenService:
             Message: message returned by database handler.
 
         """
-        decoded_token: dict[str, Any] = jwt.decode(token, cls._secret, algorithms=["HS256"])
+        decoded_token: dict[str, Any] = jwt.decode(token, cls._secret, algorithms=cls._algorithms)
         expiry: datetime = datetime.fromtimestamp(decoded_token["exp"])
 
         with DatabaseProvider.handler() as handler:

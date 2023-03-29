@@ -28,7 +28,7 @@ class AuthController:
     @blueprint.route("/login", methods=["POST"])
     def login() -> Response:
         """Login endpoint."""
-        auth: dict[str, Any] = request.get_json()
+        auth: dict[str, str] = request.get_json()
 
         email: str = auth.get("email", "")
         password: str = auth.get("password", "")
