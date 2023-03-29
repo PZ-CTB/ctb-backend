@@ -1,8 +1,9 @@
 from typing import Any
 
-from flask import Response, Blueprint, request
+from flask import Blueprint, Response, request
 
 from . import AuthService, TokenService
+
 
 class AuthController:
     """Authentication controller class.
@@ -10,7 +11,7 @@ class AuthController:
     Exposes multiple endpoints for authentication related purposes.
     """
 
-    blueprint = Blueprint('auth', __name__, url_prefix='/auth')
+    blueprint: Blueprint = Blueprint("auth", __name__, url_prefix="/auth")
 
     @staticmethod
     @blueprint.route("/register", methods=["POST"])
@@ -23,7 +24,6 @@ class AuthController:
 
         return AuthService.register(email, password)
 
-
     @staticmethod
     @blueprint.route("/login", methods=["POST"])
     def login() -> Response:
@@ -35,22 +35,19 @@ class AuthController:
 
         return AuthService.login(email, password)
 
-
     @staticmethod
     @blueprint.route("/me", methods=["GET"])
     @TokenService.token_required
-    def me(unique_id: str, token: str) -> Response:
+    def me(unique_id: str, _token: str) -> Response:
         """User's information endpoint."""
         return AuthService.me(unique_id)
-
 
     @staticmethod
     @blueprint.route("/logout", methods=["POST"])
     @TokenService.token_required
-    def logout(unique_id: str, token: str) -> Response:
+    def logout(_unique_id: str, token: str) -> Response:
         """Logout endpoint."""
         return AuthService.logout(token)
-
 
     @staticmethod
     @blueprint.route("/refresh", methods=["POST"])

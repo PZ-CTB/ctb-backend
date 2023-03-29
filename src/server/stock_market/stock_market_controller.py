@@ -1,9 +1,10 @@
 from flask import Blueprint
 
+
 class StockMarketController:
     """Stock Market Controller class."""
 
-    blueprint = Blueprint('stock', __name__, url_prefix='/stock')
+    blueprint = Blueprint("stock", __name__, url_prefix="/stock")
 
     @staticmethod
     @blueprint.route("/chart")

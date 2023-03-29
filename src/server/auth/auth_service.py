@@ -1,11 +1,12 @@
 import uuid
+
 from flask import Response
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .. import QUERIES, Responses
 from ..database import DatabaseProvider, Message
-
 from . import TokenService
+
 
 class AuthService:
     """Authentication Service class.

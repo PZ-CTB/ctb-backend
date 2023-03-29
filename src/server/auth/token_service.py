@@ -1,12 +1,14 @@
+import os
+from datetime import datetime, timedelta
 from functools import wraps
 from typing import Any, Callable
-from datetime import datetime, timedelta
-import os
+
 import jwt
 from flask import Response, request
 
 from .. import QUERIES, Responses
 from ..database import DatabaseProvider, Message
+
 
 class TokenService:
     """Token Service class.
@@ -68,9 +70,7 @@ class TokenService:
             Message: message returned by database handler.
 
         """
-        decoded_token: dict[str, Any] = jwt.decode(
-            token, cls._secret, algorithms=["HS256"]
-        )
+        decoded_token: dict[str, Any] = jwt.decode(token, cls._secret, algorithms=["HS256"])
         expiry: datetime = datetime.fromtimestamp(decoded_token["exp"])
 
         with DatabaseProvider.handler() as handler:
@@ -112,7 +112,9 @@ class TokenService:
                 "uuid": unique_id,
                 "email": email,
                 "exp": datetime.utcnow() + timedelta(minutes=cls._token_expiration_minutes),
-            }, cls._secret)
+            },
+            cls._secret,
+        )
 
     @classmethod
     def refresh(cls, unique_id: str, token: str) -> Response:
