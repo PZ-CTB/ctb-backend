@@ -61,7 +61,7 @@ class Responses:
         return make_response(
             {"message": "Not authorized to perform this action"},
             401,
-            {"WWW-Authenticate", 'Basic realm ="Not authorized to perform this action!"'},
+            {"WWW-Authenticate": 'Basic realm ="Not authorized to perform this action!"'},
         )
 
     @staticmethod
