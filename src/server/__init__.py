@@ -1,3 +1,3 @@
 from .constants import PATHS, QUERIES
 from .responses import Responses
-from .main import app
+from .server import Server

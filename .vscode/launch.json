@@ -37,6 +37,20 @@
                 "--no-reload"
             ],
             "jinja": true,
+        },
+        {
+            "name": "Raw Run (native, file db)",
+            "type": "python",
+            "request": "launch",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/",
+            "program": "${workspaceFolder}/main.py",
+            "env": {
+                "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
+                "VAR_PATH": "${workspaceFolder}/",
+                "FLASK_DEBUG": "1",
+            },
+            "jinja": true,
         }
     ]
 }

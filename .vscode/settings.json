@@ -24,4 +24,7 @@
     "isort.args": [ "--settings-file", "pyproject.toml" ],
     "python.linting.mypyArgs": [ "--config-file", "pyproject.toml" ],
     "python.linting.pydocstyleArgs": [ "--config", "pyproject.toml" ],
+
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
 }
