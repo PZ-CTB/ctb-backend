@@ -49,8 +49,8 @@ class Test_Server:
                 self.url_path: str = "api/v1/auth/register"
                 self.client: FlaskClient = client
 
-            def test_send_400_on_invalid_json_format(self, client: FlaskClient) -> None:
-                response = client.post(
+            def test_send_400_on_invalid_json_format(self) -> None:
+                response = self.client.post(
                     self.url_path,
                     data={
                         "email": "legit_email@gmail.com",
@@ -91,8 +91,8 @@ class Test_Server:
                 self.url_path: str = "api/v1/auth/login"
                 self.client: FlaskClient = client
 
-            def test_send_400_on_invalid_json_format(self, client: FlaskClient) -> None:
-                response = client.post(
+            def test_send_400_on_invalid_json_format(self) -> None:
+                response = self.client.post(
                     self.url_path,
                     data={
                         "email": "legit_email@gmail.com",
@@ -168,7 +168,7 @@ class Test_Server:
 
             @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
             def test_send_500_on_internal_error(
-                self, token, failing_database_handler: Mock
+                self, token: str, failing_database_handler: Mock
             ) -> None:
                 response = self.client.get(
                     self.url_path,
@@ -184,7 +184,7 @@ class Test_Server:
 
             @pytest.mark.skip("Not possible to achieve: token = registered, no token = 401")
             def test_send_401_when_unauthorized_user_not_registered(
-                self, token, failing_database_handler: Mock
+                self, token: str, failing_database_handler: Mock
             ) -> None:
                 response = self.client.get(
                     self.url_path,
@@ -194,7 +194,7 @@ class Test_Server:
                 )
                 assert response.status_code == 401
 
-            def test_send_200_on_success(self, token) -> None:
+            def test_send_200_on_success(self, token: str) -> None:
                 # register, login, retrieve token and get to me endpoint
                 response = self.client.get(
                     self.url_path,
@@ -225,13 +225,13 @@ class Test_Server:
                 return login_response.get_json()["auth_token"]
 
             @pytest.fixture(name="token_already_revoked")
-            def mock_is_token_revoked(self, monkeypatch) -> Mock:
+            def mock_is_token_revoked(self, monkeypatch: pytest.MonkeyPatch) -> Mock:
                 mock = Mock(return_value=True)
                 monkeypatch.setattr(TokenService, "is_token_revoked", mock)
                 return mock
 
             @pytest.fixture(name="token_revoke_failure")
-            def mock_revoke_token(self, monkeypatch) -> Mock:
+            def mock_revoke_token(self, monkeypatch: pytest.MonkeyPatch) -> Mock:
                 mock = Mock(return_value=Message.UNKNOWN_ERROR)
                 monkeypatch.setattr(TokenService, "revoke_token", mock)
                 return mock
@@ -242,7 +242,7 @@ class Test_Server:
                 assert response.status_code == 401
 
             def test_send_401_when_unauthorized_token_revoked(
-                self, token, token_already_revoked
+                self, token: str, token_already_revoked: Mock
             ) -> None:
                 # logout with revoked token
                 response = self.client.post(
@@ -253,7 +253,9 @@ class Test_Server:
                 )
                 assert response.status_code == 401
 
-            def test_send_500_on_revoke_failure(self, token, token_revoke_failure) -> None:
+            def test_send_500_on_revoke_failure(
+                self, token: str, token_revoke_failure: Mock
+            ) -> None:
                 # logout halted due to token revoke fail
                 response = self.client.post(
                     self.url_path,
@@ -263,7 +265,7 @@ class Test_Server:
                 )
                 assert response.status_code == 500
 
-            def test_send_201_on_success(self, token) -> None:
+            def test_send_201_on_success(self, token: str) -> None:
                 response = self.client.post(
                     self.url_path,
                     headers={
