@@ -1,10 +1,6 @@
 name: Coverage
 
-on:
-  workflow_run:
-    workflows: ["Quality"]
-    types:
-      - completed
+on: [pull_request]
 
 jobs:
   pytest:
@@ -15,7 +11,6 @@ jobs:
         uses: szenius/set-timezone@v1.2
         with:
           timezoneLinux: "Europe/Berlin"
-        needs: pylint.result == 'success'
       - uses: actions/checkout@v3
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
