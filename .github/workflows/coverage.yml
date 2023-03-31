@@ -1,16 +1,11 @@
 name: Coverage
 
-on:
-  workflow_run:
-    workflows: ["Quality"]
-    types:
-      - completed
+on: [pull_request]
 
 jobs:
   pytest:
     name: Test - pytest
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Set timezone
         uses: szenius/set-timezone@v1.2
