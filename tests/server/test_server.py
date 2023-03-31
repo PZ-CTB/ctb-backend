@@ -79,7 +79,7 @@ class Test_Server:
             def test_send_201_on_success(self) -> None:
                 response = self.client.post(
                     self.url_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={"email": "other_legit_email@gmail.com", "password": "thelegend27"},
                 )
                 assert response.status_code == 201
 
