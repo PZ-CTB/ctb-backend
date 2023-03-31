@@ -15,7 +15,7 @@ jobs:
         uses: szenius/set-timezone@v1.2
         with:
           timezoneLinux: "Europe/Berlin"
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        needs: pylint.result == 'success'
       - uses: actions/checkout@v3
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
