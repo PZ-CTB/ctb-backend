@@ -1,0 +1,199 @@
+openapi: 3.0.1
+info:
+  title: CTB Backend API
+  version: 1.0.0
+servers:
+  - url: https://ctb-backend.onrender.com
+tags:
+  - name: auth
+    description: Authentication and user management
+  - name: stock
+    description: Stock market data and stock price prediction
+paths:
+  /api/v1/auth/register:
+    post:
+      tags:
+        - auth
+      summary: Register
+      description: Register a new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+        '202':
+          description: User with given name already exists
+        '400':
+          description: Invalid json format
+        '500':
+          description: Internal server error
+  /api/v1/auth/login:
+    post:
+      tags:
+        - auth
+      summary: Login
+      description: Login user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '400':
+          description: Invalid json format
+        '401':
+          description: Unauthorized
+        '403':
+          description: Unauthorized - wrong password
+        '500':
+          description: Internal server error
+  /api/v1/auth/me:
+    get:
+      tags:
+        - auth
+      summary: Me
+      description: Get user's information
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          required: true
+          description: JWT access token
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      security:
+        - JWT: []
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - auth
+      summary: Logout
+      description: Logout user
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          required: true
+          description: JWT access token
+      responses:
+        '201':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      security:
+        - JWT: []
+  /api/v1/auth/refresh:
+    post:
+      tags:
+        - auth
+      summary: Refresh
+      description: Refresh JWT access token.
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          required: true
+          description: JWT access token
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      security:
+        - JWT: []
+  /api/v1/auth/change_password:
+    get:
+      tags:
+        - auth
+      summary: Change password [Beta]
+      description: Change user's password [Beta]
+      responses:
+        '200':
+          description: Successful operation
+  /api/v1/stock/chart:
+    get:
+      tags:
+        - stock
+      summary: Chart [Beta]
+      description: Get historical stock prices [Beta]
+      responses:
+        '200':
+          description: Successful operation
+  /api/v1/stock/future_value:
+    get:
+      tags:
+        - stock
+      summary: Future value [Beta]
+      description: Get future stock prices predicted by model [Beta]
+      responses:
+        '200':
+          description: Successful operation
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        email:
+          type: str
+          example: user@email.com
+        password:
+          type: str
+          example: password
+    Me:
+      type: object
+      properties:
+        uuid:
+          type: str
+          example: user_uuid
+        email:
+          type: str
+          example: user@email.com
+        wallet_usd:
+          type: str
+          example: wallet_btc
+        wallet_btc:
+          type: str
+          example: wallet_btc
+    Token:
+      type: object
+      properties:
+        auth_token:
+          type: str
+          example: token
+  components:
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
