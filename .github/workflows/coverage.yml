@@ -5,19 +5,17 @@ on:
     workflows: ["Quality"]
     types:
       - completed
-    branches:
-      - 'master'
 
 jobs:
   pytest:
     name: Test - pytest
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Set timezone
         uses: szenius/set-timezone@v1.2
         with:
           timezoneLinux: "Europe/Berlin"
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
       - uses: actions/checkout@v3
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
