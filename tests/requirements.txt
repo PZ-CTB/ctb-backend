@@ -1,1 +1,2 @@
+-r ../src/server/requirements.txt
 pytest~=7.2.2
