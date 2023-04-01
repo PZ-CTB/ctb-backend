@@ -8,7 +8,7 @@
             "cwd": "${workspaceFolder}",
             "module": "flask",
             "env": {
-                "FLASK_APP": "${workspaceFolder}/main.py",
+                "FLASK_APP": "${workspaceFolder}/src/server/main.py",
                 "FLASK_DEBUG": "1"
             },
             "args": [
@@ -26,7 +26,7 @@
             "cwd": "${workspaceFolder}",
             "module": "flask",
             "env": {
-                "FLASK_APP": "${workspaceFolder}/main.py",
+                "FLASK_APP": "${workspaceFolder}/src/server/main.py",
                 "FLASK_DEBUG": "1",
                 "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
                 "VAR_PATH": "${workspaceFolder}/"
@@ -58,8 +58,8 @@
             "type": "python",
             "request": "launch",
             "justMyCode": true,
-            "cwd": "${workspaceFolder}/",
-            "program": "${workspaceFolder}/main.py",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/src/server/main.py",
             "env": {
                 "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
                 "VAR_PATH": "${workspaceFolder}/",

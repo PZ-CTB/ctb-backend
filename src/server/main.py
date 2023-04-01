@@ -52,3 +52,15 @@ class Server:
 def hello_world_endpoint() -> str:
     """Root endpoint."""
     return "<p>Hello, World!</p>"
+
+
+def create_app() -> Flask:
+    """Production server launch."""
+    server = Server()
+    return server.app
+
+
+if __name__ == "__main__":
+    """Debug server launch."""
+    server = Server()
+    server.launch()
