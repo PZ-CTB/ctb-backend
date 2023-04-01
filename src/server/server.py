@@ -25,8 +25,6 @@ class Server:
         )
         self._setup_endpoints()
 
-        self.cors = CORS(self.app, origins=["http://localhost:3000", "https://ctb-agh.netlify.app"])
-
     def _create_app(self) -> Flask:
         """Create Flask server."""
         return Flask(self.name)
@@ -49,22 +47,6 @@ class Server:
     def shutdown(self) -> None:
         """Shutdown the WSGI server."""
         self.server.shutdown()
-
-
-# app = Flask(__name__)
-
-# api = Blueprint("api", __name__, url_prefix="/api")
-# v1 = Blueprint("v1", __name__, url_prefix="/v1")
-
-# v1.register_blueprint(AuthController.blueprint)
-# v1.register_blueprint(StockMarketController.blueprint)
-# api.register_blueprint(v1)
-# app.register_blueprint(api)
-
-# CORS(app, origins=["http://localhost:3000", "https://ctb-agh.netlify.app"])
-
-
-# app = Server.app  # let Flask figure out what the server is
 
 
 def hello_world_endpoint() -> str:

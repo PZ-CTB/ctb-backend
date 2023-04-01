@@ -16,7 +16,7 @@
                 "--no-debugger",
                 "--no-reload"
             ],
-            "jinja": true,
+            "jinja": true
         },
         {
             "name": "Flask Server (native, file db)",
@@ -36,7 +36,22 @@
                 "--no-debugger",
                 "--no-reload"
             ],
-            "jinja": true,
+            "jinja": true
+        },
+        {
+            "name": "Flask Server (docker, file db)",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "Run docker container (debug)",
+            "python": {
+                "pathMappings": [
+                    {
+                        "localRoot": "${workspaceFolder}",
+                        "remoteRoot": "/app"
+                    }
+                ],
+                "projectType": "flask"
+            }
         },
         {
             "name": "Raw Run (native, file db)",
@@ -48,9 +63,9 @@
             "env": {
                 "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
                 "VAR_PATH": "${workspaceFolder}/",
-                "FLASK_DEBUG": "1",
+                "FLASK_DEBUG": "1"
             },
-            "jinja": true,
+            "jinja": true
         }
     ]
 }
