@@ -10,7 +10,7 @@ jobs:
       - name: Set timezone
         uses: szenius/set-timezone@v1.2
         with:
-          timezoneLinux: "Europe/Berlin"
+          timezoneLinux: "Europe/Warsaw"
       - uses: actions/checkout@v3
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
