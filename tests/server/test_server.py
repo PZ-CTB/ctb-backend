@@ -5,7 +5,6 @@ from unittest.mock import Mock
 
 import pytest
 from flask.testing import FlaskClient
-from werkzeug.serving import BaseWSGIServer
 
 from src.server import Server
 from src.server.auth import TokenService
