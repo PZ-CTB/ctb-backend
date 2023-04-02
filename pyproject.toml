@@ -13,6 +13,7 @@ disallow_untyped_defs = true
 
 [tool.pydocstyle]
 ignore = ["D100", "D104", "D203", "D213", "D406", "D407"]
+match-dir = "src"
 
 [tool.pylint]
 max-line-length = 100
@@ -22,5 +23,14 @@ disable = [
     "C0116",  # missing method/class docstring
     "R0902",  # too many instance attributes
     "R0903",  # too few public methods
-    "W0102" ] # dangerous default value of an argument
+    "W0102"   # dangerous default value of an argument
+]
 ignore = ["__init__.py"]
+
+[tool.pylint.tests]
+disable = "all"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]

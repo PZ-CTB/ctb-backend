@@ -9,14 +9,15 @@
             "module": "flask",
             "env": {
                 "FLASK_APP": "${workspaceFolder}/src/server/main.py",
-                "FLASK_DEBUG": "1"
+                "FLASK_DEBUG": "1",
+                "FLASK_RUN_PORT": "8080"
             },
             "args": [
                 "run",
                 "--no-debugger",
                 "--no-reload"
             ],
-            "jinja": true,
+            "jinja": true
         },
         {
             "name": "Flask Server (native, file db)",
@@ -28,6 +29,7 @@
             "env": {
                 "FLASK_APP": "${workspaceFolder}/src/server/main.py",
                 "FLASK_DEBUG": "1",
+                "FLASK_RUN_PORT": "8080",
                 "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
                 "VAR_PATH": "${workspaceFolder}/"
             },
@@ -36,7 +38,37 @@
                 "--no-debugger",
                 "--no-reload"
             ],
-            "jinja": true,
+            "jinja": true
+        },
+        {
+            "name": "Flask Server (docker, file db)",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "Run docker container (debug)",
+            "python": {
+                "pathMappings": [
+                    {
+                        "localRoot": "${workspaceFolder}",
+                        "remoteRoot": "/app"
+                    }
+                ],
+                "projectType": "flask"
+            }
+        },
+        {
+            "name": "Raw Run (native, file db)",
+            "type": "python",
+            "request": "launch",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/src/server/main.py",
+            "env": {
+                "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
+                "VAR_PATH": "${workspaceFolder}/",
+                "FLASK_DEBUG": "1",
+                "FLASK_RUN_PORT": "8080",
+            },
+            "jinja": true
         }
     ]
 }

@@ -7,5 +7,6 @@
 		"ms-python.python",
 		"ms-python.vscode-pylance",
 		"njpwerner.autodocstring",
+		"ms-azuretools.vscode-docker",
 	],
 }
