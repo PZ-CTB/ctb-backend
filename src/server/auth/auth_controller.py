@@ -1,7 +1,7 @@
 from flask import Blueprint, Response, request
 
-from . import AuthService, TokenService
 from .. import Validator
+from . import AuthService, TokenService
 
 
 class AuthController:

@@ -1,6 +1,6 @@
 import json
 from functools import wraps
-from typing import Callable, Any
+from typing import Any, Callable
 
 from flask import request
 from jsonschema import validate
@@ -18,9 +18,9 @@ class Validator:
     @classmethod
     def initialize(cls) -> None:
         """Load schema files."""
-        with open('res/schemas/login.json', encoding='utf-8') as f:
+        with open("res/schemas/login.json", encoding="utf-8") as f:
             cls.login_schema = json.load(f)
-        with open('res/schemas/register.json', encoding='utf-8') as f:
+        with open("res/schemas/register.json", encoding="utf-8") as f:
             cls.register_schema = json.load(f)
 
     @classmethod
