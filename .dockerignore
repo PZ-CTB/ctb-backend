@@ -1,13 +1,17 @@
 **/*.*proj.user
+**/*.db
 **/*.dbmdl
 **/*.jfm
 **/.classpath
 **/.dockerignore
 **/.env
 **/.git
+**/.github
 **/.gitignore
 **/.idea
 **/.project
+**/.pytest_cache
+**/.mypy_cache
 **/.settings
 **/.toolstarget
 **/.venv
@@ -24,5 +28,8 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
-LICENSE
+**/src/model
+**/tests
+pyproject.toml
+LICENSE*
 README.md
