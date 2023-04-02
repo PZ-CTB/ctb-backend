@@ -16,7 +16,6 @@ class Test_Server:
     @pytest.fixture(name="server")
     def mock_server(self) -> Server:
         server = Server()
-        server.server = Mock(BaseWSGIServer)
         server.app.config.update({"TESTING": True})
 
         return server
