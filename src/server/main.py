@@ -1,6 +1,5 @@
 from flask import Blueprint, Flask
 from flask_cors import CORS
-from werkzeug.serving import BaseWSGIServer, make_server
 
 from .auth import AuthController
 from .database import DatabaseProvider
@@ -16,7 +15,6 @@ class Server:
 
         self.name: str = __name__
         self.app: Flask = self._create_app()
-        self.server: BaseWSGIServer = make_server("127.0.0.1", 5000, self.app)
         self.ctx = self.app.app_context()
         self.ctx.push()
 
@@ -40,14 +38,6 @@ class Server:
         self.api.register_blueprint(self.v1)
         self.app.register_blueprint(self.api)
 
-    def launch(self) -> None:
-        """Launch the WSGI server."""
-        self.server.serve_forever()
-
-    def shutdown(self) -> None:
-        """Shutdown the WSGI server."""
-        self.server.shutdown()
-
 
 def hello_world_endpoint() -> str:
     """Root endpoint."""
@@ -55,12 +45,6 @@ def hello_world_endpoint() -> str:
 
 
 def create_app() -> Flask:
-    """Production server launch."""
+    """Server launch."""
     server = Server()
     return server.app
-
-
-if __name__ == "__main__":
-    """Debug server launch."""
-    server = Server()
-    server.launch()
