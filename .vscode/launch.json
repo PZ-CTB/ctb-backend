@@ -9,7 +9,8 @@
             "module": "flask",
             "env": {
                 "FLASK_APP": "${workspaceFolder}/src/server/main.py",
-                "FLASK_DEBUG": "1"
+                "FLASK_DEBUG": "1",
+                "FLASK_RUN_PORT": "8080"
             },
             "args": [
                 "run",
@@ -28,6 +29,7 @@
             "env": {
                 "FLASK_APP": "${workspaceFolder}/src/server/main.py",
                 "FLASK_DEBUG": "1",
+                "FLASK_RUN_PORT": "8080",
                 "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
                 "VAR_PATH": "${workspaceFolder}/"
             },
@@ -63,7 +65,8 @@
             "env": {
                 "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
                 "VAR_PATH": "${workspaceFolder}/",
-                "FLASK_DEBUG": "1"
+                "FLASK_DEBUG": "1",
+                "FLASK_RUN_PORT": "8080",
             },
             "jinja": true
         }
