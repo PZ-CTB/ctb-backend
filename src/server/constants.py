@@ -21,12 +21,12 @@ class PATHS:
 class QUERIES:
     """All SQL queries used in the project."""
 
-    SELECT_USER_UUID = "SELECT uuid FROM users WHERE uuid=?"
-    SELECT_USER_EMAIL = "SELECT email FROM users WHERE email=?"
-    SELECT_USER_EMAIL_BY_UUID = "SELECT email FROM users WHERE uuid=?"
-    SELECT_USER_LOGIN_DATA_BY_EMAIL = "SELECT uuid, email, password_hash FROM users WHERE email=?"
-    SELECT_USER_DATA_BY_UUID = "SELECT email, wallet_usd, wallet_btc FROM users WHERE uuid=?"
-    INSERT_USER = "INSERT INTO users(uuid, email, password_hash) VALUES (?, ?, ?)"
+    SELECT_USER_UUID = "SELECT uuid FROM users WHERE uuid=%s"
+    SELECT_USER_EMAIL = "SELECT email FROM users WHERE email=%s"
+    SELECT_USER_EMAIL_BY_UUID = "SELECT email FROM users WHERE uuid=%s"
+    SELECT_USER_LOGIN_DATA_BY_EMAIL = "SELECT uuid, email, password_hash FROM users WHERE email=%s"
+    SELECT_USER_DATA_BY_UUID = "SELECT email, wallet_usd, wallet_btc FROM users WHERE uuid=%s"
+    INSERT_USER = "INSERT INTO users(uuid, email, password_hash) VALUES (%s, %s, %s)"
 
-    SELECT_REVOKED_TOKEN = "SELECT token FROM revoked_tokens WHERE token=? AND expiry > ?"
-    INSERT_REVOKED_TOKEN = "INSERT INTO revoked_tokens (token, expiry) VALUES (?, ?)"
+    SELECT_REVOKED_TOKEN = "SELECT token FROM revoked_tokens WHERE token=%s AND expiry > %s"
+    INSERT_REVOKED_TOKEN = "INSERT INTO revoked_tokens (token, expiry) VALUES (%s, %s)"
