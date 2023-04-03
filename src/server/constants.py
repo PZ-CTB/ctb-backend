@@ -43,3 +43,12 @@ class QUERIES:
 
     SELECT_REVOKED_TOKEN: str = "SELECT token FROM revoked_tokens WHERE token=%s AND expiry > %s"
     INSERT_REVOKED_TOKEN: str = "INSERT INTO revoked_tokens (token, expiry) VALUES (%s, %s)"
+
+    SELECT_CHART: str = """SELECT date, value FROM exchange_rate_history
+                        WHERE date BETWEEN ? and ?
+                        ORDER BY date"""
+    SELECT_CHART_AGGREGATED: str = """SELECT MIN(date), AVG(value), MIN(value), MAX(value)
+                                    FROM exchange_rate_history
+                                    WHERE date BETWEEN ? and ?
+                                    GROUP BY ROUND((STRFTIME("%s", ?) - timestamp)/(?) - 0.5)
+                                    ORDER BY MIN(date)"""

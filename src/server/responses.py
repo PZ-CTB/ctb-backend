@@ -1,3 +1,5 @@
+import json
+
 from flask import Response, make_response
 
 from .database import Message
@@ -80,3 +82,13 @@ class Responses:
             {"message": "Internal server error"},
             500,
         )
+
+    @staticmethod
+    def chart(filtered_list: list[dict]) -> Response:
+        """200: success on chart endpoint."""
+        return make_response(json.dumps(filtered_list).encode("utf-8"))
+
+    @staticmethod
+    def chart_missing_parameters_error() -> Response:
+        """400: missing parameters in chart endpoint."""
+        return make_response({"message": "Please provide both from and to parameters!"}, 400)
