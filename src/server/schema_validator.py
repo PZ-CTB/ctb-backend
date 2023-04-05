@@ -34,7 +34,8 @@ class SchemaValidator:
             def decorated(*args: tuple, **kwargs: dict) -> Response:
                 try:
                     validate(request.get_json(), schema)
-                except ValidationError:
+                except ValidationError as e:
+                    print(f"ERROR: server.schema_validator.SchemaValidator.validate(): {e}")
                     return Responses.invalid_json_format_error()
                 return fun(*args, **kwargs)
 
