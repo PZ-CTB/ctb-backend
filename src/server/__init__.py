@@ -1,4 +1,4 @@
 from .constants import PATHS, QUERIES
 from .responses import Responses
-from .validator import Validator
+from .schema_validator import SchemaValidator
 from .main import Server

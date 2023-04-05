@@ -1,6 +1,6 @@
 from flask import Blueprint, Response, request
 
-from .. import Validator
+from .. import SchemaValidator
 from . import AuthService, TokenService
 
 
@@ -14,7 +14,7 @@ class AuthController:
 
     @staticmethod
     @blueprint.route("/register", methods=["POST"])
-    @Validator.validate(Validator.register_schema)
+    @SchemaValidator.validate(SchemaValidator.register_schema)
     def register() -> Response:
         """Registration endpoint."""
         new_user: dict[str, str] = request.get_json()
@@ -26,7 +26,7 @@ class AuthController:
 
     @staticmethod
     @blueprint.route("/login", methods=["POST"])
-    @Validator.validate(Validator.login_schema)
+    @SchemaValidator.validate(SchemaValidator.login_schema)
     def login() -> Response:
         """Login endpoint."""
         auth: dict[str, str] = request.get_json()

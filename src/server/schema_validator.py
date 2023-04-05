@@ -9,7 +9,7 @@ from jsonschema.exceptions import ValidationError
 from . import Responses
 
 
-class Validator:
+class SchemaValidator:
     """Class for validating JSON requests."""
 
     login_schema: dict = {}
