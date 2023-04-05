@@ -15,5 +15,6 @@
       "minLength": 8
     }
   },
-  "required": ["email", "password", "confirmPassword"]
+  "required": ["email", "password", "confirmPassword"],
+  "additionalProperties": false
 }
