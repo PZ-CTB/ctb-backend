@@ -1,8 +1,8 @@
 import json
 from functools import wraps
-from typing import Any, Callable
+from typing import Callable
 
-from flask import request
+from flask import request, Response
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
@@ -24,12 +24,12 @@ class SchemaValidator:
             cls.register_schema = json.load(f)
 
     @classmethod
-    def validate(cls, schema: dict) -> Callable:
+    def validate(cls, schema: dict) -> Callable[[Callable[..., Response]], Callable[..., Response]]:  # xD
         """Validate received JSON against given schema."""
 
-        def decorator(fun: Callable) -> Callable:
+        def decorator(fun: Callable[..., Response]) -> Callable[..., Response]:
             @wraps(fun)
-            def decorated(*args: tuple, **kwargs: dict) -> Any:
+            def decorated(*args: tuple, **kwargs: dict) -> Response:
                 try:
                     validate(request.get_json(), schema)
                 except ValidationError:
