@@ -1,5 +1,6 @@
 from flask import Blueprint, Flask
 from flask_cors import CORS
+from flask_swagger_ui import get_swaggerui_blueprint
 
 from . import SchemaValidator
 from .auth import AuthController
@@ -32,9 +33,11 @@ class Server:
     def _setup_endpoints(self) -> None:
         """Create endpoints on the Flask server."""
         self.app.add_url_rule("/", view_func=hello_world_endpoint)
+        self.swagger: Blueprint = get_swaggerui_blueprint("/api/v1/swagger", "/static/openapi.yaml")
 
         self.api: Blueprint = Blueprint("api", self.name, url_prefix="/api")
         self.v1: Blueprint = Blueprint("v1", self.name, url_prefix="/v1")
+        self.v1.register_blueprint(self.swagger, url_prefix="/swagger")
         self.v1.register_blueprint(AuthController.blueprint)
         self.v1.register_blueprint(StockMarketController.blueprint)
         self.api.register_blueprint(self.v1)
