@@ -34,26 +34,13 @@ class DatabaseProvider:
     db_password: str = "sc_3pV9L4dezgJzWWh5wZMtJBhCiBvcS"
     db_hostname: str = "snuffleupagus.db.elephantsql.com"
     db_connection_timeout: int = 30
-    # database_source: str = PATHS.DATABASE
 
     @classmethod
     def initialize(cls) -> None:
         """Initialize connection to the database."""
-        # db_needs_setup: bool = False
-        # if not os.path.exists(cls.database_source):
-        #     db_needs_setup = True
-
         result: Message = cls._connect_to_database()
         if result is not Message.OK:
             print(f"WARNING: cannot connect to a file database: {result}")
-            # print("INFO: connecting to in-memory database as fallback")
-            # cls.database_source = ":memory:"
-            # result = cls._connect_to_database()
-            # if result is not Message.OK:
-            #     raise RuntimeError(f"Can't connect to in-memory database: {result}")
-
-        # if db_needs_setup:
-        #     cls._fill_database()
 
     @classmethod
     @contextmanager
@@ -64,7 +51,6 @@ class DatabaseProvider:
             DatabaseHandler: Handler consisting of cursor and query execution status (Message).
 
         """
-        # with cls._try_get_cursor() as cursor:
         handler: DatabaseHandler = DatabaseHandler(None, Message.OK)
         try:
             cursor: psycopg.Cursor = cls.connection.cursor()
@@ -101,29 +87,9 @@ class DatabaseProvider:
             cls.connection.commit()
             handler.message = Message.OK
 
-    # @classmethod
-    # @contextmanager
-    # def _try_get_cursor(cls) -> Generator[Optional[psycopg.Cursor], None, None]:
-    #     cursor: Optional[psycopg.Cursor] = None
-    #     try:
-    #         cursor = cls.connection.cursor()
-    #         yield cursor
-    #     except psycopg.Error as err:
-    #         print(f"ERROR: {err}")
-    #         cls.connection.rollback()
-    #         yield None
-    #     else:
-    #         cls.connection.commit()
-    #     finally:
-    #         if cursor is not None:
-    #             print("DEBUG: closing sqlite3.Cursor")
-    #             cursor.close()
-    #             print("DEBUG: committing sqlite3 changes")
-
     @classmethod
     def _connect_to_database(cls) -> Message:
         try:
-            # print(f"INFO: {cls.database_source=}")
             cls.connection = psycopg.connect(
                 conninfo=f"dbname={cls.db_name} "
                 f"user={cls.db_user} "
@@ -139,12 +105,3 @@ class DatabaseProvider:
             return Message.UNKNOWN_ERROR
 
         return Message.OK
-
-    # @classmethod
-    # def _fill_database(cls) -> None:
-    #     with cls._try_get_cursor() as cursor:
-    #         if cursor is not None:
-    #             with open(file=PATHS.DATABASE_SCHEMA, encoding="utf-8") as f:
-    #                 cursor.executescript(f.read())
-    #             with open(file=PATHS.DATABASE_DEFAULT_DUMP, encoding="utf-8") as f:
-    #                 cursor.executescript(f.read())
