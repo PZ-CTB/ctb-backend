@@ -1,5 +1,3 @@
-from typing import Optional
-
 import psycopg
 
 from . import Message
@@ -14,7 +12,7 @@ class DatabaseHandler:
     The user does not have to worry about cursor commiting changes.
     """
 
-    def __init__(self, cursor: Optional[psycopg.Cursor], message: Message):
+    def __init__(self, cursor: psycopg.Cursor, message: Message):
         """Initialize the handler with connected cursor and message held by DatabaseProvider.
 
         Args:
@@ -22,7 +20,7 @@ class DatabaseHandler:
             message (Message): Status of the executed queries.
 
         """
-        self._cursor: Optional[psycopg.Cursor] = cursor
+        self._cursor: psycopg.Cursor = cursor
         self._message: Message = message
 
     @property
@@ -36,7 +34,7 @@ class DatabaseHandler:
         return self._message is Message.OK
 
     @property
-    def cursor(self) -> Optional[psycopg.Cursor]:
+    def cursor(self) -> psycopg.Cursor:
         """Getter to cursor directly responsible for queries.
 
         Returns:
@@ -67,7 +65,7 @@ class DatabaseHandler:
         self._message = msg
         print(f"DEBUG: query result -- {self._message}")
 
-    def __call__(self) -> Optional[psycopg.Cursor]:
+    def __call__(self) -> psycopg.Cursor:
         """Magic function allowing to treat Handler as a function.
 
         Returns:

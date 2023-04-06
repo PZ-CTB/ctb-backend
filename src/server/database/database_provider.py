@@ -51,7 +51,7 @@ class DatabaseProvider:
             DatabaseHandler: Handler consisting of cursor and query execution status (Message).
 
         """
-        handler: DatabaseHandler = DatabaseHandler(None, Message.OK)
+        handler: DatabaseHandler = DatabaseHandler(None, Message.OK)  # type: ignore
         try:
             cursor: psycopg.Cursor = cls.connection.cursor()
             handler._cursor = cursor  # pylint: disable=W0212
