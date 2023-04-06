@@ -147,17 +147,38 @@ paths:
     get:
       tags:
         - stock
-      summary: Chart [Beta]
-      description: Get historical stock prices [Beta]
+      summary: Chart
+      description: Get historical stock prices
+      parameters:
+        - in: query
+          name: from
+          schema:
+            type: string
+          required: true
+          description: Start date of returned range in YYYY-MM-DD format.
+        - in: query
+          name: to
+          schema:
+            type: string
+          required: true
+          description: End date of returned range in YYYY-MM-DD format.
+        - in: query
+          name: aggregate
+          schema:
+            type: integer
+          required: false
+          description: Number of days to aggregate data. Default is 1.
       responses:
         '200':
           description: Successful operation
+        '400':
+          description: Mandatory arguments weren't provided
   /api/v1/stock/future_value:
     get:
       tags:
         - stock
       summary: Future value [Beta]
-      description: Get future stock prices predicted by model [Beta]
+      description: Get future stock prices predicted by model, not implemented yet [Beta]
       responses:
         '200':
           description: Successful operation
