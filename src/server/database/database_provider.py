@@ -56,33 +56,26 @@ class DatabaseProvider:
             cursor: psycopg.Cursor = cls.connection.cursor()
             handler._cursor = cursor  # pylint: disable=W0212
             yield handler
-        except psycopg.IntegrityError as err:
-            print(f"ERROR: {err}")
-            cls.connection.rollback()
-            handler.message = Message.DATABASE_INTEGRITY_ERROR
-        except psycopg.ProgrammingError as err:
-            print(f"ERROR: {err}")
-            cls.connection.rollback()
-            handler.message = Message.INVALID_SQL_QUERY
-        except psycopg.DataError as err:
-            print(f"ERROR: {err}")
-            cls.connection.rollback()
-            handler.message = Message.INVALID_SQL_QUERY
-        except psycopg.InternalError as err:
-            print(f"ERROR: {err}")
-            cls.connection.rollback()
-            handler.message = Message.INTERNAL_DATABASE_ERROR
-        except psycopg.NotSupportedError as err:
-            print(f"ERROR: {err}")
-            cls.connection.rollback()
-            handler.message = Message.UNSUPPORTED_OPERATION
-        except psycopg.errors.PipelineAborted as err:
-            print(f"ERROR: {err}")
-            handler.message = Message.NO_CONNECTION
         except psycopg.Error as err:
             print(f"ERROR: {err}")
             cls.connection.rollback()
-            handler.message = Message.UNKNOWN_ERROR
+            match err:
+                case psycopg.IntegrityError():
+                    handler.message = Message.DATABASE_INTEGRITY_ERROR
+                case psycopg.DataError():
+                    handler.message = Message.INVALID_SQL_QUERY
+                case psycopg.ProgrammingError():
+                    handler.message = Message.INVALID_SQL_QUERY
+                case psycopg.InternalError():
+                    handler.message = Message.INTERNAL_DATABASE_ERROR
+                case psycopg.NotSupportedError():
+                    handler.message = Message.UNSUPPORTED_OPERATION
+                case psycopg.errors.PipelineAborted():
+                    handler.message = Message.NO_CONNECTION
+                case psycopg.Error():
+                    handler.message = Message.UNKNOWN_ERROR
+                case _:
+                    handler.message = Message.UNKNOWN_ERROR
         else:
             cls.connection.commit()
             handler.message = Message.OK
