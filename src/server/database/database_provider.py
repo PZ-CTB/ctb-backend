@@ -3,6 +3,7 @@ from typing import Generator
 
 import psycopg
 
+from .. import CONSTANTS
 from . import DatabaseHandler, Message
 
 
@@ -29,15 +30,18 @@ class DatabaseProvider:
 
     # predeclaration on the class level
     connection: psycopg.Connection = None  # type: ignore
-    db_name: str = "doeqyyge"
-    db_user: str = "doeqyyge"
-    db_password: str = "sc_3pV9L4dezgJzWWh5wZMtJBhCiBvcS"
-    db_hostname: str = "snuffleupagus.db.elephantsql.com"
-    db_connection_timeout: int = 30
+    db_name: str = CONSTANTS.DATABASE_NAME
+    db_user: str = CONSTANTS.DATABASE_USER
+    db_password: str = CONSTANTS.DATABASE_PASSWORD
+    db_hostname: str = CONSTANTS.DATABASE_HOSTNAME
+    db_connection_timeout: int = CONSTANTS.DATABASE_CONNECTION_TIMEOUT
 
     @classmethod
     def initialize(cls) -> None:
         """Initialize connection to the database."""
+        if "" in [cls.db_name, cls.db_user, cls.db_password, cls.db_hostname]:
+            raise EnvironmentError("Cannot launch server due to invalid encironment")
+
         result: Message = cls._connect_to_database()
         if result is not Message.OK:
             print(f"WARNING: cannot connect to a file database: {result}")

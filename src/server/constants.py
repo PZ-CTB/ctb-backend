@@ -18,6 +18,17 @@ class PATHS:
 
 
 @dataclass(frozen=True)
+class CONSTANTS:
+    """Variables which are constant through the lifetime of the app."""
+
+    DATABASE_NAME: str = os.getenv("CTB_DB_NAME", "")
+    DATABASE_USER: str = os.getenv("CTB_DB_USER", "")
+    DATABASE_PASSWORD: str = os.getenv("CTB_DB_PWD", "")
+    DATABASE_HOSTNAME: str = os.getenv("CTB_DB_HOST", "")
+    DATABASE_CONNECTION_TIMEOUT: int = int(os.getenv("CTB_DB_CONN_TMOUT", "30"))
+
+
+@dataclass(frozen=True)
 class QUERIES:
     """All SQL queries used in the project."""
 
