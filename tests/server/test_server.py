@@ -127,6 +127,15 @@ def mock_failing_handler(monkeypatch: pytest.MonkeyPatch, cursor: psycopg.Cursor
     return mock
 
 
+@pytest.fixture(autouse=True)
+def fixture_prevent_env_check_fail(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(DatabaseProvider, "db_name", "none")
+    monkeypatch.setattr(DatabaseProvider, "db_user", "none")
+    monkeypatch.setattr(DatabaseProvider, "db_password", "none")
+    monkeypatch.setattr(DatabaseProvider, "db_hostname", "none")
+    monkeypatch.setattr(DatabaseProvider, "db_connection_timeout", "2")
+
+
 class Test_Server:
     @pytest.fixture(name="server")
     def mock_server(self) -> Server:
