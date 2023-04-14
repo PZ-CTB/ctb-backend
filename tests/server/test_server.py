@@ -1,14 +1,139 @@
-import sqlite3
 from contextlib import contextmanager
 from typing import Generator
 from unittest.mock import Mock
 
+import psycopg
 import pytest
 from flask.testing import FlaskClient
 
-from src.server import Server
+from src.server import QUERIES, Server
 from src.server.auth import TokenService
 from src.server.database import DatabaseHandler, DatabaseProvider, Message
+
+
+class FakeDatabase:
+    def __init__(self) -> None:
+        self._db_users: list[
+            tuple[str, str, str, float, float]
+        ] = []  # uuid, email, pwd_hash, usd, btc
+        self._db_tokens: list[tuple[str, str]] = []
+        self._last_query: str = ""
+        self._last_params: list | tuple = []
+
+    @property
+    def db_users(self) -> list[tuple[str, str, str, float, float]]:
+        return self._db_users
+
+    @property
+    def db_tokens(self) -> list[tuple[str, str]]:
+        return self._db_tokens
+
+    @property
+    def last_query(self) -> str:
+        return self._last_query
+
+    @property
+    def last_params(self) -> list | tuple:
+        return self._last_params
+
+    def execute_side_effect(self, query: str, params: list | tuple) -> None:
+        self._last_query = query
+        self._last_params = params
+        print(f"DEBUG: {self._last_query=}, {self._last_params=}")
+        match query:
+            case QUERIES.INSERT_USER:
+                if params[0] in [_uuid for _uuid, _, _, _, _ in self._db_users]:
+                    raise psycopg.IntegrityError()
+                else:
+                    self._db_users.append((params[0], params[1], params[2], 0.0, 0.0))
+            case QUERIES.INSERT_REVOKED_TOKEN:
+                if params[0] in [token for token, _ in self._db_tokens]:
+                    raise psycopg.IntegrityError()
+                else:
+                    self._db_tokens.append((params[0], params[1]))
+            case _:
+                pass
+
+    def fetch_side_effect(self) -> list:
+        match self.last_query:
+            case QUERIES.SELECT_USER_UUID:
+                return [
+                    _uuid for _uuid, _, _, _, _ in self._db_users if self.last_params[0] == _uuid
+                ]
+            case QUERIES.SELECT_USER_EMAIL:
+                return [
+                    email for _, email, _, _, _ in self._db_users if self.last_params[0] == email
+                ]
+            case QUERIES.SELECT_USER_EMAIL_BY_UUID:
+                return [
+                    email
+                    for _uuid, email, _, _, _ in self._db_users
+                    if self.last_params[0] == _uuid
+                ]
+            case QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL:
+                return [
+                    (_uuid, email, pwd)
+                    for _uuid, email, pwd, _, _ in self._db_users
+                    if self.last_params[0] == email
+                ]
+            case QUERIES.SELECT_USER_DATA_BY_UUID:
+                return [
+                    (email, usd, btc)
+                    for _uuid, email, _, usd, btc in self._db_users
+                    if self.last_params[0] == _uuid
+                ]
+            case QUERIES.SELECT_REVOKED_TOKEN:
+                return [
+                    token
+                    for token, expiry in self._db_tokens
+                    if token == self.last_params[0] and expiry > self.last_params[1]
+                ]
+            case _:
+                return []
+
+
+@pytest.fixture(name="cursor")
+def mock_psycopg_connection_cursor(monkeypatch: pytest.MonkeyPatch) -> Mock:
+    db = FakeDatabase()
+    mock = Mock(psycopg.Cursor)
+    mock.execute.side_effect = db.execute_side_effect
+
+    mock.fetchone.side_effect = lambda: db.fetch_side_effect()
+    mock.fetchall.side_effect = lambda: db.fetch_side_effect()
+    monkeypatch.setattr(psycopg.Connection, "cursor", mock)
+    return mock
+
+
+@pytest.fixture(name="handler", autouse=True)
+def mock_database_handler(monkeypatch: pytest.MonkeyPatch, cursor: psycopg.Cursor) -> Mock:
+    @contextmanager
+    def mocked_handler() -> Generator[DatabaseHandler, None, None]:
+        print(f"DEBUG: yielding mocked handler")
+        yield DatabaseHandler(cursor, Message.OK)
+
+    mock_handler = Mock(side_effect=mocked_handler)
+    monkeypatch.setattr(DatabaseProvider, "handler", mock_handler)
+    return mock_handler
+
+
+@pytest.fixture(name="failing_handler")
+def mock_failing_handler(monkeypatch: pytest.MonkeyPatch, cursor: psycopg.Cursor) -> Mock:
+    @contextmanager
+    def mocked_handler() -> Generator[DatabaseHandler, None, None]:
+        yield DatabaseHandler(cursor, Message.UNKNOWN_ERROR)
+
+    mock = Mock(side_effect=mocked_handler)
+    monkeypatch.setattr(DatabaseProvider, "handler", mock)
+    return mock
+
+
+@pytest.fixture(autouse=True)
+def fixture_prevent_env_check_fail(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(DatabaseProvider, "db_name", "none")
+    monkeypatch.setattr(DatabaseProvider, "db_user", "none")
+    monkeypatch.setattr(DatabaseProvider, "db_password", "none")
+    monkeypatch.setattr(DatabaseProvider, "db_hostname", "none")
+    monkeypatch.setattr(DatabaseProvider, "db_connection_timeout", "2")
 
 
 class Test_Server:
@@ -22,23 +147,6 @@ class Test_Server:
     @pytest.fixture(name="client")
     def mock_client(self, server: Server) -> FlaskClient:
         return server.app.test_client()
-
-    @pytest.fixture(name="cursor")
-    def mock_cursor(self) -> Mock:
-        mock = Mock(sqlite3.Cursor)
-        return mock
-
-    @pytest.fixture(name="failing_database_handler")
-    def mock_database_handler(
-        self, monkeypatch: pytest.MonkeyPatch, cursor: sqlite3.Cursor
-    ) -> Mock:
-        @contextmanager
-        def mocked_handler() -> Generator[DatabaseHandler, None, None]:
-            yield DatabaseHandler(cursor, Message.UNKNOWN_ERROR)
-
-        mock = Mock(side_effect=mocked_handler)
-        monkeypatch.setattr(DatabaseProvider, "handler", mock)
-        return mock
 
     class Test_Auth:
         class Test_RegisterEndpoint:
@@ -57,7 +165,7 @@ class Test_Server:
                 )
                 assert response.status_code == 400
 
-            def test_send_500_on_internal_error(self, failing_database_handler: Mock) -> None:
+            def test_send_500_on_internal_error(self, failing_handler: Mock) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"email": "legit_email@gmail.com", "password": "thelegend27"},
@@ -99,7 +207,7 @@ class Test_Server:
                 )
                 assert response.status_code == 400
 
-            def test_send_500_on_internal_error(self, failing_database_handler: Mock) -> None:
+            def test_send_500_on_internal_error(self, failing_handler: Mock) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"email": "legit_email@gmail.com", "password": "thelegend27"},
@@ -165,9 +273,7 @@ class Test_Server:
                 assert response.status_code == 405
 
             @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
-            def test_send_500_on_internal_error(
-                self, token: str, failing_database_handler: Mock
-            ) -> None:
+            def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
                 response = self.client.get(
                     self.url_path,
                     headers={
@@ -182,7 +288,7 @@ class Test_Server:
 
             @pytest.mark.skip("Not possible to achieve: token = registered, no token = 401")
             def test_send_401_when_unauthorized_user_not_registered(
-                self, token: str, failing_database_handler: Mock
+                self, token: str, failing_handler: Mock
             ) -> None:
                 response = self.client.get(
                     self.url_path,

@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Flask Server (native, memory db)",
+            "name": "Flask Server (native)",
             "type": "python",
             "request": "launch",
             "justMyCode": true,
@@ -11,27 +11,6 @@
                 "FLASK_APP": "${workspaceFolder}/src/server/main.py",
                 "FLASK_DEBUG": "1",
                 "FLASK_RUN_PORT": "8080"
-            },
-            "args": [
-                "run",
-                "--no-debugger",
-                "--no-reload"
-            ],
-            "jinja": true
-        },
-        {
-            "name": "Flask Server (native, file db)",
-            "type": "python",
-            "request": "launch",
-            "justMyCode": true,
-            "cwd": "${workspaceFolder}",
-            "module": "flask",
-            "env": {
-                "FLASK_APP": "${workspaceFolder}/src/server/main.py",
-                "FLASK_DEBUG": "1",
-                "FLASK_RUN_PORT": "8080",
-                "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
-                "VAR_PATH": "${workspaceFolder}/"
             },
             "args": [
                 "run",
@@ -54,21 +33,6 @@
                 ],
                 "projectType": "flask"
             }
-        },
-        {
-            "name": "Raw Run (native, file db)",
-            "type": "python",
-            "request": "launch",
-            "justMyCode": true,
-            "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/src/server/main.py",
-            "env": {
-                "APPLICATION_ROOT_PATH": "${workspaceFolder}/",
-                "VAR_PATH": "${workspaceFolder}/",
-                "FLASK_DEBUG": "1",
-                "FLASK_RUN_PORT": "8080",
-            },
-            "jinja": true
         }
     ]
 }

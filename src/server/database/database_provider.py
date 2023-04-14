@@ -1,9 +1,9 @@
-import os
-import sqlite3
 from contextlib import contextmanager
-from typing import Generator, Optional
+from typing import Generator
 
-from .. import PATHS
+import psycopg
+
+from .. import CONSTANTS
 from . import DatabaseHandler, Message
 
 
@@ -29,29 +29,23 @@ class DatabaseProvider:
     """
 
     # predeclaration on the class level
-    connection: sqlite3.Connection = sqlite3.Connection(":memory:")
-    database_source: str = ""
+    connection: psycopg.Connection = None  # type: ignore
+    db_name: str = CONSTANTS.DATABASE_NAME
+    db_user: str = CONSTANTS.DATABASE_USER
+    db_password: str = CONSTANTS.DATABASE_PASSWORD
+    db_hostname: str = CONSTANTS.DATABASE_HOSTNAME
+    db_connection_timeout: int = CONSTANTS.DATABASE_CONNECTION_TIMEOUT
 
     @classmethod
     def initialize(cls) -> None:
         """Initialize connection to the database."""
-        cls.database_source = PATHS.DATABASE
-
-        db_needs_setup: bool = False
-        if not os.path.exists(cls.database_source):
-            db_needs_setup = True
+        if "" in [cls.db_name, cls.db_user, cls.db_password, cls.db_hostname]:
+            print(f"DEBUG: {cls.db_name=}, {cls.db_user=}, {cls.db_hostname=}")
+            raise EnvironmentError("Cannot launch server due to invalid encironment")
 
         result: Message = cls._connect_to_database()
         if result is not Message.OK:
             print(f"WARNING: cannot connect to a file database: {result}")
-            print("INFO: connecting to in-memory database as fallback")
-            cls.database_source = ":memory:"
-            result = cls._connect_to_database()
-            if result is not Message.OK:
-                raise RuntimeError(f"Can't connect to in-memory database: {result}")
-
-        if db_needs_setup:
-            cls._fill_database()
 
     @classmethod
     @contextmanager
@@ -62,56 +56,50 @@ class DatabaseProvider:
             DatabaseHandler: Handler consisting of cursor and query execution status (Message).
 
         """
-        with cls._try_get_cursor() as cursor:
-            if cursor is not None:
-                handler: DatabaseHandler = DatabaseHandler(cursor, Message.OK)
-                try:
-                    yield handler
-                except sqlite3.IntegrityError:
-                    handler.message = Message.INVALID_SQL
-                except sqlite3.ProgrammingError:
-                    handler.message = Message.INVALID_BINDINGS
-                except sqlite3.Error:
-                    handler.message = Message.UNKNOWN_ERROR
-                else:
-                    handler.message = Message.OK
-
-    @classmethod
-    @contextmanager
-    def _try_get_cursor(cls) -> Generator[Optional[sqlite3.Cursor], None, None]:
-        cursor: Optional[sqlite3.Cursor] = None
+        handler: DatabaseHandler = DatabaseHandler(None, Message.OK)  # type: ignore
         try:
-            cursor = cls.connection.cursor()
-            yield cursor
-        except sqlite3.Error as err:
-            print(f"ERROR: sqlite3.Cursor creation -- {err}")
-            yield None
-        finally:
-            if cursor is not None:
-                print("DEBUG: closing sqlite3.Cursor")
-                cursor.close()
-                print("DEBUG: committing sqlite3 changes")
-                cls.connection.commit()
+            cursor: psycopg.Cursor = cls.connection.cursor()
+            handler._cursor = cursor  # pylint: disable=W0212
+            yield handler
+        except psycopg.Error as err:
+            print(f"ERROR: {err}")
+            cls.connection.rollback()
+            match err:
+                case psycopg.IntegrityError():
+                    handler.message = Message.DATABASE_INTEGRITY_ERROR
+                case psycopg.DataError():
+                    handler.message = Message.INVALID_SQL_QUERY
+                case psycopg.ProgrammingError():
+                    handler.message = Message.INVALID_SQL_QUERY
+                case psycopg.InternalError():
+                    handler.message = Message.INTERNAL_DATABASE_ERROR
+                case psycopg.NotSupportedError():
+                    handler.message = Message.UNSUPPORTED_OPERATION
+                case psycopg.errors.PipelineAborted():
+                    handler.message = Message.NO_CONNECTION
+                case psycopg.Error():
+                    handler.message = Message.UNKNOWN_ERROR
+                case _:
+                    handler.message = Message.UNKNOWN_ERROR
+        else:
+            cls.connection.commit()
+            handler.message = Message.OK
 
     @classmethod
     def _connect_to_database(cls) -> Message:
         try:
-            print(f"INFO: {cls.database_source=}")
-            cls.connection = sqlite3.connect(cls.database_source, check_same_thread=False)
-        except sqlite3.OperationalError as err:
+            cls.connection = psycopg.connect(
+                conninfo=f"dbname={cls.db_name} "
+                f"user={cls.db_user} "
+                f"host={cls.db_hostname} "
+                f"password={cls.db_password} "
+                f"connect_timeout={cls.db_connection_timeout}"
+            )
+        except psycopg.errors.ConnectionTimeout as err:
             print(f"ERROR: can't connect to the database: {err}")
             return Message.NO_CONNECTION
-        except sqlite3.Error as err:
+        except psycopg.Error as err:
             print(f"ERROR: {err}")
             return Message.UNKNOWN_ERROR
 
         return Message.OK
-
-    @classmethod
-    def _fill_database(cls) -> None:
-        with cls._try_get_cursor() as cursor:
-            if cursor is not None:
-                with open(file=PATHS.DATABASE_SCHEMA, encoding="utf-8") as f:
-                    cursor.executescript(f.read())
-                with open(file=PATHS.DATABASE_DEFAULT_DUMP, encoding="utf-8") as f:
-                    cursor.executescript(f.read())
