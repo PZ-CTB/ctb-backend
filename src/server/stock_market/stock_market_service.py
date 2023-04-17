@@ -16,13 +16,20 @@ class StockMarketService:
             if aggregate_param == 1:
                 handler().execute(QUERIES.SELECT_CHART, [from_param, to_param])
                 data = handler().fetchall()
-                filtered_list = [{"date": date.strftime("%Y-%m-%d"), "avg": avg} for date, avg in data]
+                filtered_list = [
+                    {"date": date.strftime("%Y-%m-%d"), "avg": avg} for date, avg in data
+                ]
 
             else:
                 # aggregate_seconds: int = int(aggregate_param) * 3600 * 24
                 handler().execute(
                     QUERIES.SELECT_CHART_AGGREGATED,
-                    (from_param, aggregate_param, from_param, to_param,)
+                    (
+                        from_param,
+                        aggregate_param,
+                        from_param,
+                        to_param,
+                    ),
                 )
                 data = handler().fetchall()
                 filtered_list = [
