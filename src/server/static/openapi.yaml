@@ -171,6 +171,12 @@ paths:
       responses:
         '200':
           description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Price'
         '400':
           description: Mandatory arguments weren't provided
   /api/v1/stock/future_value:
@@ -383,6 +389,26 @@ components:
         amount:
           type: number
           example: 0.1
+
+    Price:
+      type: object
+      properties:
+        date:
+          type: string
+          example: "2020-01-26"
+        avg:
+          type: number
+          example: 7124.183768763751
+        high:
+          type: number
+          example: 7124.183768763751
+        low:
+          type: number
+          example: 7124.183768763751
+      required:
+        - date
+        - avg
+
   securitySchemes:
     JWT:
       type: http

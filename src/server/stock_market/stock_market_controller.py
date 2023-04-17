@@ -18,7 +18,7 @@ class StockMarketController:
         to_param: str = args.get("to", "")
         aggregate_param: int = int(args.get("aggregate", 1))
 
-        if from_param is "" or to_param is "":
+        if from_param == "" or to_param == "":
             return Responses.chart_missing_parameters_error()
 
         return StockMarketService.chart(from_param, to_param, aggregate_param)
