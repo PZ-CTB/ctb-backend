@@ -10,7 +10,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS user_uuid_index ON users (uuid);
 
 CREATE TABLE IF NOT EXISTS revoked_tokens (
     token TEXT PRIMARY KEY,
-    expiry TEXT NOT NULL
+    expiry TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS token_index ON revoked_tokens (token);
