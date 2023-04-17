@@ -21,7 +21,6 @@ class StockMarketService:
                 ]
 
             else:
-                # aggregate_seconds: int = int(aggregate_param) * 3600 * 24
                 handler().execute(
                     QUERIES.SELECT_CHART_AGGREGATED,
                     (
