@@ -86,7 +86,7 @@ class Responses:
     @staticmethod
     def chart(filtered_list: list[dict]) -> Response:
         """200: success on chart endpoint."""
-        return make_response(json.dumps(filtered_list).encode("utf-8"))
+        return make_response(filtered_list)
 
     @staticmethod
     def chart_missing_parameters_error() -> Response:
