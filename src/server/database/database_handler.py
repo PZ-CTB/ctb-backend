@@ -1,10 +1,10 @@
-import sqlite3
+import psycopg
 
 from . import Message
 
 
 class DatabaseHandler:
-    """Class holding a connected sqlite3.Cursor instance with message about query execution status.
+    """Class holding a connected psycopg.Cursor instance with message about query execution status.
 
     If the DatabaseResponse.message is 'OK', the query has been executed successfully.
     Otherwise, there has been an internal error.
@@ -12,15 +12,15 @@ class DatabaseHandler:
     The user does not have to worry about cursor commiting changes.
     """
 
-    def __init__(self, cursor: sqlite3.Cursor, message: Message):
+    def __init__(self, cursor: psycopg.Cursor, message: Message):
         """Initialize the handler with connected cursor and message held by DatabaseProvider.
 
         Args:
-            cursor (sqlite3.Cursor): Cursor of the database directly responsible for queries.
+            cursor (psycopg.Cursor): Cursor of the database directly responsible for queries.
             message (Message): Status of the executed queries.
 
         """
-        self._cursor: sqlite3.Cursor = cursor
+        self._cursor: psycopg.Cursor = cursor
         self._message: Message = message
 
     @property
@@ -34,11 +34,11 @@ class DatabaseHandler:
         return self._message is Message.OK
 
     @property
-    def cursor(self) -> sqlite3.Cursor:
+    def cursor(self) -> psycopg.Cursor:
         """Getter to cursor directly responsible for queries.
 
         Returns:
-            sqlite3.Cursor: Cursor held by DatabaseProvider.
+            psycopg.Cursor: Cursor held by DatabaseProvider.
 
         """
         print("DEBUG: Getting Handler.cursor")
@@ -65,11 +65,11 @@ class DatabaseHandler:
         self._message = msg
         print(f"DEBUG: query result -- {self._message}")
 
-    def __call__(self) -> sqlite3.Cursor:
+    def __call__(self) -> psycopg.Cursor:
         """Magic function allowing to treat Handler as a function.
 
         Returns:
-            sqlite3.Cursor: Connected cursor to the database.
+            psycopg.Cursor: Connected cursor to the database.
 
         """
         return self.cursor

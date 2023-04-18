@@ -9,6 +9,11 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONOPTIMIZE=TRUE
 
+# Install dependencies
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y libsasl2-dev libldap2-dev libssl-dev libpq5
+
 # Install pip requirements
 COPY src/server/requirements.txt .
 RUN python -m pip install --upgrade pip

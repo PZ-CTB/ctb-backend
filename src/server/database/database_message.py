@@ -9,9 +9,10 @@ class Message(IntEnum):
     OK = 0
     UNKNOWN_ERROR = 1
     NO_CONNECTION = 2
-    INVALID_SQL = 3
-    INVALID_BINDINGS = 4
-    INVALID_THREAD = 5
+    DATABASE_INTEGRITY_ERROR = 3
+    INVALID_SQL_QUERY = 4
+    UNSUPPORTED_OPERATION = 5
+    INTERNAL_DATABASE_ERROR = 6
 
     def __repr__(self) -> str:
         """Display enum variables with their names and values."""
