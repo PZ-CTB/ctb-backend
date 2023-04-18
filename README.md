@@ -1,58 +1,24 @@
-# ctb-backend
+# Crypto Trading Bot – Backend
 
-## How to run the server in a Docker container?
+Please check [the wiki](https://github.com/PZ-CTB/ctb-backend/wiki) for information on project structure and deployment.
 
-Create an image:
-```
-docker build . -t ctb
-```
+Also check [the frontend side](https://github.com/PZ-CTB/ctb-frontend) of the project.
 
-Start container:
-```
-docker run -d -p 8080:8080 ctb
-```
+## Authors
+- Team leader: [Adam Łaba](https://github.com/unlvy)
+- Backend:
+  - Backend leader (model): [Paweł Bielecki](https://github.com/pawel2000pl)
+  - Backend leader (server): [Aleksander Kluczka](https://github.com/vis4rd)
+  - [Piotr Deda](https://github.com/PiotrDeda)
+  - [Kacper Osuch](https://github.com/uNBEx)
+  - [Mikołaj Sondej](https://github.com/mik-sondej)
+  - [Rafał Walkowiak](https://github.com/rafalw99)
+- Frontend:
+  - Frontend leader: [Krystian Śledź](https://github.com/krystiansledz)
+  - [Mirosław Kołodziej](https://github.com/mirek0707)
+  - [Jakub Kraśniak](https://github.com/sakor88)
+  - [Wiktor Urban](https://github.com/BlabberMobsterYeast)
+- Robotic pet: [CTB Deployer](https://github.com/CTB-Deployer)
 
-Test connection (in your browser): `https://localhost:8080/`.
-
-## Killing the container
-
-To shutdown the server, type:
-```
-docker ps
-```
-The command shows ids of containers. To kill the container, execute the command:
-```
-docker kill <id of the container>
-```
-f.e.:
-```
-docker kill 3fd7d783ce9a
-```
-
-Or just type the following command to kill all containers:
-```
-docker kill `docker container ls -q`
-```
-
-## One-command test
-
-Whole test (killing old, building and starting the new one) can be done with one command:
-```
-docker kill `docker container ls -q` ; docker build . -t ctb && docker run -d -p 8080:8080 ctb
-```
-
-## Directory binding
-
-In case of necessity of saving the database between every start of the container,
-it can be achieved by binding of container's directory with host's directory.
-The destination directory on the host must be created before the binding.
-For example, for storing the database in */tmp/ctb_opt*, execute the following command:
-```
-mkdir -p /tmp/ctb_opt
-docker run -d -p 8080:8080 --mount type=bind,source=/tmp/ctb_opt,target=/var/ctb ctb
-```
-
-To run everything using one command, execute:
-```
-mkdir -p /tmp/ctb_opt && docker kill `docker container ls -q` ; docker build . -t ctb && docker run -d -p 8080:8080 --mount type=bind,source=/tmp/ctb_opt,target=/var/ctb ctb
-```
+## License
+TODO
