@@ -2,6 +2,7 @@ from flask import Blueprint, Flask
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
 
+from . import SchemaValidator
 from .auth import AuthController
 from .database import DatabaseProvider
 from .stock_market import StockMarketController
@@ -13,6 +14,7 @@ class Server:
     def __init__(self) -> None:
         """Initialize server application along with its endpoints and cors."""
         DatabaseProvider.initialize()
+        SchemaValidator.initialize()
 
         self.name: str = __name__
         self.app: Flask = self._create_app()

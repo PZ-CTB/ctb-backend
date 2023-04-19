@@ -28,9 +28,6 @@ class AuthService:
         """
         new_uuid: uuid.UUID = uuid.uuid4()
 
-        if not email or not password:
-            return Responses.invalid_json_format_error()
-
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_EMAIL, (email,))
             user_exists: bool = handler().fetchall() != []
@@ -63,9 +60,6 @@ class AuthService:
             Response: new auth token if login succeed, appropriate error otherwise.
 
         """
-        if not email or not password:
-            return Responses.invalid_json_format_error()
-
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL, (email,))
             user_information: list[tuple[str, str, str]] = handler().fetchall()
