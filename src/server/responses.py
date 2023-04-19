@@ -7,6 +7,14 @@ class Responses:
     """All HTTP responses used in the project."""
 
     @staticmethod
+    def successfully_deposited() -> Response:
+        """200: successfully deposited."""
+        return make_response(
+            {"message": "Made a successful deposit"},
+            200,
+        )
+
+    @staticmethod
     def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
         """200: /me endpoint response."""
         return make_response(
@@ -71,6 +79,14 @@ class Responses:
             {"message": "Could not verify"},
             403,
             {"WWW-Authenticate": 'Basic realm ="Wrong password"'},
+        )
+
+    @staticmethod
+    def invalid_amount() -> Response:
+        """409: user provided invalid amount of money."""
+        return make_response(
+            {"message": "Amount must be greater than 0"},
+            409,
         )
 
     @staticmethod

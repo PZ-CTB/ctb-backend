@@ -43,3 +43,5 @@ class QUERIES:
 
     SELECT_REVOKED_TOKEN: str = "SELECT token FROM revoked_tokens WHERE token=%s AND expiry > %s"
     INSERT_REVOKED_TOKEN: str = "INSERT INTO revoked_tokens (token, expiry) VALUES (%s, %s)"
+
+    WALLET_DEPOSIT: str = "UPDATE users SET wallet_usd = wallet_usd + %s WHERE uuid=%s"

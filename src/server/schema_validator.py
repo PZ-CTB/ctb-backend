@@ -14,14 +14,16 @@ class SchemaValidator:
 
     login_schema: dict = {}
     register_schema: dict = {}
+    deposit_schema: dict = {}
 
     @classmethod
     def initialize(cls) -> None:
         """Load schema files."""
-        with open("res/schemas/login.json", encoding="utf-8") as f:
-            cls.login_schema = json.load(f)
-        with open("res/schemas/register.json", encoding="utf-8") as f:
-            cls.register_schema = json.load(f)
+        print("INFO: server.schema_validator.SchemaValidator.initialize(): Loading schemas...")
+        for schema in ("login", "register", "deposit"):
+            with open(f"res/schemas/{schema}.json", encoding="utf-8") as f:
+                cls.__dict__[f"{schema}_schema"] = json.load(f)
+        print("INFO: server.schema_validator.SchemaValidator.initialize(): Schemas loaded.")
 
     @classmethod
     def validate(
