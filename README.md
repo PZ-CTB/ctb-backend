@@ -1,4 +1,7 @@
 # Crypto Trading Bot – Backend
+Project for *Team Programming* course at AGH University of Science and Technology.
+
+The goal is to create a bot with a web interface that uses machine learning to predict future cryptocurrency prices.
 
 Please check [the wiki](https://github.com/PZ-CTB/ctb-backend/wiki) for information on project structure and deployment.
 
