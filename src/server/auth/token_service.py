@@ -26,7 +26,6 @@ class TokenService:
 
         @wraps(fun)
         def decorated(*args: tuple, **kwargs: dict) -> Response:
-            """Validate received token."""
             token: str = ""
             # JWT is passed in the request header
             if "x-access-token" in request.headers:
