@@ -147,17 +147,44 @@ paths:
     get:
       tags:
         - stock
-      summary: Chart [Beta]
-      description: Get historical stock prices [Beta]
+      summary: Chart
+      description: Get historical stock prices
+      parameters:
+        - in: query
+          name: from
+          schema:
+            type: string
+          required: true
+          description: Start date of returned range in YYYY-MM-DD format
+        - in: query
+          name: to
+          schema:
+            type: string
+          required: true
+          description: End date of returned range in YYYY-MM-DD format
+        - in: query
+          name: aggregate
+          schema:
+            type: integer
+          required: false
+          description: Number of days to aggregate data (default is 1)
       responses:
         '200':
           description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Price'
+        '400':
+          description: Mandatory arguments weren't provided
   /api/v1/stock/future_value:
     get:
       tags:
         - stock
       summary: Future value [Beta]
-      description: Get future stock prices predicted by model [Beta]
+      description: Get future stock prices predicted by model, not implemented yet [Beta]
       responses:
         '200':
           description: Successful operation
@@ -362,6 +389,26 @@ components:
         amount:
           type: number
           example: 0.1
+
+    Price:
+      type: object
+      properties:
+        date:
+          type: string
+          example: "2020-01-26"
+        avg:
+          type: number
+          example: 7124.183768763751
+        high:
+          type: number
+          example: 7124.183768763751
+        low:
+          type: number
+          example: 7124.183768763751
+      required:
+        - date
+        - avg
+
   securitySchemes:
     JWT:
       type: http
