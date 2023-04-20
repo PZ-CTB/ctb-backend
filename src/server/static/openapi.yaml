@@ -155,19 +155,19 @@ paths:
           schema:
             type: string
           required: true
-          description: Start date of returned range in YYYY-MM-DD format.
+          description: Start date of returned range in YYYY-MM-DD format
         - in: query
           name: to
           schema:
             type: string
           required: true
-          description: End date of returned range in YYYY-MM-DD format.
+          description: End date of returned range in YYYY-MM-DD format
         - in: query
           name: aggregate
           schema:
             type: integer
           required: false
-          description: Number of days to aggregate data. Default is 1.
+          description: Number of days to aggregate data (default is 1)
       responses:
         '200':
           description: Successful operation
