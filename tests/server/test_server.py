@@ -285,7 +285,7 @@ class Test_Server:
                 assert response.status_code == 401
 
             def test_send_401_when_unauthorized_user_not_registered(
-                    self, token: str, failing_handler: Mock
+                self, token: str, failing_handler: Mock
             ) -> None:
                 response = self.client.get(
                     self.url_path,
