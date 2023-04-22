@@ -8,7 +8,7 @@ from . import WalletService
 class WalletController:
     """Wallet Controller class.
 
-    Allows to user to perform operations on their wallet."""
+    Allows authorized users to perform operations on their wallet."""
 
     blueprint: Blueprint = Blueprint("wallet", __name__, url_prefix="/wallet")
 
