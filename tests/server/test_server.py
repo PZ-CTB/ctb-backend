@@ -339,7 +339,7 @@ class Test_Server:
                 assert response.status_code == 401
 
             def test_send_401_when_unauthorized_token_revoked(
-                    self, token: str, token_already_revoked: Mock
+                self, token: str, token_already_revoked: Mock
             ) -> None:
                 # logout with revoked token
                 response = self.client.post(
@@ -349,7 +349,7 @@ class Test_Server:
                 assert response.status_code == 401
 
             def test_send_500_on_revoke_failure(
-                    self, token: str, token_revoke_failure: Mock
+                self, token: str, token_revoke_failure: Mock
             ) -> None:
                 # logout halted due to token revoke fail
                 response = self.client.post(
@@ -410,7 +410,7 @@ class Test_Server:
                 assert response.status_code == 401
 
             def test_send_401_when_unauthorized_user_not_registered(
-                    self, token: str, failing_handler: Mock
+                self, token: str, failing_handler: Mock
             ) -> None:
                 response = self.client.post(
                     self.url_path,
