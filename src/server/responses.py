@@ -84,14 +84,6 @@ class Responses:
         )
 
     @staticmethod
-    def invalid_amount() -> Response:
-        """409: user provided invalid amount of money."""
-        return make_response(
-            {"message": "Amount must be greater than 0"},
-            409,
-        )
-
-    @staticmethod
     def internal_database_error(_message: Message) -> Response:
         """500: generic internal error."""
         return make_response(

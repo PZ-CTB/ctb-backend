@@ -19,9 +19,6 @@ class WalletService:
             Response: successfully_deposited if deposit succeed, appropriate error otherwise.
 
         """
-        if amount <= 0:
-            return Responses.invalid_amount()
-
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.WALLET_DEPOSIT, (amount, uuid))
         if not handler.success:

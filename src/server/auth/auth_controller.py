@@ -14,7 +14,7 @@ class AuthController:
 
     @staticmethod
     @blueprint.route("/register", methods=["POST"])
-    @SchemaValidator.validate(SchemaValidator.register_schema)
+    @SchemaValidator.validate(SchemaValidator.get_schema("register"))
     def register() -> Response:
         """Registration endpoint."""
         new_user: dict[str, str] = request.get_json()
@@ -26,7 +26,7 @@ class AuthController:
 
     @staticmethod
     @blueprint.route("/login", methods=["POST"])
-    @SchemaValidator.validate(SchemaValidator.login_schema)
+    @SchemaValidator.validate(SchemaValidator.get_schema("login"))
     def login() -> Response:
         """Login endpoint."""
         auth: dict[str, str] = request.get_json()

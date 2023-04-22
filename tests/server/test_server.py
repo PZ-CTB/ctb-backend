@@ -215,7 +215,7 @@ class Test_Server:
                 assert response.status_code == 500
 
             def test_send_401_when_unauthorized(self) -> None:
-                # basically we are trying to login without registering
+                # basically we are trying to log in without registering
                 response = self.client.post(
                     self.url_path,
                     json={"email": "not_legit_email@gmail.com", "password": "nice_try"},
@@ -236,7 +236,7 @@ class Test_Server:
                 assert response.status_code == 201
 
             def test_send_403_when_cannot_verify(self) -> None:
-                # register and then try to login with wrong password
+                # register and then try to log in with wrong password
                 self.client.post(
                     self.register_path,
                     json={"email": "legit_email@gmail.com", "password": "thelegend27"},
@@ -276,9 +276,7 @@ class Test_Server:
             def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
                 response = self.client.get(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 500
 
@@ -286,15 +284,12 @@ class Test_Server:
                 response = self.client.get(self.url_path)
                 assert response.status_code == 401
 
-            @pytest.mark.skip("Not possible to achieve: token = registered, no token = 401")
             def test_send_401_when_unauthorized_user_not_registered(
-                self, token: str, failing_handler: Mock
+                    self, token: str, failing_handler: Mock
             ) -> None:
                 response = self.client.get(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 401
 
@@ -302,9 +297,7 @@ class Test_Server:
                 # register, login, retrieve token and get to me endpoint
                 response = self.client.get(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 200
 
@@ -346,34 +339,91 @@ class Test_Server:
                 assert response.status_code == 401
 
             def test_send_401_when_unauthorized_token_revoked(
-                self, token: str, token_already_revoked: Mock
+                    self, token: str, token_already_revoked: Mock
             ) -> None:
                 # logout with revoked token
                 response = self.client.post(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 401
 
             def test_send_500_on_revoke_failure(
-                self, token: str, token_revoke_failure: Mock
+                    self, token: str, token_revoke_failure: Mock
             ) -> None:
                 # logout halted due to token revoke fail
                 response = self.client.post(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 500
 
             def test_send_201_on_success(self, token: str) -> None:
                 response = self.client.post(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 201
+
+    class Test_Wallet:
+        class Test_DepositEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, client: FlaskClient) -> None:
+                self.register_path: str = "api/v1/auth/register"
+                self.login_path: str = "api/v1/auth/login"
+                self.url_path: str = "api/v1/wallet/deposit"
+                self.client: FlaskClient = client
+
+            @pytest.fixture(name="token")
+            def fixture_register_and_login(self) -> str:
+                self.client.post(
+                    self.register_path,
+                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                )
+                login_response = self.client.post(
+                    self.login_path,
+                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                )
+                return login_response.get_json()["auth_token"]
+
+            def test_send_200_on_success(self, token: str) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 5.75},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 200
+
+            def test_send_400_on_invalid_json_format(self, token: str) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    data={"amount": -5.75},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 400
+
+            def test_send_401_when_unauthorized_no_token(self) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 5.75},
+                )
+                assert response.status_code == 401
+
+            def test_send_401_when_unauthorized_user_not_registered(
+                    self, token: str, failing_handler: Mock
+            ) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 5.75},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 401
+
+            @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
+            def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 5.75},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 500

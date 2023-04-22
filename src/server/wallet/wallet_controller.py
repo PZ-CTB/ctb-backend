@@ -10,11 +10,11 @@ class WalletController:
 
     Allows to user to perform operations on their wallet."""
 
-    blueprint = Blueprint("wallet", __name__, url_prefix="/wallet")
+    blueprint: Blueprint = Blueprint("wallet", __name__, url_prefix="/wallet")
 
     @staticmethod
-    @blueprint.route("/deposit")
-    @SchemaValidator.validate(SchemaValidator.deposit_schema)
+    @blueprint.route("/deposit", methods=["POST"])
+    @SchemaValidator.validate(SchemaValidator.get_schema("deposit"))
     @TokenService.token_required
     def deposit(uuid: str, _token: str) -> Response:
         """Deposit endpoint."""

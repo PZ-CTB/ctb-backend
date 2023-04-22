@@ -12,18 +12,21 @@ from . import Responses
 class SchemaValidator:
     """Class for validating JSON requests."""
 
-    login_schema: dict = {}
-    register_schema: dict = {}
-    deposit_schema: dict = {}
+    schemas: dict = {}
 
     @classmethod
     def initialize(cls) -> None:
         """Load schema files."""
         print("INFO: server.schema_validator.SchemaValidator.initialize(): Loading schemas...")
-        for schema in ("login", "register", "deposit"):
-            with open(f"res/schemas/{schema}.json", encoding="utf-8") as f:
-                cls.__dict__[f"{schema}_schema"] = json.load(f)
+        for schema in ["register", "login", "deposit"]:
+            with open(f"res/schemas/{schema}.json") as file:
+                cls.schemas[schema] = json.load(file)
         print("INFO: server.schema_validator.SchemaValidator.initialize(): Schemas loaded.")
+
+    @classmethod
+    def get_schema(cls, schema: str) -> dict:
+        """Get schema by name."""
+        return cls.schemas.get(schema, {})
 
     @classmethod
     def validate(
