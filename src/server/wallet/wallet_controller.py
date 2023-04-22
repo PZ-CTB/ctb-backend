@@ -1,7 +1,7 @@
 from flask import Blueprint, Response, request
 
-from ..auth import TokenService
 from .. import SchemaValidator
+from ..auth import TokenService
 from . import WalletService
 
 
