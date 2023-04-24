@@ -386,18 +386,20 @@ class Test_Server:
                 )
                 return login_response.get_json()["auth_token"]
 
-            def test_send_200_on_success(self, token: str) -> None:
+            @pytest.mark.parametrize("amount", [1, 5.75])
+            def test_send_200_on_success(self, token: str, amount: float) -> None:
                 response = self.client.post(
                     self.url_path,
-                    json={"amount": 5.75},
+                    json={"amount": amount},
                     headers={"x-access-token": token},
                 )
                 assert response.status_code == 200
 
-            def test_send_400_on_invalid_json_format(self, token: str) -> None:
+            @pytest.mark.parametrize("amount", [-5.75, 0.0])
+            def test_send_400_on_invalid_json_format(self, token: str, amount: float) -> None:
                 response = self.client.post(
                     self.url_path,
-                    data={"amount": -5.75},
+                    data={"amount": amount},
                     headers={"x-access-token": token},
                 )
                 assert response.status_code == 400
