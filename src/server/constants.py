@@ -40,7 +40,9 @@ class QUERIES:
     SELECT_USER_LOGIN_DATA_BY_EMAIL: Query = (
         "SELECT uuid, email, password_hash FROM users WHERE email=%s"
     )
-    SELECT_USER_DATA_BY_UUID: Query = "SELECT email, wallet_usd, wallet_btc FROM users WHERE uuid=%s"
+    SELECT_USER_DATA_BY_UUID: Query = (
+        "SELECT email, wallet_usd, wallet_btc FROM users WHERE uuid=%s"
+    )
     INSERT_USER: Query = "INSERT INTO users(uuid, email, password_hash) VALUES (%s, %s, %s)"
 
     SELECT_REVOKED_TOKEN: Query = "SELECT token FROM revoked_tokens WHERE token=%s AND expiry > %s"
