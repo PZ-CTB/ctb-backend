@@ -53,3 +53,8 @@ class QUERIES:
                                         WHERE date BETWEEN %s AND %s
                                         GROUP BY period_number
                                         ORDER BY period_number"""
+
+    SELECT_DATA: str = "SELECT date, value FROM exchange_rate_history"
+    SELECT_NEWEST_DATA: str = (
+        "SELECT date, value FROM exchange_rate_history ORDER BY date DESC LIMIT %s"
+    )
