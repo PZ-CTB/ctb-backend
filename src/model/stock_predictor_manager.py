@@ -209,10 +209,10 @@ class StockPredictorManager:
 
         return predicted_values
 
-    def load_model(self, path="stock_predictor_model.pt") -> None:
+    def load_model(self, path: str = "stock_predictor_model.pt") -> None:
         """Load saved model."""
         self.stock_predictor.load_state_dict(torch.load(path))
 
-    def save_model(self, path="stock_predictor_model.pt") -> None:
+    def save_model(self, path: str = "stock_predictor_model.pt") -> None:
         """Save current loaded model."""
         torch.save(self.stock_predictor.state_dict(), path)
