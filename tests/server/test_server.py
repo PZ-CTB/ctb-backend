@@ -57,14 +57,16 @@ class FakeDatabase:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
-                    self._db_users[index] = old_user[:3] + (old_user[3] + params[0]) + old_user[4:]
+                    # noinspection PyTypeChecker
+                    self._db_users[index] = old_user[:3] + (old_user[3] + params[0],) + old_user[4:]
             case QUERIES.WALLET_WITHDRAW:
                 index = [user[0] for user in self._db_users].index(params[1])
                 if index is None:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
-                    self._db_users[index] = old_user[:3] + (old_user[3] - params[0]) + old_user[4:]
+                    # noinspection PyTypeChecker
+                    self._db_users[index] = old_user[:3] + (old_user[3] - params[0],) + old_user[4:]
             case _:
                 pass
 
