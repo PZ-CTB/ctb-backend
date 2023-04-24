@@ -107,7 +107,7 @@ class StockPredictorManager:
 
         return data_loader
 
-    def train_model(self, verbose: bool = False):
+    def train_model(self, verbose: bool = False) -> None:
         """Train model"""
 
         train_data: Optional[np.ndarray] = None
@@ -132,7 +132,7 @@ class StockPredictorManager:
             val_loss: float = 0
             with torch.no_grad():
                 for inputs, targets in val_loader:
-                    outputs: torch.Tensor = self.stock_predictor(inputs)
+                    outputs = self.stock_predictor(inputs)
                     val_loss += self.criterion(outputs[:, -1], targets[:, -1, 0])
             val_loss /= len(val_loader)
 
@@ -197,7 +197,7 @@ class StockPredictorManager:
             )
 
             # Create new sequence in order to predict value for the next date.
-            data: pd.DataFrame = pd.concat([new_data, data])
+            data = pd.concat([new_data, data])
             # Delete oldest date from the dataframe
             data.drop(data.index[self.config.seq_length - 1], inplace=True)
 
@@ -209,10 +209,10 @@ class StockPredictorManager:
 
         return predicted_values
 
-    def load_model(self, path="stock_predictor_model.pt"):
+    def load_model(self, path="stock_predictor_model.pt") -> None:
         """Load saved model."""
         self.stock_predictor.load_state_dict(torch.load(path))
 
-    def save_model(self, path="stock_predictor_model.pt"):
+    def save_model(self, path="stock_predictor_model.pt") -> None:
         """Save current loaded model."""
         torch.save(self.stock_predictor.state_dict(), path)
