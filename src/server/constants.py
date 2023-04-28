@@ -13,6 +13,7 @@ class PATHS:
 
     RESOURCES: str = APPLICATION_ROOT_PATH + "res/"
     DATASETS: str = RESOURCES + "datasets/"
+    VALIDATION_SCHEMAS: str = RESOURCES + "schemas/"
 
     DATABASE_SCHEMA: str = RESOURCES + "schema.sql"
     DATABASE_DEFAULT_DUMP: str = RESOURCES + "dump.sql"
