@@ -52,16 +52,18 @@ class FakeDatabase:
                 else:
                     self._db_tokens.append((params[0], params[1]))
             case QUERIES.WALLET_DEPOSIT:
-                index = [user[0] for user in self._db_users].index(params[1])
-                if index is None:
+                try:
+                    index = [user[0] for user in self._db_users].index(params[1])
+                except ValueError:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
                     # noinspection PyTypeChecker
                     self._db_users[index] = old_user[:3] + (old_user[3] + params[0],) + old_user[4:]
             case QUERIES.WALLET_WITHDRAW:
-                index = [user[0] for user in self._db_users].index(params[1])
-                if index is None:
+                try:
+                    index = [user[0] for user in self._db_users].index(params[1])
+                except ValueError:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
