@@ -6,7 +6,7 @@ from flask import Response, request
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
-from . import Responses
+from . import PATHS, Responses
 
 
 class SchemaValidator:
@@ -19,7 +19,7 @@ class SchemaValidator:
         """Load schema files."""
         print("INFO: server.schema_validator.SchemaValidator.initialize(): Loading schemas...")
         for schema in ["register", "login", "deposit"]:
-            with open(f"res/schemas/{schema}.json") as file:
+            with open(f"{PATHS.VALIDATION_SCHEMAS}{schema}.json") as file:
                 cls.schemas[schema] = json.load(file)
         print("INFO: server.schema_validator.SchemaValidator.initialize(): Schemas loaded.")
 
