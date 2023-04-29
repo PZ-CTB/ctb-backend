@@ -30,7 +30,7 @@ class SchemaValidator:
 
     @classmethod
     def validate(
-        cls, schema: dict
+        cls, schema_name: str
     ) -> Callable[[Callable[..., Response]], Callable[..., Response]]:  # xD
         """Validate received JSON against given schema."""
 
@@ -38,7 +38,7 @@ class SchemaValidator:
             @wraps(fun)
             def decorated(*args: tuple, **kwargs: dict) -> Response:
                 try:
-                    validate(request.get_json(), schema)
+                    validate(request.get_json(), SchemaValidator.get_schema(schema_name))
                 except ValidationError as e:
                     print(f"ERROR: server.schema_validator.SchemaValidator.validate(): {e}")
                     return Responses.invalid_json_format_error()
