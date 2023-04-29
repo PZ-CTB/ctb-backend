@@ -14,7 +14,7 @@ class WalletController:
 
     @staticmethod
     @blueprint.route("/deposit", methods=["POST"])
-    @SchemaValidator.validate(SchemaValidator.get_schema("deposit"))
+    @SchemaValidator.validate("deposit")
     @TokenService.token_required
     def deposit(uuid: str, _token: str) -> Response:
         """Deposit endpoint."""
