@@ -167,7 +167,7 @@ class Test_Server:
             def test_send_400_on_invalid_json_format(self) -> None:
                 response = self.client.post(
                     self.url_path,
-                    data={
+                    json={
                         "email": "legit_email@gmail.com",
                         "totally_wrong_key": "what_even_is_this",
                     },
@@ -209,7 +209,7 @@ class Test_Server:
             def test_send_400_on_invalid_json_format(self) -> None:
                 response = self.client.post(
                     self.url_path,
-                    data={
+                    json={
                         "email": "legit_email@gmail.com",
                         "totally_wrong_key": "what_even_is_this",
                     },
@@ -408,7 +408,7 @@ class Test_Server:
             def test_send_400_on_invalid_json_format(self, token: str, amount: float) -> None:
                 response = self.client.post(
                     self.url_path,
-                    data={"amount": amount},
+                    json={"amount": amount},
                     headers={"x-access-token": token},
                 )
                 assert response.status_code == 400
