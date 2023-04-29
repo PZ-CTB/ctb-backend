@@ -508,7 +508,11 @@ class Test_Server:
             def fixture_register_and_login_with_starting_balance(self) -> str:
                 self.client.post(
                     self.register_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 login_response = self.client.post(
                     self.login_path,
@@ -530,11 +534,11 @@ class Test_Server:
                 )
                 assert response.status_code == 200
 
-            @pytest.mark.parametrize("amount", [-5.75, 0.0, 100.01])
+            @pytest.mark.parametrize("amount", [-5.75, 0.0])
             def test_send_400_on_invalid_json_format(self, token: str, amount: float) -> None:
                 response = self.client.post(
                     self.url_path,
-                    data={"amount": amount},
+                    json={"amount": amount},
                     headers={"x-access-token": token},
                 )
                 assert response.status_code == 400
@@ -555,6 +559,14 @@ class Test_Server:
                     headers={"x-access-token": token},
                 )
                 assert response.status_code == 401
+
+            def test_send_409_when_not_enough_money_to_withdraw(self, token: str) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 100.01},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 409
 
             @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
             def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:

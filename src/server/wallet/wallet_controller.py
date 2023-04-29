@@ -26,7 +26,7 @@ class WalletController:
 
     @staticmethod
     @blueprint.route("/withdraw", methods=["POST"])
-    @SchemaValidator.validate(SchemaValidator.get_schema("withdraw"))
+    @SchemaValidator.validate("withdraw")
     @TokenService.token_required
     def withdraw(uuid: str, _token: str) -> Response:
         """Withdraw endpoint."""
