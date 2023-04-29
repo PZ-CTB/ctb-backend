@@ -21,8 +21,9 @@ class AuthController:
 
         email: str = new_user.get("email", "")
         password: str = new_user.get("password", "")
+        confirm_password: str = new_user.get("confirmPassword", "")
 
-        return AuthService.register(email, password)
+        return AuthService.register(email, password, confirm_password)
 
     @staticmethod
     @blueprint.route("/login", methods=["POST"])

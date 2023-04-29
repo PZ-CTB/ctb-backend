@@ -177,25 +177,52 @@ class Test_Server:
             def test_send_500_on_internal_error(self, failing_handler: Mock) -> None:
                 response = self.client.post(
                     self.url_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 assert response.status_code == 500
+
+            def test_send_400_when_passwords_dont_match(self) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend28",
+                    },
+                )
+                assert response.status_code == 400
 
             def test_send_202_when_user_exists(self) -> None:
                 self.client.post(
                     self.url_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 response = self.client.post(
                     self.url_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 assert response.status_code == 202
 
             def test_send_201_on_success(self) -> None:
                 response = self.client.post(
                     self.url_path,
-                    json={"email": "other_legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "other_legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 assert response.status_code == 201
 
@@ -235,7 +262,11 @@ class Test_Server:
                 # register and then login
                 self.client.post(
                     self.register_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
 
                 response = self.client.post(
@@ -248,7 +279,11 @@ class Test_Server:
                 # register and then try to log in with wrong password
                 self.client.post(
                     self.register_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
 
                 response = self.client.post(
@@ -269,7 +304,11 @@ class Test_Server:
             def fixture_register_and_login(self) -> str:
                 self.client.post(
                     self.register_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 login_response = self.client.post(
                     self.login_path,
@@ -322,7 +361,11 @@ class Test_Server:
             def fixture_register_and_login(self) -> str:
                 self.client.post(
                     self.register_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 login_response = self.client.post(
                     self.login_path,
@@ -387,7 +430,11 @@ class Test_Server:
             def fixture_register_and_login(self) -> str:
                 self.client.post(
                     self.register_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 login_response = self.client.post(
                     self.login_path,
