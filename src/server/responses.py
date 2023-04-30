@@ -82,6 +82,14 @@ class Responses:
         )
 
     @staticmethod
+    def passwords_dont_match_error() -> Response:
+        """400: password and confirmPassword don't match."""
+        return make_response(
+            {"message": "Passwords don't match"},
+            400,
+        )
+
+    @staticmethod
     def unauthorized_error() -> Response:
         """401: generic problem with authorization or token."""
         return make_response(
