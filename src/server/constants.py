@@ -59,4 +59,10 @@ class QUERIES:
                                         GROUP BY period_number
                                         ORDER BY period_number"""
 
+    SELECT_LAST_KNOWN_DATE: Query = """SELECT MAX(date)
+                                       FROM exchange_rate_history"""
+
+    INSERT_PRICE: Query = """INSERT INTO exchange_rate_history (date, value)
+                             VALUES (%s, %s)"""
+
     WALLET_DEPOSIT: Query = "UPDATE users SET wallet_usd = wallet_usd + %s WHERE uuid=%s"
