@@ -101,7 +101,7 @@ class Responses:
 
     @staticmethod
     def not_enough_money_to_withdraw() -> Response:
-        """409: user tried to withdraw more money than he has."""
+        """409: user tried to withdraw more money than they have."""
         return make_response(
             {"message": "Provided amount is greater than user's wallet balance"},
             409,
