@@ -1,5 +1,3 @@
-import json
-
 from flask import Response, make_response
 
 from .database import Message
@@ -7,6 +5,14 @@ from .database import Message
 
 class Responses:
     """All HTTP responses used in the project."""
+
+    @staticmethod
+    def balance(usd_balance: float, btc_balance: float) -> Response:
+        """200: returning balance of a user."""
+        return make_response(
+            {"wallet_usd": usd_balance, "wallet_btc": btc_balance},
+            200,
+        )
 
     @staticmethod
     def successfully_deposited() -> Response:
