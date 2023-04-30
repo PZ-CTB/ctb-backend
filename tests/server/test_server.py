@@ -326,8 +326,6 @@ class Test_Server:
         class Test_MeEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
-                self.register_path: str = "api/v1/auth/register"
-                self.login_path: str = "api/v1/auth/login"
                 self.url_path: str = "api/v1/auth/me"
                 self.client: FlaskClient = client
 
@@ -367,8 +365,6 @@ class Test_Server:
         class Test_LogoutEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
-                self.register_path: str = "api/v1/auth/register"
-                self.login_path: str = "api/v1/auth/login"
                 self.url_path: str = "api/v1/auth/logout"
                 self.client: FlaskClient = client
 
@@ -420,9 +416,6 @@ class Test_Server:
         class Test_BalanceEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
-                self.register_path: str = "api/v1/auth/register"
-                self.login_path: str = "api/v1/auth/login"
-                self.deposit_path: str = "api/v1/wallet/deposit"
                 self.url_path: str = "api/v1/wallet/balance"
                 self.client: FlaskClient = client
 
@@ -464,8 +457,6 @@ class Test_Server:
         class Test_DepositEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
-                self.register_path: str = "api/v1/auth/register"
-                self.login_path: str = "api/v1/auth/login"
                 self.url_path: str = "api/v1/wallet/deposit"
                 self.client: FlaskClient = client
 
