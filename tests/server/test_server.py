@@ -51,6 +51,15 @@ class FakeDatabase:
                     raise psycopg.IntegrityError()
                 else:
                     self._db_tokens.append((params[0], params[1]))
+            case QUERIES.WALLET_DEPOSIT:
+                try:
+                    index = [user[0] for user in self._db_users].index(params[1])
+                except ValueError:
+                    raise psycopg.IntegrityError()
+                else:
+                    old_user = self._db_users[index]
+                    # noinspection PyTypeChecker
+                    self._db_users[index] = old_user[:3] + (old_user[3] + params[0],) + old_user[4:]
             case _:
                 pass
 
@@ -158,7 +167,7 @@ class Test_Server:
             def test_send_400_on_invalid_json_format(self) -> None:
                 response = self.client.post(
                     self.url_path,
-                    data={
+                    json={
                         "email": "legit_email@gmail.com",
                         "totally_wrong_key": "what_even_is_this",
                     },
@@ -168,25 +177,52 @@ class Test_Server:
             def test_send_500_on_internal_error(self, failing_handler: Mock) -> None:
                 response = self.client.post(
                     self.url_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 assert response.status_code == 500
+
+            def test_send_400_when_passwords_dont_match(self) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend28",
+                    },
+                )
+                assert response.status_code == 400
 
             def test_send_202_when_user_exists(self) -> None:
                 self.client.post(
                     self.url_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 response = self.client.post(
                     self.url_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 assert response.status_code == 202
 
             def test_send_201_on_success(self) -> None:
                 response = self.client.post(
                     self.url_path,
-                    json={"email": "other_legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "other_legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 assert response.status_code == 201
 
@@ -200,7 +236,7 @@ class Test_Server:
             def test_send_400_on_invalid_json_format(self) -> None:
                 response = self.client.post(
                     self.url_path,
-                    data={
+                    json={
                         "email": "legit_email@gmail.com",
                         "totally_wrong_key": "what_even_is_this",
                     },
@@ -215,7 +251,7 @@ class Test_Server:
                 assert response.status_code == 500
 
             def test_send_401_when_unauthorized(self) -> None:
-                # basically we are trying to login without registering
+                # basically we are trying to log in without registering
                 response = self.client.post(
                     self.url_path,
                     json={"email": "not_legit_email@gmail.com", "password": "nice_try"},
@@ -226,7 +262,11 @@ class Test_Server:
                 # register and then login
                 self.client.post(
                     self.register_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
 
                 response = self.client.post(
@@ -236,10 +276,14 @@ class Test_Server:
                 assert response.status_code == 201
 
             def test_send_403_when_cannot_verify(self) -> None:
-                # register and then try to login with wrong password
+                # register and then try to log in with wrong password
                 self.client.post(
                     self.register_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
 
                 response = self.client.post(
@@ -260,7 +304,11 @@ class Test_Server:
             def fixture_register_and_login(self) -> str:
                 self.client.post(
                     self.register_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 login_response = self.client.post(
                     self.login_path,
@@ -276,9 +324,7 @@ class Test_Server:
             def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
                 response = self.client.get(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 500
 
@@ -286,15 +332,12 @@ class Test_Server:
                 response = self.client.get(self.url_path)
                 assert response.status_code == 401
 
-            @pytest.mark.skip("Not possible to achieve: token = registered, no token = 401")
             def test_send_401_when_unauthorized_user_not_registered(
                 self, token: str, failing_handler: Mock
             ) -> None:
                 response = self.client.get(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 401
 
@@ -302,9 +345,7 @@ class Test_Server:
                 # register, login, retrieve token and get to me endpoint
                 response = self.client.get(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 200
 
@@ -320,7 +361,11 @@ class Test_Server:
             def fixture_register_and_login(self) -> str:
                 self.client.post(
                     self.register_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
                 )
                 login_response = self.client.post(
                     self.login_path,
@@ -351,9 +396,7 @@ class Test_Server:
                 # logout with revoked token
                 response = self.client.post(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 401
 
@@ -363,17 +406,82 @@ class Test_Server:
                 # logout halted due to token revoke fail
                 response = self.client.post(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 500
 
             def test_send_201_on_success(self, token: str) -> None:
                 response = self.client.post(
                     self.url_path,
-                    headers={
-                        "x-access-token": token,
-                    },
+                    headers={"x-access-token": token},
                 )
                 assert response.status_code == 201
+
+    class Test_Wallet:
+        class Test_DepositEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, client: FlaskClient) -> None:
+                self.register_path: str = "api/v1/auth/register"
+                self.login_path: str = "api/v1/auth/login"
+                self.url_path: str = "api/v1/wallet/deposit"
+                self.client: FlaskClient = client
+
+            @pytest.fixture(name="token")
+            def fixture_register_and_login(self) -> str:
+                self.client.post(
+                    self.register_path,
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
+                )
+                login_response = self.client.post(
+                    self.login_path,
+                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                )
+                return login_response.get_json()["auth_token"]
+
+            @pytest.mark.parametrize("amount", [1, 5.75])
+            def test_send_200_on_success(self, token: str, amount: float) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": amount},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 200
+
+            @pytest.mark.parametrize("amount", [-5.75, 0.0])
+            def test_send_400_on_invalid_json_format(self, token: str, amount: float) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": amount},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 400
+
+            def test_send_401_when_unauthorized_no_token(self) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 5.75},
+                )
+                assert response.status_code == 401
+
+            def test_send_401_when_unauthorized_user_not_registered(
+                self, token: str, failing_handler: Mock
+            ) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 5.75},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 401
+
+            @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
+            def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 5.75},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 500

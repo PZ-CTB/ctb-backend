@@ -9,6 +9,14 @@ class Responses:
     """All HTTP responses used in the project."""
 
     @staticmethod
+    def successfully_deposited() -> Response:
+        """200: successfully deposited."""
+        return make_response(
+            {"message": "Made a successful deposit"},
+            200,
+        )
+
+    @staticmethod
     def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
         """200: /me endpoint response."""
         return make_response(
@@ -54,6 +62,14 @@ class Responses:
         """400: json parser could not parse the request."""
         return make_response(
             {"message": "Invalid Json format"},
+            400,
+        )
+
+    @staticmethod
+    def passwords_dont_match_error() -> Response:
+        """400: password and confirmPassword don't match."""
+        return make_response(
+            {"message": "Passwords don't match"},
             400,
         )
 

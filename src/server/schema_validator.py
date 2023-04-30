@@ -6,26 +6,31 @@ from flask import Response, request
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
-from . import Responses
+from . import PATHS, Responses
 
 
 class SchemaValidator:
     """Class for validating JSON requests."""
 
-    login_schema: dict = {}
-    register_schema: dict = {}
+    schemas: dict = {}
 
     @classmethod
     def initialize(cls) -> None:
         """Load schema files."""
-        with open("res/schemas/login.json", encoding="utf-8") as f:
-            cls.login_schema = json.load(f)
-        with open("res/schemas/register.json", encoding="utf-8") as f:
-            cls.register_schema = json.load(f)
+        print("INFO: server.schema_validator.SchemaValidator.initialize(): Loading schemas...")
+        for schema in ["register", "login", "deposit"]:
+            with open(f"{PATHS.VALIDATION_SCHEMAS}{schema}.json") as file:
+                cls.schemas[schema] = json.load(file)
+        print("INFO: server.schema_validator.SchemaValidator.initialize(): Schemas loaded.")
+
+    @classmethod
+    def get_schema(cls, schema: str) -> dict:
+        """Get schema by name."""
+        return cls.schemas.get(schema, {})
 
     @classmethod
     def validate(
-        cls, schema: dict
+        cls, schema_name: str
     ) -> Callable[[Callable[..., Response]], Callable[..., Response]]:  # xD
         """Validate received JSON against given schema."""
 
@@ -33,7 +38,7 @@ class SchemaValidator:
             @wraps(fun)
             def decorated(*args: tuple, **kwargs: dict) -> Response:
                 try:
-                    validate(request.get_json(), schema)
+                    validate(request.get_json(), SchemaValidator.get_schema(schema_name))
                 except ValidationError as e:
                     print(f"ERROR: server.schema_validator.SchemaValidator.validate(): {e}")
                     return Responses.invalid_json_format_error()
