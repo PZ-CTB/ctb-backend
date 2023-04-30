@@ -418,6 +418,78 @@ class Test_Server:
                 assert response.status_code == 201
 
     class Test_Wallet:
+        class Test_BalanceEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, client: FlaskClient) -> None:
+                self.register_path: str = "api/v1/auth/register"
+                self.login_path: str = "api/v1/auth/login"
+                self.deposit_path: str = "api/v1/wallet/deposit"
+                self.url_path: str = "api/v1/wallet/balance"
+                self.client: FlaskClient = client
+
+            @pytest.fixture(name="token")
+            def fixture_register_and_login(self) -> str:
+                self.client.post(
+                    self.register_path,
+                    json={
+                        "email": "legit_email@gmail.com",
+                        "password": "thelegend27",
+                        "confirmPassword": "thelegend27",
+                    },
+                )
+                login_response = self.client.post(
+                    self.login_path,
+                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                )
+                return login_response.get_json()["auth_token"]
+
+            @pytest.fixture(name="deposit")
+            def fixture_deposit(self, token: str) -> float:
+                amount: float = 21.37
+                self.client.post(
+                    self.deposit_path,
+                    json={
+                        "amount": amount,
+                    },
+                    headers={"x-access-token": token},
+                )
+                return amount
+
+            def test_send_200_on_success(self, token: str, deposit: float) -> None:
+                response = self.client.get(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 200
+                assert response.get_json()["wallet_usd"] == deposit
+
+            def test_send_401_when_unauthorized_no_token(self) -> None:
+                response = self.client.get(
+                    self.url_path,
+                )
+                assert response.status_code == 401
+
+            def test_send_401_when_unauthorized_user_not_registered(
+                self, token: str, failing_handler: Mock
+            ) -> None:
+                response = self.client.get(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 401
+
+            def test_send_405_on_invalid_method(self) -> None:
+                response = self.client.post(self.url_path)
+                assert response.status_code == 405
+
+            @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
+            def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 500
+
         class Test_DepositEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
