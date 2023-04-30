@@ -157,6 +157,37 @@ class Test_Server:
     def mock_client(self, server: Server) -> FlaskClient:
         return server.app.test_client()
 
+    @pytest.fixture(name="token")
+    def fixture_register_and_login(self, client: FlaskClient) -> str:
+        client.post(
+            "api/v1/auth/register",
+            json={
+                "email": "legit_email@gmail.com",
+                "password": "thelegend27",
+                "confirmPassword": "thelegend27",
+            },
+        )
+        login_response = client.post(
+            "api/v1/auth/login",
+            json={
+                "email": "legit_email@gmail.com",
+                "password": "thelegend27",
+            },
+        )
+        return login_response.get_json()["auth_token"]
+
+    @pytest.fixture(name="deposit")
+    def fixture_deposit(self, token: str, client: FlaskClient) -> float:
+        amount: float = 21.37
+        client.post(
+            "api/v1/wallet/deposit",
+            json={
+                "amount": amount,
+            },
+            headers={"x-access-token": token},
+        )
+        return amount
+
     class Test_Auth:
         class Test_RegisterEndpoint:
             @pytest.fixture(autouse=True)
@@ -300,22 +331,6 @@ class Test_Server:
                 self.url_path: str = "api/v1/auth/me"
                 self.client: FlaskClient = client
 
-            @pytest.fixture(name="token")
-            def fixture_register_and_login(self) -> str:
-                self.client.post(
-                    self.register_path,
-                    json={
-                        "email": "legit_email@gmail.com",
-                        "password": "thelegend27",
-                        "confirmPassword": "thelegend27",
-                    },
-                )
-                login_response = self.client.post(
-                    self.login_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
-                )
-                return login_response.get_json()["auth_token"]
-
             def test_send_405_on_invalid_method(self) -> None:
                 response = self.client.post(self.url_path)
                 assert response.status_code == 405
@@ -356,22 +371,6 @@ class Test_Server:
                 self.login_path: str = "api/v1/auth/login"
                 self.url_path: str = "api/v1/auth/logout"
                 self.client: FlaskClient = client
-
-            @pytest.fixture(name="token")
-            def fixture_register_and_login(self) -> str:
-                self.client.post(
-                    self.register_path,
-                    json={
-                        "email": "legit_email@gmail.com",
-                        "password": "thelegend27",
-                        "confirmPassword": "thelegend27",
-                    },
-                )
-                login_response = self.client.post(
-                    self.login_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
-                )
-                return login_response.get_json()["auth_token"]
 
             @pytest.fixture(name="token_already_revoked")
             def mock_is_token_revoked(self, monkeypatch: pytest.MonkeyPatch) -> Mock:
@@ -427,34 +426,6 @@ class Test_Server:
                 self.url_path: str = "api/v1/wallet/balance"
                 self.client: FlaskClient = client
 
-            @pytest.fixture(name="token")
-            def fixture_register_and_login(self) -> str:
-                self.client.post(
-                    self.register_path,
-                    json={
-                        "email": "legit_email@gmail.com",
-                        "password": "thelegend27",
-                        "confirmPassword": "thelegend27",
-                    },
-                )
-                login_response = self.client.post(
-                    self.login_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
-                )
-                return login_response.get_json()["auth_token"]
-
-            @pytest.fixture(name="deposit")
-            def fixture_deposit(self, token: str) -> float:
-                amount: float = 21.37
-                self.client.post(
-                    self.deposit_path,
-                    json={
-                        "amount": amount,
-                    },
-                    headers={"x-access-token": token},
-                )
-                return amount
-
             def test_send_200_on_success(self, token: str, deposit: float) -> None:
                 response = self.client.get(
                     self.url_path,
@@ -497,22 +468,6 @@ class Test_Server:
                 self.login_path: str = "api/v1/auth/login"
                 self.url_path: str = "api/v1/wallet/deposit"
                 self.client: FlaskClient = client
-
-            @pytest.fixture(name="token")
-            def fixture_register_and_login(self) -> str:
-                self.client.post(
-                    self.register_path,
-                    json={
-                        "email": "legit_email@gmail.com",
-                        "password": "thelegend27",
-                        "confirmPassword": "thelegend27",
-                    },
-                )
-                login_response = self.client.post(
-                    self.login_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
-                )
-                return login_response.get_json()["auth_token"]
 
             @pytest.mark.parametrize("amount", [1, 5.75])
             def test_send_200_on_success(self, token: str, amount: float) -> None:
