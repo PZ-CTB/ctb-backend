@@ -45,7 +45,7 @@ class StockPredictorManager:
         data: list = []
 
         with DatabaseProvider.handler() as handler:
-            handler().execute(QUERIES.SELECT_DATA)
+            handler().execute(QUERIES.SELECT_ALL_RATE_HISTORY)
             data = handler().fetchall()
             data = [{"date": date.strftime("%Y-%m-%d"), "avg": avg} for date, avg in data]
 
@@ -60,7 +60,7 @@ class StockPredictorManager:
         data: list = []
 
         with DatabaseProvider.handler() as handler:
-            handler().execute(QUERIES.SELECT_NEWEST_DATA, [self.config.seq_length])
+            handler().execute(QUERIES.SELECT_ALL_RATE_HISTORY_DESC , [self.config.seq_length])
             data = handler().fetchall()
             data = [{"date": date.strftime("%Y-%m-%d"), "avg": avg} for date, avg in data]
 
