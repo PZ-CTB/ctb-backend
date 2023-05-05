@@ -43,6 +43,8 @@ class WalletService:
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
             user_data = handler().fetchone()
+            if not user_data:
+                return Responses.internal_server_error()
             if user_data[0][1] < amount:
                 return Responses.not_enough_money_to_withdraw()
             else:

@@ -108,8 +108,16 @@ class Responses:
         )
 
     @staticmethod
-    def internal_database_error(_message: Message) -> Response:
+    def internal_server_error() -> Response:
         """500: generic internal error."""
+        return make_response(
+            {"message": "Internal server error"},
+            500,
+        )
+
+    @staticmethod
+    def internal_database_error(_message: Message) -> Response:
+        """500: database internal error."""
         return make_response(
             {"message": "Internal server error"},
             500,
