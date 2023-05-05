@@ -218,8 +218,8 @@ paths:
     post:
       tags:
         - wallet
-      summary: Deposit [Beta]
-      description: Deposit cash in USD [Beta]
+      summary: Deposit
+      description: Deposit cash in USD
       parameters:
         - in: header
           name: x-access-token
@@ -240,8 +240,6 @@ paths:
           description: Invalid json format
         '401':
           description: Unauthorized
-        '409':
-          description: Invalid amount
         '500':
           description: Internal server error
       security:

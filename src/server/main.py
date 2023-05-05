@@ -1,11 +1,14 @@
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 from flask import Blueprint, Flask
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
 
 from . import SchemaValidator
 from .auth import AuthController
-from .database import DatabaseProvider
+from .database import DatabaseProvider, DatabaseUpdater
 from .stock_market import StockMarketController
+from .wallet import WalletController
 
 
 class Server:
@@ -15,6 +18,8 @@ class Server:
         """Initialize server application along with its endpoints and cors."""
         DatabaseProvider.initialize()
         SchemaValidator.initialize()
+
+        self._setup_scheduler()
 
         self.name: str = __name__
         self.app: Flask = self._create_app()
@@ -40,8 +45,22 @@ class Server:
         self.v1.register_blueprint(self.swagger, url_prefix="/swagger")
         self.v1.register_blueprint(AuthController.blueprint)
         self.v1.register_blueprint(StockMarketController.blueprint)
+        self.v1.register_blueprint(WalletController.blueprint)
         self.api.register_blueprint(self.v1)
         self.app.register_blueprint(self.api)
+
+    def _setup_scheduler(self) -> None:
+        self.scheduler: BackgroundScheduler = BackgroundScheduler()
+        self.scheduler.start()
+
+        def scheduled_tasks() -> None:
+            DatabaseUpdater.daily_database_update()
+
+        self.scheduler.add_job(
+            func=scheduled_tasks,
+            trigger=CronTrigger(hour=6, minute=0, second=0),
+            max_instances=1,
+        )
 
 
 def hello_world_endpoint() -> str:

@@ -15,17 +15,21 @@ class AuthService:
     """
 
     @staticmethod
-    def register(email: str, password: str) -> Response:
+    def register(email: str, password: str, confirm_password: str) -> Response:
         """Register method.
 
         Args:
             email (str): user`s email,
             password (str): user`s password.
+            confirm_password (str): user`s password repeated for confirmation.
 
         Returns:
             Response: successfully_registered if register succeed, appropriate error otherwise.
 
         """
+        if password != confirm_password:
+            return Responses.passwords_dont_match_error()
+
         new_uuid: uuid.UUID = uuid.uuid4()
 
         with DatabaseProvider.handler() as handler:
