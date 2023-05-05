@@ -36,7 +36,7 @@ class WalletService:
             amount (float): amount to withdraw.
 
         Returns:
-            Response: successfully_withdrawn if withdrawal succeed, appropriate error otherwise.
+            Response: successfully_withdrawn if withdrawal succeeded, appropriate error otherwise.
 
         """
         # Check if user has enough money to withdraw
