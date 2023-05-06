@@ -17,6 +17,14 @@ class Responses:
         )
 
     @staticmethod
+    def successfully_withdrawn() -> Response:
+        """200: successfully withdrawn."""
+        return make_response(
+            {"message": "Made a successful withdrawal"},
+            200,
+        )
+
+    @staticmethod
     def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
         """200: /me endpoint response."""
         return make_response(
@@ -92,8 +100,24 @@ class Responses:
         )
 
     @staticmethod
-    def internal_database_error(_message: Message) -> Response:
+    def not_enough_money_to_withdraw() -> Response:
+        """409: user tried to withdraw more money than they have."""
+        return make_response(
+            {"message": "Provided amount is greater than user's wallet balance"},
+            409,
+        )
+
+    @staticmethod
+    def internal_server_error() -> Response:
         """500: generic internal error."""
+        return make_response(
+            {"message": "Internal server error"},
+            500,
+        )
+
+    @staticmethod
+    def internal_database_error(_message: Message) -> Response:
+        """500: database internal error."""
         return make_response(
             {"message": "Internal server error"},
             500,

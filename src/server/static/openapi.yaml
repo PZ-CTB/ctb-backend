@@ -248,8 +248,8 @@ paths:
     post:
       tags:
         - wallet
-      summary: Withdraw [Beta]
-      description: Witdhraw cash in USD [Beta]
+      summary: Withdraw
+      description: Witdhraw cash in USD
       parameters:
         - in: header
           name: x-access-token
