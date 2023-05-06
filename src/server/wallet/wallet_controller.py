@@ -8,9 +8,17 @@ from . import WalletService
 class WalletController:
     """Wallet Controller class.
 
-    Allows authorized users to perform operations on their wallet."""
+    Allows authorized users to perform operations on their wallet.
+    """
 
     blueprint: Blueprint = Blueprint("wallet", __name__, url_prefix="/wallet")
+
+    @staticmethod
+    @blueprint.route("/balance", methods=["GET"])
+    @TokenService.token_required
+    def balance(uuid: str, _token: str) -> Response:
+        """Balance endpoint."""
+        return WalletService.balance(uuid)
 
     @staticmethod
     @blueprint.route("/deposit", methods=["POST"])
