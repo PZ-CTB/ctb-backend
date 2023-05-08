@@ -14,7 +14,9 @@ class DatabaseUpdater:
     def daily_database_update() -> None:
         """Update the database with prices up to the current day."""
         today_date: date = date.today()
-        last_known_date: date = DatabaseUpdater.check_last_known_date()
+        last_known_date: Optional[date] = DatabaseUpdater.get_last_known_date()
+        if last_known_date is None:
+            return
         print(f"DEBUG: Daily database update triggered. Today is {today_date}.")
 
         if today_date == last_known_date:
@@ -24,19 +26,25 @@ class DatabaseUpdater:
             current_date: date = last_known_date + timedelta(days=1)
             print(f"DEBUG: Updating price for {current_date}.")
             DatabaseUpdater.update_selected_date(current_date)
-            last_known_date = DatabaseUpdater.check_last_known_date()
+            last_known_date += timedelta(days=1)
 
     @staticmethod
-    def check_last_known_date() -> date:
+    def get_last_known_date() -> Optional[date]:
         """Check the date of last known price."""
+        last_known_date: Optional[date] = None
+
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_LAST_KNOWN_DATE)
-            last_known_date: date = handler().fetchall()[0][0].date()
-            print(last_known_date)
-            return last_known_date
+            last_known_date = handler().fetchall()[0][0].date()
+
+        if not handler.success:
+            return None
+
+        print(f"DEBUG: {last_known_date=}")
+        return last_known_date
 
     @staticmethod
-    def update_selected_date(selected_date: date) -> None:
+    def update_selected_date(selected_date: date) -> bool:
         """Fetch price for chosen date and put it in the database."""
         date_string_dmy: str = selected_date.strftime("%d-%m-%Y")
         url = f"https://api.coingecko.com/api/v3/coins/bitcoin/history?date={date_string_dmy}"
@@ -52,3 +60,9 @@ class DatabaseUpdater:
                     price,
                 ),
             )
+
+        if handler.success:
+            return True
+
+        print("DEBUG: price insertion failed")
+        return False
