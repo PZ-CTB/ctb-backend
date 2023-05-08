@@ -17,6 +17,7 @@ class FakeDatabase:
             tuple[str, str, str, float, float]
         ] = []  # uuid, email, pwd_hash, usd, btc
         self._db_tokens: list[tuple[str, str]] = []
+        self._db_prices: list[tuple[float, str]] = [(20000.0, "01-01-2019")]  # price, date
         self._last_query: str = ""
         self._last_params: list | tuple = []
 
@@ -27,6 +28,10 @@ class FakeDatabase:
     @property
     def db_tokens(self) -> list[tuple[str, str]]:
         return self._db_tokens
+
+    @property
+    def db_prices(self) -> list[tuple[float, str]]:
+        return self._db_prices
 
     @property
     def last_query(self) -> str:
@@ -76,7 +81,10 @@ class FakeDatabase:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
-                    self._db_users[index] = old_user[:3] + (old_user[3] - params[0],) + old_user[4:]
+                    self._db_users[index] = (
+                        old_user[:3] + (old_user[3] - params[0] * 20000,) + old_user[4:]
+                    )
+                    self._db_users[index] = old_user[:4] + (old_user[4] + params[0],)
             case _:
                 pass
 
@@ -114,6 +122,8 @@ class FakeDatabase:
                     for token, expiry in self._db_tokens
                     if token == self.last_params[0] and expiry > self.last_params[1]
                 ]
+            case QUERIES.SELECT_STOCK_PRICE:
+                return [(value, data) for value, data in self._db_prices]
             case _:
                 return []
 
