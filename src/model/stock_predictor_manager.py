@@ -18,7 +18,7 @@ from .stock_predictor_config import StockPredictorConfig
 class StockPredictorManager:
     """Class for managing StockPredictor GRU model"""
 
-    def __init__(self) -> None:
+    def __init__(self) - None:
         self.config = StockPredictorConfig()
 
         self._initialize_model()
@@ -28,7 +28,9 @@ class StockPredictorManager:
 
         self.criterion: nn.MSELoss = nn.MSELoss()
         self.optimizer: optim.adam.Adam = optim.Adam(  # pylint: disable=no-member
-            self.stock_predictor.parameters(), lr=self.config.learning_rate
+            self.stock_predictor.parameters(),
+            lr=self.config.learning_rate,
+            weight_decay=self.config.weight_decay
         )
 
     def _initialize_model(self) -> None:
@@ -121,7 +123,8 @@ class StockPredictorManager:
         best_val_loss: float = sys.float_info.max
         loss: torch.Tensor = torch.tensor(0)  # pylint: disable=no-member
 
-        for epoch in range(self.config.epochs):
+        for epoch in range(self.config.max_epochs):
+            self.stock_predictor.train()
             for _, (inputs, targets) in enumerate(train_loader):
                 self.optimizer.zero_grad()
                 outputs: torch.Tensor = self.stock_predictor(inputs)
@@ -129,6 +132,7 @@ class StockPredictorManager:
                 loss.backward()
                 self.optimizer.step()
 
+            self.stock_predictor.eval()
             val_loss: float = 0
             with torch.no_grad():
                 for inputs, targets in val_loader:
@@ -183,6 +187,7 @@ class StockPredictorManager:
             )
 
             # Predict output for the next date
+            self.stock_predictor.eval()
             with torch.no_grad():
                 predicted_output_tensor: torch.Tensor = self.stock_predictor(input_seq_tensor)
 

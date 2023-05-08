@@ -13,7 +13,8 @@ class StockPredictorConfig:
     seq_length: int = 16
     batch_size: int = 32
 
-    epochs: int = 1000
+    max_epochs: int = 1000
     patience: int = 10
     min_delta: float = 0.00001
     learning_rate: float = 0.001
+    weight_decay: float = 2 * min_delta
