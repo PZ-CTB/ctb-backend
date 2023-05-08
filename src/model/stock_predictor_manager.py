@@ -18,7 +18,7 @@ from .stock_predictor_config import StockPredictorConfig
 class StockPredictorManager:
     """Class for managing StockPredictor GRU model"""
 
-    def __init__(self) - None:
+    def __init__(self) -> None:
         self.config = StockPredictorConfig()
 
         self._initialize_model()
