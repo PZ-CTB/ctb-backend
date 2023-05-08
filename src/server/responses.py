@@ -31,6 +31,14 @@ class Responses:
         )
 
     @staticmethod
+    def successfully_bought() -> Response:
+        """200: successfully bought BTC."""
+        return make_response(
+            {"message": "Successful purchase"},
+            200,
+        )
+
+    @staticmethod
     def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
         """200: /me endpoint response."""
         return make_response(
@@ -111,6 +119,16 @@ class Responses:
         return make_response(
             {"message": "Provided amount is greater than user's wallet balance"},
             409,
+        )
+
+    @staticmethod
+    def not_enough_money_to_make_a_purchase() -> Response:
+        """410: user tried to make a purchase without sufficient funds."""
+        return make_response(
+            {
+                "message": "Total price of attempted transaction is greater than user's wallet balance"
+            },
+            410,
         )
 
     @staticmethod

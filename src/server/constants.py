@@ -61,3 +61,9 @@ class QUERIES:
 
     WALLET_DEPOSIT: Query = "UPDATE users SET wallet_usd = wallet_usd + %s WHERE uuid=%s"
     WALLET_WITHDRAW: Query = "UPDATE users SET wallet_usd = wallet_usd - %s WHERE uuid=%s"
+
+    SELECT_STOCK_PRICE: Query = """SELECT value FROM exchange_rate_history
+                        ORDER BY date DESC
+                        LIMIT 1"""
+    WALLET_BTC_BUY: Query = "UPDATE users SET wallet_btc = wallet_btc + %s WHERE uuid=%s"
+    WALLET_USD_BUY: Query = "UPDATE users SET wallet_usd = wallet_usd - %s WHERE uuid=%s"
