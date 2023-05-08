@@ -192,8 +192,8 @@ paths:
     get:
       tags:
         - wallet
-      summary: Account balance [Beta]
-      description: Get user's account balance [Beta]
+      summary: Account balance
+      description: Get user's account balance
       parameters:
         - in: header
           name: x-access-token
@@ -248,8 +248,8 @@ paths:
     post:
       tags:
         - wallet
-      summary: Withdraw [Beta]
-      description: Witdhraw cash in USD [Beta]
+      summary: Withdraw
+      description: Witdhraw cash in USD
       parameters:
         - in: header
           name: x-access-token

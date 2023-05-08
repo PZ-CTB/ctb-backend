@@ -66,3 +66,4 @@ class QUERIES:
                              VALUES (%s, %s)"""
 
     WALLET_DEPOSIT: Query = "UPDATE users SET wallet_usd = wallet_usd + %s WHERE uuid=%s"
+    WALLET_WITHDRAW: Query = "UPDATE users SET wallet_usd = wallet_usd - %s WHERE uuid=%s"

@@ -1,5 +1,6 @@
 import json
 from functools import wraps
+from pathlib import Path
 from typing import Callable
 
 from flask import Response, request
@@ -18,7 +19,8 @@ class SchemaValidator:
     def initialize(cls) -> None:
         """Load schema files."""
         print("INFO: server.schema_validator.SchemaValidator.initialize(): Loading schemas...")
-        for schema in ["register", "login", "deposit"]:
+        files = [p.stem for p in Path(PATHS.VALIDATION_SCHEMAS).iterdir() if p.is_file()]
+        for schema in files:
             with open(f"{PATHS.VALIDATION_SCHEMAS}{schema}.json") as file:
                 cls.schemas[schema] = json.load(file)
         print("INFO: server.schema_validator.SchemaValidator.initialize(): Schemas loaded.")

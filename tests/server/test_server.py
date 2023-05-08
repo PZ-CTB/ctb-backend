@@ -60,6 +60,15 @@ class FakeDatabase:
                     old_user = self._db_users[index]
                     # noinspection PyTypeChecker
                     self._db_users[index] = old_user[:3] + (old_user[3] + params[0],) + old_user[4:]
+            case QUERIES.WALLET_WITHDRAW:
+                try:
+                    index = [user[0] for user in self._db_users].index(params[1])
+                except ValueError:
+                    raise psycopg.IntegrityError()
+                else:
+                    old_user = self._db_users[index]
+                    # noinspection PyTypeChecker
+                    self._db_users[index] = old_user[:3] + (old_user[3] - params[0],) + old_user[4:]
             case _:
                 pass
 
@@ -156,6 +165,37 @@ class Test_Server:
     @pytest.fixture(name="client")
     def mock_client(self, server: Server) -> FlaskClient:
         return server.app.test_client()
+
+    @pytest.fixture(name="token")
+    def fixture_register_and_login(self, client: FlaskClient) -> str:
+        client.post(
+            "api/v1/auth/register",
+            json={
+                "email": "legit_email@gmail.com",
+                "password": "thelegend27",
+                "confirmPassword": "thelegend27",
+            },
+        )
+        login_response = client.post(
+            "api/v1/auth/login",
+            json={
+                "email": "legit_email@gmail.com",
+                "password": "thelegend27",
+            },
+        )
+        return login_response.get_json()["auth_token"]
+
+    @pytest.fixture(name="deposit")
+    def fixture_deposit(self, token: str, client: FlaskClient) -> float:
+        amount: float = 21.37
+        client.post(
+            "api/v1/wallet/deposit",
+            json={
+                "amount": amount,
+            },
+            headers={"x-access-token": token},
+        )
+        return amount
 
     class Test_Auth:
         class Test_RegisterEndpoint:
@@ -295,26 +335,8 @@ class Test_Server:
         class Test_MeEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
-                self.register_path: str = "api/v1/auth/register"
-                self.login_path: str = "api/v1/auth/login"
                 self.url_path: str = "api/v1/auth/me"
                 self.client: FlaskClient = client
-
-            @pytest.fixture(name="token")
-            def fixture_register_and_login(self) -> str:
-                self.client.post(
-                    self.register_path,
-                    json={
-                        "email": "legit_email@gmail.com",
-                        "password": "thelegend27",
-                        "confirmPassword": "thelegend27",
-                    },
-                )
-                login_response = self.client.post(
-                    self.login_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
-                )
-                return login_response.get_json()["auth_token"]
 
             def test_send_405_on_invalid_method(self) -> None:
                 response = self.client.post(self.url_path)
@@ -352,26 +374,8 @@ class Test_Server:
         class Test_LogoutEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
-                self.register_path: str = "api/v1/auth/register"
-                self.login_path: str = "api/v1/auth/login"
                 self.url_path: str = "api/v1/auth/logout"
                 self.client: FlaskClient = client
-
-            @pytest.fixture(name="token")
-            def fixture_register_and_login(self) -> str:
-                self.client.post(
-                    self.register_path,
-                    json={
-                        "email": "legit_email@gmail.com",
-                        "password": "thelegend27",
-                        "confirmPassword": "thelegend27",
-                    },
-                )
-                login_response = self.client.post(
-                    self.login_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
-                )
-                return login_response.get_json()["auth_token"]
 
             @pytest.fixture(name="token_already_revoked")
             def mock_is_token_revoked(self, monkeypatch: pytest.MonkeyPatch) -> Mock:
@@ -418,16 +422,108 @@ class Test_Server:
                 assert response.status_code == 201
 
     class Test_Wallet:
+        class Test_BalanceEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, client: FlaskClient) -> None:
+                self.url_path: str = "api/v1/wallet/balance"
+                self.client: FlaskClient = client
+
+            def test_send_200_on_success(self, token: str, deposit: float) -> None:
+                response = self.client.get(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 200
+                assert response.get_json()["wallet_usd"] == deposit
+
+            def test_send_401_when_unauthorized_no_token(self) -> None:
+                response = self.client.get(
+                    self.url_path,
+                )
+                assert response.status_code == 401
+
+            def test_send_401_when_unauthorized_user_not_registered(
+                self, token: str, failing_handler: Mock
+            ) -> None:
+                response = self.client.get(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 401
+
+            def test_send_405_on_invalid_method(self) -> None:
+                response = self.client.post(self.url_path)
+                assert response.status_code == 405
+
+            @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
+            def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 500
+
         class Test_DepositEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, client: FlaskClient) -> None:
+                self.url_path: str = "api/v1/wallet/deposit"
+                self.client: FlaskClient = client
+
+            @pytest.mark.parametrize("amount", [1, 5.75])
+            def test_send_200_on_success(self, token: str, amount: float) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": amount},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 200
+
+            @pytest.mark.parametrize("amount", [-5.75, 0.0])
+            def test_send_400_on_invalid_json_format(self, token: str, amount: float) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": amount},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 400
+
+            def test_send_401_when_unauthorized_no_token(self) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 5.75},
+                )
+                assert response.status_code == 401
+
+            def test_send_401_when_unauthorized_user_not_registered(
+                self, token: str, failing_handler: Mock
+            ) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 5.75},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 401
+
+            @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
+            def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 5.75},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 500
+
+        class Test_WithdrawEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
                 self.register_path: str = "api/v1/auth/register"
                 self.login_path: str = "api/v1/auth/login"
-                self.url_path: str = "api/v1/wallet/deposit"
+                self.deposit_path: str = "api/v1/wallet/deposit"
+                self.url_path: str = "api/v1/wallet/withdraw"
                 self.client: FlaskClient = client
 
             @pytest.fixture(name="token")
-            def fixture_register_and_login(self) -> str:
+            def fixture_register_and_login_with_starting_balance(self) -> str:
                 self.client.post(
                     self.register_path,
                     json={
@@ -439,6 +535,11 @@ class Test_Server:
                 login_response = self.client.post(
                     self.login_path,
                     json={"email": "legit_email@gmail.com", "password": "thelegend27"},
+                )
+                self.client.post(
+                    self.deposit_path,
+                    json={"amount": 100.0},
+                    headers={"x-access-token": login_response.get_json()["auth_token"]},
                 )
                 return login_response.get_json()["auth_token"]
 
@@ -476,6 +577,14 @@ class Test_Server:
                     headers={"x-access-token": token},
                 )
                 assert response.status_code == 401
+
+            def test_send_409_when_not_enough_money_to_withdraw(self, token: str) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 100.01},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 409
 
             @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
             def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
