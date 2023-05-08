@@ -14,7 +14,7 @@ class DatabaseUpdater:
     def daily_database_update() -> None:
         """Update the database with prices up to the current day."""
         today_date: date = date.today()
-        last_known_date: Optional[date] = DatabaseUpdater.get_last_known_date()
+        last_known_date: Optional[date] = DatabaseUpdater._get_last_known_date()
         if last_known_date is None:
             return
         print(f"DEBUG: Daily database update triggered. Today is {today_date}.")
@@ -25,11 +25,11 @@ class DatabaseUpdater:
         while last_known_date < today_date:
             current_date: date = last_known_date + timedelta(days=1)
             print(f"DEBUG: Updating price for {current_date}.")
-            DatabaseUpdater.update_selected_date(current_date)
+            DatabaseUpdater._update_selected_date(current_date)
             last_known_date += timedelta(days=1)
 
     @staticmethod
-    def get_last_known_date() -> Optional[date]:
+    def _get_last_known_date() -> Optional[date]:
         """Check the date of last known price."""
         last_known_date: Optional[date] = None
 
@@ -44,7 +44,7 @@ class DatabaseUpdater:
         return last_known_date
 
     @staticmethod
-    def update_selected_date(selected_date: date) -> bool:
+    def _update_selected_date(selected_date: date) -> bool:
         """Fetch price for chosen date and put it in the database."""
         date_string_dmy: str = selected_date.strftime("%d-%m-%Y")
         url = f"https://api.coingecko.com/api/v3/coins/bitcoin/history?date={date_string_dmy}"
