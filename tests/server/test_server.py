@@ -84,9 +84,7 @@ class FakeDatabase:
                 ]
             case QUERIES.SELECT_USER_EMAIL_BY_UUID:
                 return [
-                    email
-                    for _uuid, email, _, _, _ in self.db_users
-                    if self.last_params[0] == _uuid
+                    email for _uuid, email, _, _, _ in self.db_users if self.last_params[0] == _uuid
                 ]
             case QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL:
                 return [
