@@ -2,7 +2,7 @@
 
 Version 2, December 2004
 
-Copyright (C) 2023 Adam Łaba, Paweł Bielecki, Aleksander Kluczka, Piotr Deda, Kacper Osuch, Mikołaj Sondej, Rafał Walkowiak, Krystian Śledź, Mirosław Kołodziej, Jakub Kraśniak, Wiktor Urban
+Copyright (C) 2023 Adam Łaba, Paweł Bielecki, Aleksander Kluczka, Krystian Śledź, Piotr Deda, Mirosław Kołodziej, Jakub Kraśniak, Kacper Osuch, Mikołaj Sondej, Wiktor Urban, Rafał Walkowiak
 
 Everyone is permitted to copy and distribute verbatim or modified
 copies of this license document, and changing it is allowed as long
