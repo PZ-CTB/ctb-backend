@@ -47,7 +47,7 @@ class FakeDatabase:
         print(f"DEBUG: {self.last_query=}, {self.last_params=}")
         match query:
             case QUERIES.INSERT_USER:
-                if params[0] in [_uuid for _uuid, _, _, _, _ in self._db_users]:
+                if params[0] in [_uuid for _uuid, _, _, _, _ in self.db_users]:
                     raise psycopg.IntegrityError()
                 else:
                     self._db_users.append((params[0], params[1], params[2], 0.0, 0.0))
@@ -58,7 +58,7 @@ class FakeDatabase:
                     self.db_tokens.append((params[0], params[1]))
             case QUERIES.WALLET_DEPOSIT:
                 try:
-                    index = [user[0] for user in self._db_users].index(params[1])
+                    index = [user[0] for user in self.db_users].index(params[1])
                 except ValueError:
                     raise psycopg.IntegrityError()
                 else:
@@ -67,7 +67,7 @@ class FakeDatabase:
                     self._db_users[index] = old_user[:3] + (old_user[3] + params[0],) + old_user[4:]
             case QUERIES.WALLET_WITHDRAW:
                 try:
-                    index = [user[0] for user in self._db_users].index(params[1])
+                    index = [user[0] for user in self.db_users].index(params[1])
                 except ValueError:
                     raise psycopg.IntegrityError()
                 else:
@@ -76,13 +76,13 @@ class FakeDatabase:
                     self._db_users[index] = old_user[:3] + (old_user[3] - params[0],) + old_user[4:]
             case QUERIES.WALLET_BUY_ADD_BTC:
                 try:
-                    index = [user[0] for user in self._db_users].index(params[1])
+                    index = [user[0] for user in self.db_users].index(params[1])
                 except ValueError:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
                     self._db_users[index] = (
-                        old_user[:3] + (old_user[3] - params[0] * 20000,) + old_user[4:]
+                        old_user[:3] + (old_user[3] - params[0] * 3,) + old_user[4:]
                     )
                     self._db_users[index] = old_user[:4] + (old_user[4] + params[0],)
             case _:
