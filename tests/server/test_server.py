@@ -41,7 +41,7 @@ class FakeDatabase:
     def last_params(self) -> list | tuple:
         return self._last_params
 
-    def execute_side_effect(self, query: str, params: list | tuple) -> None:
+    def execute_side_effect(self, query: str, params: list | tuple = []) -> None:
         self._last_query = query
         self._last_params = params
         print(f"DEBUG: {self._last_query=}, {self._last_params=}")
