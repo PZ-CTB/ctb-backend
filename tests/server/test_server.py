@@ -17,7 +17,7 @@ class FakeDatabase:
             tuple[str, str, str, float, float]
         ] = []  # uuid, email, pwd_hash, usd, btc
         self._db_tokens: list[tuple[str, str]] = []
-        self._db_prices: list[tuple[float, str]] = [(3.0, "01-01-2019")]  # price, date
+        self._db_prices: list[tuple[str, str]] = [("3.0", "01-01-2019")]  # price, date
         self._last_query: str = ""
         self._last_params: list | tuple = []
 
@@ -30,7 +30,7 @@ class FakeDatabase:
         return self._db_tokens
 
     @property
-    def db_prices(self) -> list[tuple[float, str]]:
+    def db_prices(self) -> list[tuple[str, str]]:
         return self._db_prices
 
     @property
@@ -44,7 +44,7 @@ class FakeDatabase:
     def execute_side_effect(self, query: str, params: list | tuple = []) -> None:
         self._last_query = query
         self._last_params = params
-        print(f"DEBUG: {self._last_query=}, {self._last_params=}")
+        print(f"DEBUG: {self.last_query=}, {self.last_params=}")
         match query:
             case QUERIES.INSERT_USER:
                 if params[0] in [_uuid for _uuid, _, _, _, _ in self._db_users]:
@@ -52,10 +52,10 @@ class FakeDatabase:
                 else:
                     self._db_users.append((params[0], params[1], params[2], 0.0, 0.0))
             case QUERIES.INSERT_REVOKED_TOKEN:
-                if params[0] in [token for token, _ in self._db_tokens]:
+                if params[0] in [token for token, _ in self.db_tokens]:
                     raise psycopg.IntegrityError()
                 else:
-                    self._db_tokens.append((params[0], params[1]))
+                    self.db_tokens.append((params[0], params[1]))
             case QUERIES.WALLET_DEPOSIT:
                 try:
                     index = [user[0] for user in self._db_users].index(params[1])
@@ -121,7 +121,7 @@ class FakeDatabase:
                     if token == self.last_params[0] and expiry > self.last_params[1]
                 ]
             case QUERIES.SELECT_LATEST_STOCK_PRICE:
-                return [(value, data) for value, data in self._db_prices]
+                return [(value, data) for value, data in self.db_prices]
             case _:
                 return []
 
