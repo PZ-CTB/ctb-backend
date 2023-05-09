@@ -20,7 +20,7 @@ class WalletService:
         """
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
-            user_data: list[tuple[str, float, float]] = handler().fetchall()
+            user_data: list[tuple[str, str, str]] = handler().fetchall()
 
         if not handler.success:
             print(f"ERROR: server.wallet.wallet_service.balance: {handler.message}")
@@ -28,7 +28,7 @@ class WalletService:
 
         if user_data:
             _, usd_balance, btc_balance = user_data[0]
-            return Responses.balance(usd_balance, btc_balance)
+            return Responses.balance(float(usd_balance), float(btc_balance))
         else:
             return Responses.unauthorized_error()
 
@@ -67,10 +67,10 @@ class WalletService:
         # Check if user has enough money to withdraw
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
-            user_data = handler().fetchone()
+            user_data: list[tuple[str, str, str]] = handler().fetchone()
             if not user_data:
                 return Responses.internal_server_error()
-            if user_data[0][1] < amount:
+            if float(user_data[0][1]) < amount:
                 return Responses.not_enough_money_to_withdraw()
             else:
                 handler().execute(QUERIES.WALLET_WITHDRAW, (amount, uuid))
