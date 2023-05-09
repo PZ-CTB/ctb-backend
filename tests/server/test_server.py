@@ -22,8 +22,8 @@ class FakeDatabase:
         self._last_params: list | tuple = []
 
     @property
-    def db_users(self) -> list[tuple[str, str, str, float, float]]:
-        return self._db_users
+    def db_users(self) -> list[tuple[str, str, str, str, str]]:
+        return [(t[0], t[1], t[2], str(t[3]), str(t[4])) for t in self._db_users]
 
     @property
     def db_tokens(self) -> list[tuple[str, str]]:
@@ -92,34 +92,32 @@ class FakeDatabase:
         match self.last_query:
             case QUERIES.SELECT_USER_UUID:
                 return [
-                    _uuid for _uuid, _, _, _, _ in self._db_users if self.last_params[0] == _uuid
+                    _uuid for _uuid, _, _, _, _ in self.db_users if self.last_params[0] == _uuid
                 ]
             case QUERIES.SELECT_USER_EMAIL:
                 return [
-                    email for _, email, _, _, _ in self._db_users if self.last_params[0] == email
+                    email for _, email, _, _, _ in self.db_users if self.last_params[0] == email
                 ]
             case QUERIES.SELECT_USER_EMAIL_BY_UUID:
                 return [
-                    email
-                    for _uuid, email, _, _, _ in self._db_users
-                    if self.last_params[0] == _uuid
+                    email for _uuid, email, _, _, _ in self.db_users if self.last_params[0] == _uuid
                 ]
             case QUERIES.SELECT_USER_LOGIN_DATA_BY_EMAIL:
                 return [
                     (_uuid, email, pwd)
-                    for _uuid, email, pwd, _, _ in self._db_users
+                    for _uuid, email, pwd, _, _ in self.db_users
                     if self.last_params[0] == email
                 ]
             case QUERIES.SELECT_USER_DATA_BY_UUID:
                 return [
                     (email, usd, btc)
-                    for _uuid, email, _, usd, btc in self._db_users
+                    for _uuid, email, _, usd, btc in self.db_users
                     if self.last_params[0] == _uuid
                 ]
             case QUERIES.SELECT_REVOKED_TOKEN:
                 return [
                     token
-                    for token, expiry in self._db_tokens
+                    for token, expiry in self.db_tokens
                     if token == self.last_params[0] and expiry > self.last_params[1]
                 ]
             case QUERIES.SELECT_LATEST_STOCK_PRICE:
