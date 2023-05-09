@@ -17,7 +17,7 @@ class FakeDatabase:
             tuple[str, str, str, float, float]
         ] = []  # uuid, email, pwd_hash, usd, btc
         self._db_tokens: list[tuple[str, str]] = []
-        self._db_prices: list[tuple[str, str]] = [("3.0", "01-01-2019")]  # price, date
+        self._db_prices: list[tuple[float, str]] = [(3.0, "01-01-2019")]  # price, date
         self._last_query: str = ""
         self._last_params: list | tuple = []
 
@@ -31,7 +31,7 @@ class FakeDatabase:
 
     @property
     def db_prices(self) -> list[tuple[str, str]]:
-        return self._db_prices
+        return [(str(t[0]), t[1]) for t in self._db_prices]
 
     @property
     def last_query(self) -> str:
