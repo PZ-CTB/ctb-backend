@@ -272,7 +272,7 @@ paths:
           description: Unauthorized
         '409':
           description: Invalid amount USD
-        '410':
+        '409':
           description: Invalid amount BTC
         '500':
           description: Internal server error

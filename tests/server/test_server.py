@@ -17,7 +17,7 @@ class FakeDatabase:
             tuple[str, str, str, float, float]
         ] = []  # uuid, email, pwd_hash, usd, btc
         self._db_tokens: list[tuple[str, str]] = []
-        self._db_prices: list[tuple[float, str]] = [(20000.0, "01-01-2019")]  # price, date
+        self._db_prices: list[tuple[float, str]] = [(3.0, "01-01-2019")]  # price, date
         self._last_query: str = ""
         self._last_params: list | tuple = []
 
@@ -74,7 +74,7 @@ class FakeDatabase:
                     old_user = self._db_users[index]
                     # noinspection PyTypeChecker
                     self._db_users[index] = old_user[:3] + (old_user[3] - params[0],) + old_user[4:]
-            case QUERIES.WALLET_BTC_BUY:
+            case QUERIES.WALLET_BUY_ADD_BTC:
                 try:
                     index = [user[0] for user in self._db_users].index(params[1])
                 except ValueError:
@@ -122,7 +122,7 @@ class FakeDatabase:
                     for token, expiry in self._db_tokens
                     if token == self.last_params[0] and expiry > self.last_params[1]
                 ]
-            case QUERIES.SELECT_STOCK_PRICE:
+            case QUERIES.SELECT_LATEST_STOCK_PRICE:
                 return [(value, data) for value, data in self._db_prices]
             case _:
                 return []
@@ -534,35 +534,11 @@ class Test_Server:
         class Test_WithdrawEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
-                self.register_path: str = "api/v1/auth/register"
-                self.login_path: str = "api/v1/auth/login"
-                self.deposit_path: str = "api/v1/wallet/deposit"
                 self.url_path: str = "api/v1/wallet/withdraw"
                 self.client: FlaskClient = client
 
-            @pytest.fixture(name="token")
-            def fixture_register_and_login_with_starting_balance(self) -> str:
-                self.client.post(
-                    self.register_path,
-                    json={
-                        "email": "legit_email@gmail.com",
-                        "password": "thelegend27",
-                        "confirmPassword": "thelegend27",
-                    },
-                )
-                login_response = self.client.post(
-                    self.login_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
-                )
-                self.client.post(
-                    self.deposit_path,
-                    json={"amount": 100.0},
-                    headers={"x-access-token": login_response.get_json()["auth_token"]},
-                )
-                return login_response.get_json()["auth_token"]
-
             @pytest.mark.parametrize("amount", [1, 5.75])
-            def test_send_200_on_success(self, token: str, amount: float) -> None:
+            def test_send_200_on_success(self, token: str, deposit: float, amount: float) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": amount},
@@ -571,7 +547,9 @@ class Test_Server:
                 assert response.status_code == 200
 
             @pytest.mark.parametrize("amount", [-5.75, 0.0])
-            def test_send_400_on_invalid_json_format(self, token: str, amount: float) -> None:
+            def test_send_400_on_invalid_json_format(
+                self, token: str, deposit: float, amount: float
+            ) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": amount},
@@ -587,7 +565,7 @@ class Test_Server:
                 assert response.status_code == 401
 
             def test_send_401_when_unauthorized_user_not_registered(
-                self, token: str, failing_handler: Mock
+                self, token: str, deposit: float, failing_handler: Mock
             ) -> None:
                 response = self.client.post(
                     self.url_path,
@@ -596,7 +574,9 @@ class Test_Server:
                 )
                 assert response.status_code == 401
 
-            def test_send_409_when_not_enough_money_to_withdraw(self, token: str) -> None:
+            def test_send_409_when_not_enough_money_to_withdraw(
+                self, token: str, deposit: float
+            ) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": 100.01},
@@ -605,7 +585,9 @@ class Test_Server:
                 assert response.status_code == 409
 
             @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
-            def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
+            def test_send_500_on_internal_error(
+                self, token: str, deposit: float, failing_handler: Mock
+            ) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": 5.75},
@@ -616,35 +598,11 @@ class Test_Server:
         class Test_BuyEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
-                self.register_path: str = "api/v1/auth/register"
-                self.login_path: str = "api/v1/auth/login"
-                self.deposit_path: str = "api/v1/wallet/deposit"
                 self.url_path: str = "api/v1/wallet/buy"
                 self.client: FlaskClient = client
 
-            @pytest.fixture(name="token")
-            def set_up_account_with_funds(self) -> str:
-                self.client.post(
-                    self.register_path,
-                    json={
-                        "email": "test@gmail.com",
-                        "password": "password123",
-                        "confirmPassword": "password123",
-                    },
-                )
-                login_response = self.client.post(
-                    self.login_path,
-                    json={"email": "test@gmail.com", "password": "password123"},
-                )
-                self.client.post(
-                    self.deposit_path,
-                    json={"amount": 100000.0},
-                    headers={"x-access-token": login_response.get_json()["auth_token"]},
-                )
-                return login_response.get_json()["auth_token"]
-
             @pytest.mark.parametrize("amount", [0.1, 2])
-            def test_send_200_on_success(self, token: str, amount: float) -> None:
+            def test_send_200_on_success(self, token: str, deposit: float, amount: float) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": amount},
@@ -652,8 +610,10 @@ class Test_Server:
                 )
                 assert response.status_code == 200
 
-            @pytest.mark.parametrize("amount", [-2, -0.1])
-            def test_send_400_on_invalid_json_format(self, token: str, amount: float) -> None:
+            @pytest.mark.parametrize("amount", [-2, 0])
+            def test_send_400_on_invalid_json_format(
+                self, token: str, deposit: float, amount: float
+            ) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": amount},
@@ -669,7 +629,7 @@ class Test_Server:
                 assert response.status_code == 401
 
             def test_send_401_when_unauthorized_user_not_registered(
-                self, token: str, failing_handler: Mock
+                self, token: str, deposit: float, failing_handler: Mock
             ) -> None:
                 response = self.client.post(
                     self.url_path,
@@ -678,10 +638,12 @@ class Test_Server:
                 )
                 assert response.status_code == 401
 
-            def test_send_410_when_not_enough_money_to_purchase_BTC(self, token: str) -> None:
+            def test_send_409_when_not_enough_money_to_purchase_BTC(
+                self, token: str, deposit: float
+            ) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": 10},
                     headers={"x-access-token": token},
                 )
-                assert response.status_code == 410
+                assert response.status_code == 409

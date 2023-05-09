@@ -92,18 +92,18 @@ class WalletService:
             Response: successfully_bought if transaction succeed, return error otherwise.
 
         """
-        # Check if user has enough money to perform transaction
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
             user_data = handler().fetchone()
             if user_data:
-                handler().execute(QUERIES.SELECT_STOCK_PRICE)
+                handler().execute(QUERIES.SELECT_LATEST_STOCK_PRICE)
                 price = handler().fetchone()
                 if price:
                     total_price = price[0][0] * amount
+                    # Check if user has enough money to perform transaction
                     if user_data[0][1] > total_price:
-                        handler().execute(QUERIES.WALLET_USD_BUY, (total_price, uuid))
-                        handler().execute(QUERIES.WALLET_BTC_BUY, (amount, uuid))
+                        handler().execute(QUERIES.WALLET_BUY_SUBTRACT_USD, (total_price, uuid))
+                        handler().execute(QUERIES.WALLET_BUY_ADD_BTC, (amount, uuid))
                     else:
                         return Responses.not_enough_money_to_make_a_purchase()
                 else:

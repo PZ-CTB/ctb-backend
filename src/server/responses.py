@@ -123,12 +123,12 @@ class Responses:
 
     @staticmethod
     def not_enough_money_to_make_a_purchase() -> Response:
-        """410: user tried to make a purchase without sufficient funds."""
+        """409: user tried to make a purchase without sufficient funds."""
         return make_response(
             {
                 "message": "Total price of attempted transaction is greater than user's wallet balance"
             },
-            410,
+            409,
         )
 
     @staticmethod
