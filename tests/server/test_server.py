@@ -17,6 +17,7 @@ class FakeDatabase:
             tuple[str, str, str, float, float]
         ] = []  # uuid, email, pwd_hash, usd, btc
         self._db_tokens: list[tuple[str, str]] = []
+        self._db_prices: list[tuple[float, str]] = [(3.0, "01-01-2019")]  # price, date
         self._last_query: str = ""
         self._last_params: list | tuple = []
 
@@ -29,6 +30,10 @@ class FakeDatabase:
         return self._db_tokens
 
     @property
+    def db_prices(self) -> list[tuple[str, str]]:
+        return [(str(t[0]), t[1]) for t in self._db_prices]
+
+    @property
     def last_query(self) -> str:
         return self._last_query
 
@@ -36,24 +41,24 @@ class FakeDatabase:
     def last_params(self) -> list | tuple:
         return self._last_params
 
-    def execute_side_effect(self, query: str, params: list | tuple) -> None:
+    def execute_side_effect(self, query: str, params: list | tuple = []) -> None:
         self._last_query = query
         self._last_params = params
-        print(f"DEBUG: {self._last_query=}, {self._last_params=}")
+        print(f"DEBUG: {self.last_query=}, {self.last_params=}")
         match query:
             case QUERIES.INSERT_USER:
-                if params[0] in [_uuid for _uuid, _, _, _, _ in self._db_users]:
+                if params[0] in [_uuid for _uuid, _, _, _, _ in self.db_users]:
                     raise psycopg.IntegrityError()
                 else:
                     self._db_users.append((params[0], params[1], params[2], 0.0, 0.0))
             case QUERIES.INSERT_REVOKED_TOKEN:
-                if params[0] in [token for token, _ in self._db_tokens]:
+                if params[0] in [token for token, _ in self.db_tokens]:
                     raise psycopg.IntegrityError()
                 else:
-                    self._db_tokens.append((params[0], params[1]))
+                    self.db_tokens.append((params[0], params[1]))
             case QUERIES.WALLET_DEPOSIT:
                 try:
-                    index = [user[0] for user in self._db_users].index(params[1])
+                    index = [user[0] for user in self.db_users].index(params[1])
                 except ValueError:
                     raise psycopg.IntegrityError()
                 else:
@@ -62,13 +67,24 @@ class FakeDatabase:
                     self._db_users[index] = old_user[:3] + (old_user[3] + params[0],) + old_user[4:]
             case QUERIES.WALLET_WITHDRAW:
                 try:
-                    index = [user[0] for user in self._db_users].index(params[1])
+                    index = [user[0] for user in self.db_users].index(params[1])
                 except ValueError:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
                     # noinspection PyTypeChecker
                     self._db_users[index] = old_user[:3] + (old_user[3] - params[0],) + old_user[4:]
+            case QUERIES.WALLET_BUY_ADD_BTC:
+                try:
+                    index = [user[0] for user in self.db_users].index(params[1])
+                except ValueError:
+                    raise psycopg.IntegrityError()
+                else:
+                    old_user = self._db_users[index]
+                    self._db_users[index] = (
+                        old_user[:3] + (old_user[3] - params[0] * 3,) + old_user[4:]
+                    )
+                    self._db_users[index] = old_user[:4] + (old_user[4] + params[0],)
             case _:
                 pass
 
@@ -104,6 +120,8 @@ class FakeDatabase:
                     for token, expiry in self.db_tokens
                     if token == self.last_params[0] and expiry > self.last_params[1]
                 ]
+            case QUERIES.SELECT_LATEST_STOCK_PRICE:
+                return [(value, data) for value, data in self.db_prices]
             case _:
                 return []
 
@@ -514,35 +532,11 @@ class Test_Server:
         class Test_WithdrawEndpoint:
             @pytest.fixture(autouse=True)
             def prepare_tests(self, client: FlaskClient) -> None:
-                self.register_path: str = "api/v1/auth/register"
-                self.login_path: str = "api/v1/auth/login"
-                self.deposit_path: str = "api/v1/wallet/deposit"
                 self.url_path: str = "api/v1/wallet/withdraw"
                 self.client: FlaskClient = client
 
-            @pytest.fixture(name="token")
-            def fixture_register_and_login_with_starting_balance(self) -> str:
-                self.client.post(
-                    self.register_path,
-                    json={
-                        "email": "legit_email@gmail.com",
-                        "password": "thelegend27",
-                        "confirmPassword": "thelegend27",
-                    },
-                )
-                login_response = self.client.post(
-                    self.login_path,
-                    json={"email": "legit_email@gmail.com", "password": "thelegend27"},
-                )
-                self.client.post(
-                    self.deposit_path,
-                    json={"amount": 100.0},
-                    headers={"x-access-token": login_response.get_json()["auth_token"]},
-                )
-                return login_response.get_json()["auth_token"]
-
             @pytest.mark.parametrize("amount", [1, 5.75])
-            def test_send_200_on_success(self, token: str, amount: float) -> None:
+            def test_send_200_on_success(self, token: str, deposit: float, amount: float) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": amount},
@@ -551,7 +545,9 @@ class Test_Server:
                 assert response.status_code == 200
 
             @pytest.mark.parametrize("amount", [-5.75, 0.0])
-            def test_send_400_on_invalid_json_format(self, token: str, amount: float) -> None:
+            def test_send_400_on_invalid_json_format(
+                self, token: str, deposit: float, amount: float
+            ) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": amount},
@@ -567,7 +563,7 @@ class Test_Server:
                 assert response.status_code == 401
 
             def test_send_401_when_unauthorized_user_not_registered(
-                self, token: str, failing_handler: Mock
+                self, token: str, deposit: float, failing_handler: Mock
             ) -> None:
                 response = self.client.post(
                     self.url_path,
@@ -576,7 +572,9 @@ class Test_Server:
                 )
                 assert response.status_code == 401
 
-            def test_send_409_when_not_enough_money_to_withdraw(self, token: str) -> None:
+            def test_send_409_when_not_enough_money_to_withdraw(
+                self, token: str, deposit: float
+            ) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": 100.01},
@@ -585,10 +583,65 @@ class Test_Server:
                 assert response.status_code == 409
 
             @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
-            def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
+            def test_send_500_on_internal_error(
+                self, token: str, deposit: float, failing_handler: Mock
+            ) -> None:
                 response = self.client.post(
                     self.url_path,
                     json={"amount": 5.75},
                     headers={"x-access-token": token},
                 )
                 assert response.status_code == 500
+
+        class Test_BuyEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, client: FlaskClient) -> None:
+                self.url_path: str = "api/v1/wallet/buy"
+                self.client: FlaskClient = client
+
+            @pytest.mark.parametrize("amount", [0.1, 2])
+            def test_send_200_on_success(self, token: str, deposit: float, amount: float) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": amount},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 200
+
+            @pytest.mark.parametrize("amount", [-2, 0])
+            def test_send_400_on_invalid_json_format(
+                self, token: str, deposit: float, amount: float
+            ) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": amount},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 400
+
+            def test_send_401_when_unauthorized_no_token(self) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 0.1},
+                )
+                assert response.status_code == 401
+
+            def test_send_401_when_unauthorized_user_not_registered(
+                self, token: str, deposit: float, failing_handler: Mock
+            ) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 0.1},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 401
+
+            def test_send_409_when_not_enough_money_to_purchase_BTC(
+                self, token: str, deposit: float
+            ) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 10},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 409
