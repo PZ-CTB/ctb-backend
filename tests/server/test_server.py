@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Generator
+from typing import Any, Generator
 from unittest.mock import Mock
 
 import psycopg
@@ -19,6 +19,8 @@ class FakeDatabase:
         self._db_tokens: list[tuple[str, str]] = []
         self._last_query: str = ""
         self._last_params: list | tuple = []
+        self._last_result: list = []
+        self._last_generator: Generator = self._invalid_generator()
 
     @property
     def db_users(self) -> list[tuple[str, str, str, str, str]]:
@@ -39,7 +41,10 @@ class FakeDatabase:
     def execute_side_effect(self, query: str, params: list | tuple) -> None:
         self._last_query = query
         self._last_params = params
-        print(f"DEBUG: {self._last_query=}, {self._last_params=}")
+        self._last_result = []
+        self._last_generator = self._invalid_generator()
+
+        print(f"TEST: {self._last_query=}, {self._last_params=}")
         match query:
             case QUERIES.INSERT_USER:
                 if params[0] in [_uuid for _uuid, _, _, _, _ in self._db_users]:
@@ -58,7 +63,6 @@ class FakeDatabase:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
-                    # noinspection PyTypeChecker
                     self._db_users[index] = old_user[:3] + (old_user[3] + params[0],) + old_user[4:]
             case QUERIES.WALLET_WITHDRAW:
                 try:
@@ -67,12 +71,12 @@ class FakeDatabase:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
-                    # noinspection PyTypeChecker
                     self._db_users[index] = old_user[:3] + (old_user[3] - params[0],) + old_user[4:]
             case _:
-                pass
+                self._last_result = self.fetchall_side_effect()
+                self._last_generator = self._fetchone_generator()
 
-    def fetch_side_effect(self) -> list:
+    def fetchall_side_effect(self) -> list:
         match self.last_query:
             case QUERIES.SELECT_USER_UUID:
                 return [
@@ -107,15 +111,40 @@ class FakeDatabase:
             case _:
                 return []
 
+    def fetchone_side_effect(self) -> Any:
+        return next(self._last_generator)
+
+    def _invalid_generator(self) -> Generator:
+        for i in range(0):
+            yield i
+        print("TEST: USING INVALID GENERATOR")
+        raise StopIteration
+
+    def _fetchone_generator(self) -> Generator:
+        yield from self._last_result
+
+
+DATABASE = FakeDatabase()
+
+
+@pytest.fixture(name="clear_database", autouse=True)
+def fixture_clear_fake_database() -> None:
+    DATABASE._db_users.clear()
+    DATABASE._db_tokens.clear()
+    DATABASE._last_query = ""
+    DATABASE._last_params = []
+    DATABASE._last_result = []
+    DATABASE._last_generator = DATABASE._invalid_generator()
+
 
 @pytest.fixture(name="cursor")
 def mock_psycopg_connection_cursor(monkeypatch: pytest.MonkeyPatch) -> Mock:
-    db = FakeDatabase()
+    db = DATABASE
     mock = Mock(psycopg.Cursor)
     mock.execute.side_effect = db.execute_side_effect
 
-    mock.fetchone.side_effect = lambda: db.fetch_side_effect()
-    mock.fetchall.side_effect = lambda: db.fetch_side_effect()
+    mock.fetchone.side_effect = db.fetchone_side_effect
+    mock.fetchall.side_effect = db.fetchall_side_effect
     monkeypatch.setattr(psycopg.Connection, "cursor", mock)
     return mock
 
