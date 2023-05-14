@@ -94,14 +94,14 @@ class WalletService:
         """
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
-            user_data: list[tuple[str, str, str]] = handler().fetchone()
+            user_data: tuple[str, str, str] = handler().fetchone()
             if user_data:
                 handler().execute(QUERIES.SELECT_LATEST_STOCK_PRICE)
-                price: list[tuple[str,]] = handler().fetchone()
+                price: tuple[str,] = handler().fetchone()
                 if price:
-                    total_price = float(price[0][0]) * amount
+                    total_price = float(price[0]) * amount
                     # Check if user has enough money to perform transaction
-                    if float(user_data[0][1]) >= total_price:
+                    if float(user_data[1]) >= total_price:
                         handler().execute(QUERIES.WALLET_BUY_SUBTRACT_USD, (total_price, uuid))
                         handler().execute(QUERIES.WALLET_BUY_ADD_BTC, (amount, uuid))
                     else:
