@@ -192,8 +192,8 @@ paths:
     get:
       tags:
         - wallet
-      summary: Account balance [Beta]
-      description: Get user's account balance [Beta]
+      summary: Account balance
+      description: Get user's account balance
       parameters:
         - in: header
           name: x-access-token
@@ -218,8 +218,8 @@ paths:
     post:
       tags:
         - wallet
-      summary: Deposit [Beta]
-      description: Deposit cash in USD [Beta]
+      summary: Deposit
+      description: Deposit cash in USD
       parameters:
         - in: header
           name: x-access-token
@@ -240,8 +240,6 @@ paths:
           description: Invalid json format
         '401':
           description: Unauthorized
-        '409':
-          description: Invalid amount
         '500':
           description: Internal server error
       security:
@@ -250,8 +248,8 @@ paths:
     post:
       tags:
         - wallet
-      summary: Withdraw [Beta]
-      description: Witdhraw cash in USD [Beta]
+      summary: Withdraw
+      description: Witdhraw cash in USD
       parameters:
         - in: header
           name: x-access-token
@@ -273,7 +271,9 @@ paths:
         '401':
           description: Unauthorized
         '409':
-          description: Invalid amount
+          description: Invalid amount USD
+        '409':
+          description: Invalid amount BTC
         '500':
           description: Internal server error
       security:
@@ -282,8 +282,8 @@ paths:
     post:
       tags:
         - wallet
-      summary: Buy [Beta]
-      description: Buy BTC cryptocurrency [Beta]
+      summary: Buy
+      description: Buy BTC cryptocurrency
       parameters:
         - in: header
           name: x-access-token

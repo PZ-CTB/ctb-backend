@@ -24,4 +24,4 @@ Also check [the frontend side](https://github.com/PZ-CTB/ctb-frontend) of the pr
 - Robotic pet: [CTB Deployer](https://github.com/CTB-Deployer)
 
 ## License
-TODO
+This project is licensed under WTFPL, a free and open-source license. For more information, please see [LICENSE.md](LICENSE.md).

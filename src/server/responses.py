@@ -1,5 +1,3 @@
-import json
-
 from flask import Response, make_response
 
 from .database import Message
@@ -7,6 +5,38 @@ from .database import Message
 
 class Responses:
     """All HTTP responses used in the project."""
+
+    @staticmethod
+    def balance(usd_balance: float, btc_balance: float) -> Response:
+        """200: returning balance of a user."""
+        return make_response(
+            {"wallet_usd": usd_balance, "wallet_btc": btc_balance},
+            200,
+        )
+
+    @staticmethod
+    def successfully_deposited() -> Response:
+        """200: successfully deposited."""
+        return make_response(
+            {"message": "Made a successful deposit"},
+            200,
+        )
+
+    @staticmethod
+    def successfully_withdrawn() -> Response:
+        """200: successfully withdrawn."""
+        return make_response(
+            {"message": "Made a successful withdrawal"},
+            200,
+        )
+
+    @staticmethod
+    def successfully_bought() -> Response:
+        """200: successfully bought BTC."""
+        return make_response(
+            {"message": "Successful purchase"},
+            200,
+        )
 
     @staticmethod
     def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
@@ -58,6 +88,14 @@ class Responses:
         )
 
     @staticmethod
+    def passwords_dont_match_error() -> Response:
+        """400: password and confirmPassword don't match."""
+        return make_response(
+            {"message": "Passwords don't match"},
+            400,
+        )
+
+    @staticmethod
     def unauthorized_error() -> Response:
         """401: generic problem with authorization or token."""
         return make_response(
@@ -76,8 +114,34 @@ class Responses:
         )
 
     @staticmethod
-    def internal_database_error(_message: Message) -> Response:
+    def not_enough_money_to_withdraw() -> Response:
+        """409: user tried to withdraw more money than they have."""
+        return make_response(
+            {"message": "Provided amount is greater than user's wallet balance"},
+            409,
+        )
+
+    @staticmethod
+    def not_enough_money_to_make_a_purchase() -> Response:
+        """409: user tried to make a purchase without sufficient funds."""
+        return make_response(
+            {
+                "message": "Total price of attempted transaction is greater than user's wallet balance"
+            },
+            409,
+        )
+
+    @staticmethod
+    def internal_server_error() -> Response:
         """500: generic internal error."""
+        return make_response(
+            {"message": "Internal server error"},
+            500,
+        )
+
+    @staticmethod
+    def internal_database_error(_message: Message) -> Response:
+        """500: database internal error."""
         return make_response(
             {"message": "Internal server error"},
             500,

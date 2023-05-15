@@ -9,7 +9,7 @@ class DatabaseHandler:
     If the DatabaseResponse.message is 'OK', the query has been executed successfully.
     Otherwise, there has been an internal error.
 
-    The user does not have to worry about cursor commiting changes.
+    The user does not have to worry about cursor committing changes.
     """
 
     def __init__(self, cursor: psycopg.Cursor, message: Message):

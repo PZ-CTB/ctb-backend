@@ -6,6 +6,7 @@ from . import SchemaValidator
 from .auth import AuthController
 from .database import DatabaseProvider
 from .stock_market import StockMarketController
+from .wallet import WalletController
 
 
 class Server:
@@ -40,6 +41,7 @@ class Server:
         self.v1.register_blueprint(self.swagger, url_prefix="/swagger")
         self.v1.register_blueprint(AuthController.blueprint)
         self.v1.register_blueprint(StockMarketController.blueprint)
+        self.v1.register_blueprint(WalletController.blueprint)
         self.api.register_blueprint(self.v1)
         self.app.register_blueprint(self.api)
 
