@@ -4,6 +4,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 
 from . import SchemaValidator
 from .auth import AuthController
+from .constants import QUERIES
 from .database import DatabaseProvider
 from .stock_market import StockMarketController
 from .wallet import WalletController
@@ -48,7 +49,14 @@ class Server:
 
 def hello_world_endpoint() -> str:
     """Root endpoint."""
-    return "<p>Hello, World!</p>"
+    try:
+        with DatabaseProvider.handler() as handler:
+            handler().execute(QUERIES.HELLO_WORLD_QUERY)
+            (db_hello_world,) = handler().fetchone()  # type: ignore
+    except:
+        # no matter why, show something else than it would show if it worked correctly
+        db_hello_world = "Goodbye, World!"
+    return f"<p>Hello, World!</p><p>{db_hello_world}</p>"
 
 
 def create_app() -> Flask:
