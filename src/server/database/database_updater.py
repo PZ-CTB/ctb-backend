@@ -2,6 +2,8 @@ from datetime import date, timedelta
 from typing import Optional
 
 import requests
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from .. import QUERIES
 from . import DatabaseProvider
@@ -9,6 +11,23 @@ from . import DatabaseProvider
 
 class DatabaseUpdater:
     """Class for updating the database with new stock matket data."""
+
+    scheduler: Optional[BackgroundScheduler] = None
+
+    @classmethod
+    def initialize(cls) -> None:
+        """Initialize DatabaseUpdater."""
+        cls.scheduler = BackgroundScheduler()
+        cls.scheduler.start()
+
+        def scheduled_tasks() -> None:
+            DatabaseUpdater.daily_database_update()
+
+        cls.scheduler.add_job(
+            func=scheduled_tasks,
+            trigger=CronTrigger(hour=6, minute=0, second=0),
+            max_instances=1,
+        )
 
     @staticmethod
     def daily_database_update() -> None:
