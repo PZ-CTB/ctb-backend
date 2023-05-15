@@ -43,3 +43,15 @@ class WalletController:
         amount: int = body.get("amount", 0)
 
         return WalletService.withdraw(uuid, amount)
+
+    @staticmethod
+    @blueprint.route("/buy", methods=["POST"])
+    @SchemaValidator.validate("buy")
+    @TokenService.token_required
+    def buy(uuid: str, _token: str) -> Response:
+        """Buying endpoint."""
+        body: dict[str, int] = request.get_json()
+
+        amount: int = body.get("amount", 0)
+
+        return WalletService.buy(uuid, amount)
