@@ -96,7 +96,7 @@ class WalletService:
             user_data: tuple[str, str, str] = handler().fetchone()
             if user_data:
                 handler().execute(QUERIES.SELECT_LATEST_STOCK_PRICE)
-                price: tuple[str,] = handler().fetchone()
+                price: tuple[str] = handler().fetchone()
                 if price:
                     total_price = float(price[0]) * amount
                     # Check if user has enough money to perform transaction
@@ -136,8 +136,9 @@ class WalletService:
         if transaction_history:
             transactions: list[tuple[str, str, float, float]] = []
             for transaction in transaction_history:
-                transactions.append((transaction[0], transaction[1], float(transaction[2]),
-                                     float(transaction[3])))
+                transactions.append(
+                    (transaction[0], transaction[1], float(transaction[2]), float(transaction[3]))
+                )
             return Responses.transaction_history(transactions)
         else:
             return Responses.unauthorized_error()
