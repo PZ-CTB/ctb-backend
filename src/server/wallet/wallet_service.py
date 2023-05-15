@@ -21,7 +21,6 @@ class WalletService:
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
             user_data: list[tuple[str, str, str]] = handler().fetchall()
-
         if not handler.success:
             print(f"ERROR: server.wallet.wallet_service.balance: {handler.message}")
             return Responses.internal_database_error(handler.message)
@@ -115,3 +114,30 @@ class WalletService:
             return Responses.internal_database_error(handler.message)
 
         return Responses.successfully_bought()
+
+    @staticmethod
+    def history(uuid: str) -> Response:
+        """Get user's transaction history.
+
+        Args:
+            uuid (str): user's uuid.
+
+        Returns:
+            Response: List of transactions if operation succeeded, appropriate error otherwise.
+
+        """
+        with DatabaseProvider.handler() as handler:
+            handler().execute(QUERIES.WALLET_TRANSACTION_HISTORY, (uuid,))
+            transaction_history: list[tuple[str, str, str, str]] = handler().fetchall()
+        if not handler.success:
+            print(f"ERROR: server.wallet.wallet_service.history: {handler.message}")
+            return Responses.internal_database_error(handler.message)
+
+        if transaction_history:
+            transactions: list[tuple[str, str, float, float]] = []
+            for transaction in transaction_history:
+                transactions.append((transaction[0], transaction[1], float(transaction[2]),
+                                     float(transaction[3])))
+            return Responses.transaction_history(transactions)
+        else:
+            return Responses.unauthorized_error()

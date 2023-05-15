@@ -55,3 +55,10 @@ class WalletController:
         amount: int = body.get("amount", 0)
 
         return WalletService.buy(uuid, amount)
+
+    @staticmethod
+    @blueprint.route("/history", methods=["GET"])
+    @TokenService.token_required
+    def history(uuid: str, _token: str) -> Response:
+        """History endpoint."""
+        return WalletService.history(uuid)
