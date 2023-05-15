@@ -60,7 +60,7 @@ class QUERIES:
                                         ORDER BY period_number"""
 
     SELECT_ALL_RATE_HISTORY: Query = "SELECT date, value FROM exchange_rate_history"
-    SELECT_ALL_RATE_HISTORY_DESC : Query = (
+    SELECT_ALL_RATE_HISTORY_DESC: Query = (
         "SELECT date, value FROM exchange_rate_history ORDER BY date DESC LIMIT %s"
     )
 
@@ -72,4 +72,3 @@ class QUERIES:
                         LIMIT 1"""
     WALLET_BUY_ADD_BTC: Query = "UPDATE users SET wallet_btc = wallet_btc + %s WHERE uuid=%s"
     WALLET_BUY_SUBTRACT_USD: Query = "UPDATE users SET wallet_usd = wallet_usd - %s WHERE uuid=%s"
-
