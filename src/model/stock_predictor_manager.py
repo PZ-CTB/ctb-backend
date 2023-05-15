@@ -30,7 +30,7 @@ class StockPredictorManager:
         self.optimizer: optim.adam.Adam = optim.Adam(  # pylint: disable=no-member
             self.stock_predictor.parameters(),
             lr=self.config.learning_rate,
-            weight_decay=self.config.weight_decay
+            weight_decay=self.config.weight_decay,
         )
 
     def _initialize_model(self) -> None:
@@ -62,7 +62,7 @@ class StockPredictorManager:
         data: list = []
 
         with DatabaseProvider.handler() as handler:
-            handler().execute(QUERIES.SELECT_ALL_RATE_HISTORY_DESC , [self.config.seq_length])
+            handler().execute(QUERIES.SELECT_ALL_RATE_HISTORY_DESC, [self.config.seq_length])
             data = handler().fetchall()
             data = [{"date": date.strftime("%Y-%m-%d"), "avg": avg} for date, avg in data]
 
