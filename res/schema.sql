@@ -21,5 +21,16 @@ CREATE TABLE IF NOT EXISTS exchange_rate_history (
     value FLOAT
 );
 
-
 CREATE INDEX IF NOT EXISTS exchange_rate_history_date_index ON exchange_rate_history (date);
+
+DROP TYPE IF EXISTS transaction_type;
+CREATE TYPE transaction_type AS ENUM ('deposit', 'withdraw', 'buy', 'sell');
+
+CREATE TABLE IF NOT EXISTS transaction_history (
+    uuid TEXT PRIMARY KEY,
+    timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+    user_uuid TEXT NOT NULL REFERENCES users (uuid),
+    type transaction_type NOT NULL,
+    amount FLOAT NOT NULL,
+    total_after_transaction FLOAT NOT NULL
+);
