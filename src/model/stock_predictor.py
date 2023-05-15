@@ -4,7 +4,7 @@ import torch
 from torch import nn
 
 
-class StockPredictor(nn.Module):  # pylint: disable= too-few-public-methods
+class StockPredictor(nn.Module):
     """Model used to predict future stock prices."""
 
     def __init__(self, input_dim: int, hidden_dim: int, num_layers: int, output_dim: int):
