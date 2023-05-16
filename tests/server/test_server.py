@@ -704,9 +704,7 @@ class Test_Server:
                 assert response.status_code == 401
 
             @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
-            def test_send_500_on_internal_error(
-                self, token: str, failing_handler: Mock
-            ) -> None:
+            def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
                 response = self.client.get(
                     self.url_path,
                     headers={"x-access-token": token},
