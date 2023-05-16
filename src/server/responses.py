@@ -39,6 +39,14 @@ class Responses:
         )
 
     @staticmethod
+    def successfully_sold() -> Response:
+        """200: successfully sold BTC."""
+        return make_response(
+            {"message": "Successful sale"},
+            200,
+        )
+
+    @staticmethod
     def me(uuid: str, email: str, wallet_usd: float, wallet_btc: float) -> Response:
         """200: /me endpoint response."""
         return make_response(
@@ -128,6 +136,14 @@ class Responses:
             {
                 "message": "Total price of attempted transaction is greater than user's wallet balance"
             },
+            409,
+        )
+
+    @staticmethod
+    def not_enough_BTC_to_make_a_sale() -> Response:
+        """409: user tried to sell more BTC that they own."""
+        return make_response(
+            {"message": "Amount of BTC provided is greater than user's wallet balance"},
             409,
         )
 

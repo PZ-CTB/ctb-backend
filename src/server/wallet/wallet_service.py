@@ -115,3 +115,39 @@ class WalletService:
             return Responses.internal_database_error(handler.message)
 
         return Responses.successfully_bought()
+
+    @staticmethod
+    def sell(uuid: str, amount: float) -> Response:
+        """Selling method.
+
+        Args:
+            uuid (str): user's uuid,
+            amount (float): amount of BTC to sell.
+
+        Returns:
+            Response: successfully_sold if transaction succeed, return error otherwise.
+
+        """
+        with DatabaseProvider.handler() as handler:
+            handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
+            user_data: tuple[str, str, str] = handler().fetchone()
+            if user_data:
+                # Check if user has enough BTC to perform transaction
+                if float(user_data[2]) >= amount:
+                    handler().execute(QUERIES.SELECT_LATEST_STOCK_PRICE)
+                    price: tuple[str,] = handler().fetchone()
+                    if price:
+                        total_price = float(price[0]) * amount
+                        handler().execute(QUERIES.WALLET_SELL_SUBTRACT_BTC, (amount, uuid))
+                        handler().execute(QUERIES.WALLET_SELL_ADD_USD, (total_price, uuid))
+                    else:
+                        return Responses.internal_server_error()
+                else:
+                    return Responses.not_enough_BTC_to_make_a_sale()
+            else:
+                return Responses.internal_server_error()
+        if not handler.success:
+            print(f"ERROR: server.wallet.wallet_service.sell: {handler.message}")
+            return Responses.internal_database_error(handler.message)
+
+        return Responses.successfully_sold()

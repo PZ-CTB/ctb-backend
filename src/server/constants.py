@@ -67,3 +67,5 @@ class QUERIES:
                         LIMIT 1"""
     WALLET_BUY_ADD_BTC: Query = "UPDATE users SET wallet_btc = wallet_btc + %s WHERE uuid=%s"
     WALLET_BUY_SUBTRACT_USD: Query = "UPDATE users SET wallet_usd = wallet_usd - %s WHERE uuid=%s"
+    WALLET_SELL_SUBTRACT_BTC: Query = "UPDATE users SET wallet_btc = wallet_btc - %s WHERE uuid=%s"
+    WALLET_SELL_ADD_USD: Query = "UPDATE users SET wallet_usd = wallet_usd + %s WHERE uuid=%s"
