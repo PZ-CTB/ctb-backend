@@ -133,12 +133,9 @@ class WalletService:
             print(f"ERROR: server.wallet.wallet_service.history: {handler.message}")
             return Responses.internal_database_error(handler.message)
 
-        if transaction_history:
-            transactions: list[tuple[str, str, float, float]] = []
-            for transaction in transaction_history:
-                transactions.append(
-                    (transaction[0], transaction[1], float(transaction[2]), float(transaction[3]))
-                )
-            return Responses.transaction_history(transactions)
-        else:
-            return Responses.unauthorized_error()
+        transactions: list[tuple[str, str, float, float]] = []
+        for transaction in transaction_history:
+            transactions.append(
+                (transaction[0], transaction[1], float(transaction[2]), float(transaction[3]))
+            )
+        return Responses.transaction_history(transactions)

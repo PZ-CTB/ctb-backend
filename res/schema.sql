@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS users (
     uuid TEXT PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
@@ -23,8 +25,11 @@ CREATE TABLE IF NOT EXISTS exchange_rate_history (
 
 CREATE INDEX IF NOT EXISTS exchange_rate_history_date_index ON exchange_rate_history (date);
 
-DROP TYPE IF EXISTS transaction_type;
-CREATE TYPE transaction_type AS ENUM ('deposit', 'withdraw', 'buy', 'sell');
+DO $$ BEGIN
+    CREATE TYPE transaction_type AS ENUM ('deposit', 'withdraw', 'buy', 'sell');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 CREATE TABLE IF NOT EXISTS transaction_history (
     uuid TEXT PRIMARY KEY,
@@ -34,3 +39,40 @@ CREATE TABLE IF NOT EXISTS transaction_history (
     amount FLOAT NOT NULL,
     total_after_transaction FLOAT NOT NULL
 );
+
+CREATE OR REPLACE FUNCTION update_transaction_history()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF NEW.wallet_btc <> OLD.wallet_btc THEN
+        IF NEW.wallet_btc > OLD.wallet_btc THEN
+            INSERT INTO transaction_history (uuid, timestamp, user_uuid, type, amount, total_after_transaction)
+            VALUES (uuid_generate_v4(), current_timestamp, NEW.uuid, 'buy', NEW.wallet_btc - OLD.wallet_btc,
+                    NEW.wallet_btc);
+        ELSE
+            INSERT INTO transaction_history (uuid, timestamp, user_uuid, type, amount, total_after_transaction)
+            VALUES (uuid_generate_v4(), current_timestamp, NEW.uuid, 'sell', OLD.wallet_btc - NEW.wallet_btc,
+                    NEW.wallet_btc);
+        END IF;
+    ELSIF NEW.wallet_usd <> OLD.wallet_usd THEN
+        IF NEW.wallet_usd > OLD.wallet_usd THEN
+            INSERT INTO transaction_history (uuid, timestamp, user_uuid, type, amount, total_after_transaction)
+            VALUES (uuid_generate_v4(), current_timestamp, NEW.uuid, 'deposit', NEW.wallet_usd - OLD.wallet_usd,
+                    NEW.wallet_usd);
+        ELSE
+            INSERT INTO transaction_history (uuid, timestamp, user_uuid, type, amount, total_after_transaction)
+            VALUES (uuid_generate_v4(), current_timestamp, NEW.uuid, 'withdraw', OLD.wallet_usd - NEW.wallet_usd,
+                    NEW.wallet_usd);
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS update_transaction_history_trigger ON users;
+CREATE TRIGGER update_transaction_history_trigger
+    AFTER UPDATE OF wallet_btc, wallet_usd
+    ON users
+    FOR EACH ROW
+EXECUTE FUNCTION update_transaction_history();

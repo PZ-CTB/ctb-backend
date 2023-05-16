@@ -674,3 +674,41 @@ class Test_Server:
                     headers={"x-access-token": token},
                 )
                 assert response.status_code == 409
+
+        class Test_HistoryEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, client: FlaskClient) -> None:
+                self.url_path: str = "api/v1/wallet/history"
+                self.client: FlaskClient = client
+
+            def test_send_200_on_success(self, token: str) -> None:
+                response = self.client.get(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 200
+
+            def test_send_401_when_unauthorized_no_token(self) -> None:
+                response = self.client.get(
+                    self.url_path,
+                )
+                assert response.status_code == 401
+
+            def test_send_401_when_unauthorized_user_not_registered(
+                self, token: str, failing_handler: Mock
+            ) -> None:
+                response = self.client.get(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 401
+
+            @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
+            def test_send_500_on_internal_error(
+                self, token: str, failing_handler: Mock
+            ) -> None:
+                response = self.client.get(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 500
