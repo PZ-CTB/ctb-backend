@@ -130,6 +130,3 @@ dmypy.json
 
 # PyCharm
 .idea/
-
-# Environment list with database variables (for development)
-env.list
