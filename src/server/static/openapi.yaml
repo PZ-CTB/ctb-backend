@@ -447,10 +447,16 @@ components:
           type:
             type: string
             example: "deposit"
-          amount:
+          amount_usd:
             type: number
             example: 0.1
-          total_after_transaction:
+          amount_btc:
+            type: number
+            example: 0.1
+          total_usd_after_transaction:
+            type: number
+            example: 7124.1
+          total_btc_after_transaction:
             type: number
             example: 7124.1
   securitySchemes:

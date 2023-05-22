@@ -70,9 +70,9 @@ class QUERIES:
     SELECT_LATEST_STOCK_PRICE: Query = """SELECT value FROM exchange_rate_history
                         ORDER BY date DESC
                         LIMIT 1"""
-    WALLET_BUY_ADD_BTC: Query = "UPDATE users SET wallet_btc = wallet_btc + %s WHERE uuid=%s"
-    WALLET_BUY_SUBTRACT_USD: Query = "UPDATE users SET wallet_usd = wallet_usd - %s WHERE uuid=%s"
+    WALLET_BUY: Query = "UPDATE users SET wallet_usd = wallet_usd - %s, wallet_btc = wallet_btc + %s WHERE uuid=%s"
 
-    WALLET_TRANSACTION_HISTORY: Query = """SELECT timestamp, type, amount, total_after_transaction
+    WALLET_TRANSACTION_HISTORY: Query = """SELECT timestamp, type, amount_usd, amount_btc,
+                                           total_usd_after_transaction, total_btc_after_transaction
                                            FROM transaction_history
                                            WHERE user_uuid=%s"""

@@ -101,8 +101,7 @@ class WalletService:
                     total_price = float(price[0]) * amount
                     # Check if user has enough money to perform transaction
                     if float(user_data[1]) >= total_price:
-                        handler().execute(QUERIES.WALLET_BUY_SUBTRACT_USD, (total_price, uuid))
-                        handler().execute(QUERIES.WALLET_BUY_ADD_BTC, (amount, uuid))
+                        handler().execute(QUERIES.WALLET_BUY, (total_price, amount, uuid))
                     else:
                         return Responses.not_enough_money_to_make_a_purchase()
                 else:
@@ -128,14 +127,15 @@ class WalletService:
         """
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.WALLET_TRANSACTION_HISTORY, (uuid,))
-            transaction_history: list[tuple[str, str, str, str]] = handler().fetchall()
+            transaction_history: list[tuple[str, str, str, str, str, str]] = handler().fetchall()
         if not handler.success:
             print(f"ERROR: server.wallet.wallet_service.history: {handler.message}")
             return Responses.internal_database_error(handler.message)
 
-        transactions: list[tuple[str, str, float, float]] = []
+        transactions: list[tuple[str, str, float, float, float, float]] = []
         for transaction in transaction_history:
             transactions.append(
-                (transaction[0], transaction[1], float(transaction[2]), float(transaction[3]))
+                (transaction[0], transaction[1], float(transaction[2]), float(transaction[3]), float(transaction[4]),
+                 float(transaction[5]))
             )
         return Responses.transaction_history(transactions)

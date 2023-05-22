@@ -77,17 +77,16 @@ class FakeDatabase:
                 else:
                     old_user = self._db_users[index]
                     self._db_users[index] = old_user[:3] + (old_user[3] - params[0],) + old_user[4:]
-            case QUERIES.WALLET_BUY_ADD_BTC:
+            case QUERIES.WALLET_BUY:
                 try:
-                    index = [user[0] for user in self.db_users].index(params[1])
+                    index = [user[0] for user in self.db_users].index(params[2])
                 except ValueError:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
                     self._db_users[index] = (
-                        old_user[:3] + (old_user[3] - params[0] * 3,) + old_user[4:]
+                        old_user[:3] + (old_user[3] - params[0] * 3,) + (old_user[4] + params[0],)
                     )
-                    self._db_users[index] = old_user[:4] + (old_user[4] + params[0],)
             case _:
                 self._last_result = self.fetchall_side_effect()
                 self._last_generator = self._fetchone_generator()

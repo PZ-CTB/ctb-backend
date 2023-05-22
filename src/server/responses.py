@@ -47,7 +47,7 @@ class Responses:
         )
 
     @staticmethod
-    def transaction_history(transactions: list[tuple[str, str, float, float]]) -> Response:
+    def transaction_history(transactions: list[tuple[str, str, float, float, float, float]]) -> Response:
         """200: /history endpoint response."""
         return make_response(
             {"transactions": transactions},
