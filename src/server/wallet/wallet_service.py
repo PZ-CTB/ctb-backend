@@ -135,7 +135,13 @@ class WalletService:
         transactions: list[tuple[str, str, float, float, float, float]] = []
         for transaction in transaction_history:
             transactions.append(
-                (transaction[0], transaction[1], float(transaction[2]), float(transaction[3]), float(transaction[4]),
-                 float(transaction[5]))
+                (
+                    transaction[0],
+                    transaction[1],
+                    float(transaction[2]),
+                    float(transaction[3]),
+                    float(transaction[4]),
+                    float(transaction[5]),
+                )
             )
         return Responses.transaction_history(transactions)
