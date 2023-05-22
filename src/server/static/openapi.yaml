@@ -4,6 +4,10 @@ info:
   version: 1.0.1
 servers:
   - url: https://ctb-backend.onrender.com
+  - url: https://ctb-backend-pr-{id}.onrender.com
+    variables:
+      id:
+        default: '0'
 tags:
   - name: auth
     description: Authentication and user management
