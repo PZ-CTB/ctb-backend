@@ -63,7 +63,7 @@ BEGIN
             INSERT INTO transaction_history (uuid, timestamp, user_uuid, type, amount_usd, amount_btc,
                                              total_usd_after_transaction, total_btc_after_transaction)
             VALUES (uuid_generate_v4(), current_timestamp, NEW.uuid, 'sell', NEW.wallet_usd - OLD.wallet_usd,
-                    OLD.wallet_btc - NEW.wallet_btc, NEW.wallet_usd, NEW.wallet_btc);
+                    NEW.wallet_btc - OLD.wallet_btc, NEW.wallet_usd, NEW.wallet_btc);
         END IF;
     ELSIF NEW.wallet_usd <> OLD.wallet_usd THEN
         IF NEW.wallet_usd > OLD.wallet_usd THEN
@@ -74,7 +74,7 @@ BEGIN
         ELSE
             INSERT INTO transaction_history (uuid, timestamp, user_uuid, type, amount_usd, amount_btc,
                                              total_usd_after_transaction, total_btc_after_transaction)
-            VALUES (uuid_generate_v4(), current_timestamp, NEW.uuid, 'withdraw', OLD.wallet_usd - NEW.wallet_usd,
+            VALUES (uuid_generate_v4(), current_timestamp, NEW.uuid, 'withdraw', NEW.wallet_usd - OLD.wallet_usd,
                     NEW.wallet_btc - OLD.wallet_btc, NEW.wallet_usd, NEW.wallet_btc);
         END IF;
     END IF;
