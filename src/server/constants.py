@@ -59,6 +59,11 @@ class QUERIES:
                                         GROUP BY period_number
                                         ORDER BY period_number"""
 
+    SELECT_ALL_RATE_HISTORY: Query = "SELECT date, value FROM exchange_rate_history"
+    SELECT_ALL_RATE_HISTORY_DESC: Query = (
+        "SELECT date, value FROM exchange_rate_history ORDER BY date DESC LIMIT %s"
+    )
+
     WALLET_DEPOSIT: Query = "UPDATE users SET wallet_usd = wallet_usd + %s WHERE uuid=%s"
     WALLET_WITHDRAW: Query = "UPDATE users SET wallet_usd = wallet_usd - %s WHERE uuid=%s"
 
