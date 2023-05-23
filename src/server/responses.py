@@ -141,7 +141,7 @@ class Responses:
 
     @staticmethod
     def not_enough_BTC_to_make_a_sale() -> Response:
-        """409: user tried to sell more BTC that they own."""
+        """409: user tried to sell more BTC than they own."""
         return make_response(
             {"message": "Amount of BTC provided is greater than user's wallet balance"},
             409,

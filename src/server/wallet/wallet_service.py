@@ -135,11 +135,10 @@ class WalletService:
                 # Check if user has enough BTC to perform transaction
                 if float(user_data[2]) >= amount:
                     handler().execute(QUERIES.SELECT_LATEST_STOCK_PRICE)
-                    price: tuple[str,] = handler().fetchone()
+                    price: tuple[str] = handler().fetchone()
                     if price:
                         total_price = float(price[0]) * amount
-                        handler().execute(QUERIES.WALLET_SELL_SUBTRACT_BTC, (amount, uuid))
-                        handler().execute(QUERIES.WALLET_SELL_ADD_USD, (total_price, uuid))
+                        handler().execute(QUERIES.WALLET_SELL, (total_price, amount, uuid))
                     else:
                         return Responses.internal_server_error()
                 else:
