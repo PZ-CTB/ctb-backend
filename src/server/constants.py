@@ -73,6 +73,9 @@ class QUERIES:
     WALLET_BUY: Query = (
         "UPDATE users SET wallet_usd = wallet_usd - %s, wallet_btc = wallet_btc + %s WHERE uuid=%s"
     )
+    WALLET_SELL: Query = (
+        "UPDATE users SET wallet_usd = wallet_usd + %s, wallet_btc = wallet_btc - %s WHERE uuid=%s"
+    )
 
     WALLET_TRANSACTION_HISTORY: Query = """SELECT timestamp, type, amount_usd, amount_btc,
                                            total_usd_after_transaction, total_btc_after_transaction

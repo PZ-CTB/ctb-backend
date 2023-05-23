@@ -57,6 +57,18 @@ class WalletController:
         return WalletService.buy(uuid, amount)
 
     @staticmethod
+    @blueprint.route("/sell", methods=["POST"])
+    @SchemaValidator.validate("sell")
+    @TokenService.token_required
+    def sell(uuid: str, _token: str) -> Response:
+        """Selling endpoint."""
+        body: dict[str, int] = request.get_json()
+
+        amount: int = body.get("amount", 0)
+
+        return WalletService.sell(uuid, amount)
+
+    @staticmethod
     @blueprint.route("/history", methods=["GET"])
     @TokenService.token_required
     def history(uuid: str, _token: str) -> Response:
