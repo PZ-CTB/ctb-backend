@@ -24,6 +24,12 @@ class StockMarketController:
         return StockMarketService.chart(from_param, to_param, aggregate_param)
 
     @staticmethod
+    @blueprint.route("/price", methods=["GET"])
+    def price() -> Response:
+        """BTC price retrieval endpoint."""
+        return StockMarketService.price()
+
+    @staticmethod
     @blueprint.route("/future_value")
     def future_value() -> str:
         """Model data estimation endpoint."""

@@ -192,6 +192,21 @@ paths:
       responses:
         '200':
           description: Successful operation
+  /api/v1/stock/price:
+    get:
+      tags:
+        - stock
+      summary: Stock price
+      description: Current price of one BTC in USD
+      reponses:
+        '200':
+          description: Successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRate'
+        '500':
+          description: Internal server error
   /api/v1/wallet/balance:
     get:
       tags:
@@ -463,6 +478,13 @@ components:
           total_btc_after_transaction:
             type: number
             example: 7124.1
+    ExchangeRate:
+      type: object
+      properties:
+        price:
+          type: number
+          example: 567
+
   securitySchemes:
     JWT:
       type: http
