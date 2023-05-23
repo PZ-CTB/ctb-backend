@@ -17,11 +17,16 @@ class FakeDatabase:
             tuple[str, str, str, float, float]
         ] = []  # uuid, email, pwd_hash, usd, btc
         self._db_tokens: list[tuple[str, str]] = []
-        self._db_prices: list[tuple[float, str]] = [(3.0, "01-01-2019")]  # price, date
+        self._db_prices: list[tuple[float, str]] = []  # price, date
         self._last_query: str = ""
         self._last_params: list | tuple = []
         self._last_result: list = []
         self._last_generator: Generator = self._invalid_generator()
+
+        self.prefill()
+
+    def prefill(self) -> None:
+        self._db_prices.append((3.0, "01-01-2019"))
 
     @property
     def db_users(self) -> list[tuple[str, str, str, str, str]]:
@@ -139,7 +144,12 @@ class FakeDatabase:
                 return []
 
     def fetchone_side_effect(self) -> Any:
-        return next(self._last_generator)
+        try:
+            retval = next(self._last_generator)
+        except StopIteration:
+            return None
+        else:
+            return retval
 
     def _invalid_generator(self) -> Generator:
         for i in range(0):
@@ -158,10 +168,13 @@ DATABASE = FakeDatabase()
 def fixture_clear_fake_database() -> None:
     DATABASE._db_users.clear()
     DATABASE._db_tokens.clear()
+    DATABASE._db_prices.clear()
     DATABASE._last_query = ""
     DATABASE._last_params = []
     DATABASE._last_result = []
     DATABASE._last_generator = DATABASE._invalid_generator()
+
+    DATABASE.prefill()
 
 
 @pytest.fixture(name="cursor")
@@ -784,4 +797,33 @@ class Test_Server:
                     self.url_path,
                     headers={"x-access-token": token},
                 )
+
+    class Test_Stock:
+        class Test_PriceEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, client: FlaskClient) -> None:
+                self.url_path: str = "api/v1/stock/price"
+                self.client: FlaskClient = client
+
+            def test_send_200_on_success(self) -> None:
+                expected: float = float(DATABASE.db_prices[0][0])
+
+                response = self.client.get(self.url_path)
+                actual = response.get_json()["price"]
+
+                assert response.status_code == 200
+
+                assert isinstance(actual, float)
+                assert actual == expected
+
+            def test_send_500_on_database_error(self, failing_handler: Mock) -> None:
+                response = self.client.get(self.url_path)
+
+                assert response.status_code == 500
+
+            def test_send_500_on_none_returned(self) -> None:
+                DATABASE._db_prices.clear()
+
+                response = self.client.get(self.url_path)
+
                 assert response.status_code == 500
