@@ -314,8 +314,8 @@ paths:
     post:
       tags:
         - wallet
-      summary: Sell [Beta]
-      description: Sell BTC cryptocurrency [Beta]
+      summary: Sell
+      description: Sell BTC cryptocurrency
       parameters:
         - in: header
           name: x-access-token

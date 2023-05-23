@@ -88,6 +88,16 @@ class FakeDatabase:
                         old_user[:3] + (old_user[3] - params[0] * 3,) + old_user[4:]
                     )
                     self._db_users[index] = old_user[:4] + (old_user[4] + params[0],)
+            case QUERIES.WALLET_SELL:
+                try:
+                    index = [user[0] for user in self.db_users].index(params[2])
+                except ValueError:
+                    raise psycopg.IntegrityError()
+                else:
+                    old_user = self._db_users[index]
+                    self._db_users[index] = (
+                        old_user[:3] + (old_user[3] + params[0] * 3,) + (old_user[4] - params[0],)
+                    )
             case _:
                 self._last_result = self.fetchall_side_effect()
                 self._last_generator = self._fetchone_generator()
@@ -241,6 +251,17 @@ class Test_Server:
             headers={"x-access-token": token},
         )
         return amount
+
+    @pytest.fixture(name="buy")
+    def fixture_buy(self, token: str, client: FlaskClient) -> None:
+        amount: float = 3
+        client.post(
+            "api/v1/wallet/buy",
+            json={
+                "amount": amount,
+            },
+            headers={"x-access-token": token},
+        )
 
     class Test_Auth:
         class Test_RegisterEndpoint:
@@ -667,6 +688,61 @@ class Test_Server:
 
             def test_send_409_when_not_enough_money_to_purchase_BTC(
                 self, token: str, deposit: float
+            ) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 10},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 409
+
+        class Test_SellEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, token: str, client: FlaskClient) -> None:
+                self.url_path: str = "api/v1/wallet/sell"
+                self.client: FlaskClient = client
+
+            @pytest.mark.parametrize("amount", [0.1, 2])
+            def test_send_200_on_success(
+                self, token: str, deposit: float, buy: None, amount: float
+            ) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": amount},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 200
+
+            @pytest.mark.parametrize("amount", [-2, 0])
+            def test_send_400_on_invalid_json_format(
+                self, token: str, deposit: float, buy: None, amount: float
+            ) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": amount},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 400
+
+            def test_send_401_when_unauthorized_no_token(self) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 0.1},
+                )
+                assert response.status_code == 401
+
+            def test_send_401_when_unauthorized_user_not_registered(
+                self, token: str, deposit: float, buy: None, failing_handler: Mock
+            ) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"amount": 0.1},
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 401
+
+            def test_send_409_when_not_enough_BTC_sell(
+                self, token: str, deposit: float, buy: None
             ) -> None:
                 response = self.client.post(
                     self.url_path,
