@@ -200,7 +200,7 @@ paths:
       description: Current price of one BTC in USD
       reponses:
         '200':
-          description: Successfull operation
+          description: Successful operation
           content:
             application/json:
               schema:
