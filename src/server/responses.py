@@ -55,6 +55,16 @@ class Responses:
         )
 
     @staticmethod
+    def transaction_history(
+        transactions: list[tuple[str, str, float, float, float, float]]
+    ) -> Response:
+        """200: /history endpoint response."""
+        return make_response(
+            {"transactions": transactions},
+            200,
+        )
+
+    @staticmethod
     def auth_token(token: str) -> Response:
         """201: returning auth token to user on login or refresh."""
         return make_response(

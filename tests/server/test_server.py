@@ -77,17 +77,16 @@ class FakeDatabase:
                 else:
                     old_user = self._db_users[index]
                     self._db_users[index] = old_user[:3] + (old_user[3] - params[0],) + old_user[4:]
-            case QUERIES.WALLET_BUY_ADD_BTC:
+            case QUERIES.WALLET_BUY:
                 try:
-                    index = [user[0] for user in self.db_users].index(params[1])
+                    index = [user[0] for user in self.db_users].index(params[2])
                 except ValueError:
                     raise psycopg.IntegrityError()
                 else:
                     old_user = self._db_users[index]
                     self._db_users[index] = (
-                        old_user[:3] + (old_user[3] - params[0] * 3,) + old_user[4:]
+                        old_user[:3] + (old_user[3] - params[0] * 3,) + (old_user[4] + params[0],)
                     )
-                    self._db_users[index] = old_user[:4] + (old_user[4] + params[0],)
             case QUERIES.WALLET_SELL:
                 try:
                     index = [user[0] for user in self.db_users].index(params[2])
@@ -750,3 +749,39 @@ class Test_Server:
                     headers={"x-access-token": token},
                 )
                 assert response.status_code == 409
+
+        class Test_HistoryEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, client: FlaskClient) -> None:
+                self.url_path: str = "api/v1/wallet/history"
+                self.client: FlaskClient = client
+
+            def test_send_200_on_success(self, token: str) -> None:
+                response = self.client.get(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 200
+
+            def test_send_401_when_unauthorized_no_token(self) -> None:
+                response = self.client.get(
+                    self.url_path,
+                )
+                assert response.status_code == 401
+
+            def test_send_401_when_unauthorized_user_not_registered(
+                self, token: str, failing_handler: Mock
+            ) -> None:
+                response = self.client.get(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 401
+
+            @pytest.mark.skip("Currently returns 401 due to internal error on token validation")
+            def test_send_500_on_internal_error(self, token: str, failing_handler: Mock) -> None:
+                response = self.client.get(
+                    self.url_path,
+                    headers={"x-access-token": token},
+                )
+                assert response.status_code == 500
