@@ -1,11 +1,8 @@
-from typing import TYPE_CHECKING
+from typing import Union
 
 from flask import Response, make_response
 
 from .database import Message
-
-if TYPE_CHECKING:
-    from .wallet import WalletTransaction
 
 
 class Responses:
@@ -60,7 +57,7 @@ class Responses:
         )
 
     @staticmethod
-    def transaction_history(transactions: list["WalletTransaction"]) -> Response:
+    def transaction_history(transactions: list[dict[str, Union[str, float]]]) -> Response:
         """200: /history endpoint response."""
         return make_response(
             {"transactions": transactions},

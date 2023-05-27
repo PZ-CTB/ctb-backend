@@ -448,7 +448,7 @@ components:
           timestamp:
             type: string
             example: "2020-01-26T15:04:05.000Z"
-          transaction_type:
+          type:
             type: string
             example: "deposit"
           amount_usd:
