@@ -1,4 +1,3 @@
-import json
 from typing import Union
 
 from flask import Response, make_response
@@ -61,7 +60,7 @@ class Responses:
     def transaction_history(transactions: list[dict[str, Union[str, float]]]) -> Response:
         """200: /history endpoint response."""
         return make_response(
-            {"transactions": json.dumps(transactions)},
+            {"transactions": transactions},
             200,
         )
 
