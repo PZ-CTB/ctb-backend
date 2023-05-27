@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class WalletTransaction:
     """Representation of wallet transaction for transaction history endpoint."""
 
