@@ -1,8 +1,8 @@
 from flask import Response
 
-from . import WalletTransaction
 from .. import QUERIES, Responses
 from ..database import DatabaseProvider
+from . import WalletTransaction
 
 
 class WalletService:
