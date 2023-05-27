@@ -1,6 +1,7 @@
 from flask import Response, make_response
 
 from .database import Message
+from .wallet import WalletTransaction
 
 
 class Responses:
@@ -55,9 +56,7 @@ class Responses:
         )
 
     @staticmethod
-    def transaction_history(
-        transactions: list[tuple[str, str, float, float, float, float]]
-    ) -> Response:
+    def transaction_history(transactions: list[WalletTransaction]) -> Response:
         """200: /history endpoint response."""
         return make_response(
             {"transactions": transactions},

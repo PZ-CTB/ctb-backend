@@ -1,5 +1,6 @@
 from flask import Response
 
+from . import WalletTransaction
 from .. import QUERIES, Responses
 from ..database import DatabaseProvider
 
@@ -167,10 +168,10 @@ class WalletService:
             print(f"ERROR: server.wallet.wallet_service.history: {handler.message}")
             return Responses.internal_database_error(handler.message)
 
-        transactions: list[tuple[str, str, float, float, float, float]] = []
+        transactions: list[WalletTransaction] = []
         for transaction in transaction_history:
             transactions.append(
-                (
+                WalletTransaction(
                     transaction[0],
                     transaction[1],
                     float(transaction[2]),
