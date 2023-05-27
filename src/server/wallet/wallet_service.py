@@ -1,3 +1,5 @@
+from typing import Union
+
 from flask import Response
 
 from .. import QUERIES, Responses
@@ -167,16 +169,18 @@ class WalletService:
             print(f"ERROR: server.wallet.wallet_service.history: {handler.message}")
             return Responses.internal_database_error(handler.message)
 
-        transactions: list[tuple[str, str, float, float, float, float]] = []
+        transactions: list[dict[str, Union[str, float]]] = []
         for transaction in transaction_history:
             transactions.append(
                 (
-                    transaction[0],
-                    transaction[1],
-                    float(transaction[2]),
-                    float(transaction[3]),
-                    float(transaction[4]),
-                    float(transaction[5]),
+                    {
+                        "timestamp": transaction[0],
+                        "type": transaction[1],
+                        "amount_usd": float(transaction[2]),
+                        "amount_btc": float(transaction[3]),
+                        "total_usd_after_transaction": float(transaction[4]),
+                        "total_btc_after_transaction": float(transaction[5]),
+                    }
                 )
             )
         return Responses.transaction_history(transactions)
