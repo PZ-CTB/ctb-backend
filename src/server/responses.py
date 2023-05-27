@@ -1,3 +1,5 @@
+from typing import Union
+
 from flask import Response, make_response
 
 from .database import Message
@@ -60,9 +62,7 @@ class Responses:
         return make_response(filtered_list)
 
     @staticmethod
-    def transaction_history(
-        transactions: list[tuple[str, str, float, float, float, float]]
-    ) -> Response:
+    def transaction_history(transactions: list[dict[str, Union[str, float]]]) -> Response:
         """200: /history endpoint response."""
         return make_response(
             {"transactions": transactions},
