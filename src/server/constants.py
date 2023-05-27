@@ -64,6 +64,11 @@ class QUERIES:
 
     INSERT_PRICE: Query = """INSERT INTO exchange_rate_history (date, value)
                              VALUES (%s, %s)"""
+      
+    SELECT_ALL_RATE_HISTORY: Query = "SELECT date, value FROM exchange_rate_history"
+    SELECT_ALL_RATE_HISTORY_DESC: Query = (
+        "SELECT date, value FROM exchange_rate_history ORDER BY date DESC LIMIT %s"
+    )
 
     WALLET_DEPOSIT: Query = "UPDATE users SET wallet_usd = wallet_usd + %s WHERE uuid=%s"
     WALLET_WITHDRAW: Query = "UPDATE users SET wallet_usd = wallet_usd - %s WHERE uuid=%s"
@@ -71,5 +76,14 @@ class QUERIES:
     SELECT_LATEST_STOCK_PRICE: Query = """SELECT value FROM exchange_rate_history
                         ORDER BY date DESC
                         LIMIT 1"""
-    WALLET_BUY_ADD_BTC: Query = "UPDATE users SET wallet_btc = wallet_btc + %s WHERE uuid=%s"
-    WALLET_BUY_SUBTRACT_USD: Query = "UPDATE users SET wallet_usd = wallet_usd - %s WHERE uuid=%s"
+    WALLET_BUY: Query = (
+        "UPDATE users SET wallet_usd = wallet_usd - %s, wallet_btc = wallet_btc + %s WHERE uuid=%s"
+    )
+    WALLET_SELL: Query = (
+        "UPDATE users SET wallet_usd = wallet_usd + %s, wallet_btc = wallet_btc - %s WHERE uuid=%s"
+    )
+
+    WALLET_TRANSACTION_HISTORY: Query = """SELECT timestamp, type, amount_usd, amount_btc,
+                                           total_usd_after_transaction, total_btc_after_transaction
+                                           FROM transaction_history
+                                           WHERE user_uuid=%s"""

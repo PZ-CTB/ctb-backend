@@ -41,7 +41,7 @@ class DatabaseProvider:
         """Initialize connection to the database."""
         if "" in [cls.db_name, cls.db_user, cls.db_password, cls.db_hostname]:
             print(f"DEBUG: {cls.db_name=}, {cls.db_user=}, {cls.db_hostname=}")
-            raise EnvironmentError("Cannot launch server due to invalid encironment")
+            raise EnvironmentError("Cannot launch server due to invalid environment")
 
         result: Message = cls._connect_to_database()
         if result is not Message.OK:

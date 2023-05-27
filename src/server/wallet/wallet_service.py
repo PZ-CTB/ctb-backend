@@ -21,7 +21,6 @@ class WalletService:
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
             user_data: list[tuple[str, str, str]] = handler().fetchall()
-
         if not handler.success:
             print(f"ERROR: server.wallet.wallet_service.balance: {handler.message}")
             return Responses.internal_database_error(handler.message)
@@ -97,13 +96,12 @@ class WalletService:
             user_data: tuple[str, str, str] = handler().fetchone()
             if user_data:
                 handler().execute(QUERIES.SELECT_LATEST_STOCK_PRICE)
-                price: tuple[str,] = handler().fetchone()
+                price: tuple[str] = handler().fetchone()
                 if price:
                     total_price = float(price[0]) * amount
                     # Check if user has enough money to perform transaction
                     if float(user_data[1]) >= total_price:
-                        handler().execute(QUERIES.WALLET_BUY_SUBTRACT_USD, (total_price, uuid))
-                        handler().execute(QUERIES.WALLET_BUY_ADD_BTC, (amount, uuid))
+                        handler().execute(QUERIES.WALLET_BUY, (total_price, amount, uuid))
                     else:
                         return Responses.not_enough_money_to_make_a_purchase()
                 else:
@@ -115,3 +113,70 @@ class WalletService:
             return Responses.internal_database_error(handler.message)
 
         return Responses.successfully_bought()
+
+    @staticmethod
+    def sell(uuid: str, amount: float) -> Response:
+        """Selling method.
+
+        Args:
+            uuid (str): user's uuid,
+            amount (float): amount of BTC to sell.
+
+        Returns:
+            Response: successfully_sold if transaction succeed, return error otherwise.
+
+        """
+        with DatabaseProvider.handler() as handler:
+            handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
+            user_data: tuple[str, str, str] = handler().fetchone()
+            if user_data:
+                # Check if user has enough BTC to perform transaction
+                if float(user_data[2]) >= amount:
+                    handler().execute(QUERIES.SELECT_LATEST_STOCK_PRICE)
+                    price: tuple[str] = handler().fetchone()
+                    if price:
+                        total_price = float(price[0]) * amount
+                        handler().execute(QUERIES.WALLET_SELL, (total_price, amount, uuid))
+                    else:
+                        return Responses.internal_server_error()
+                else:
+                    return Responses.not_enough_BTC_to_make_a_sale()
+            else:
+                return Responses.internal_server_error()
+        if not handler.success:
+            print(f"ERROR: server.wallet.wallet_service.sell: {handler.message}")
+            return Responses.internal_database_error(handler.message)
+
+        return Responses.successfully_sold()
+
+    @staticmethod
+    def history(uuid: str) -> Response:
+        """Get user's transaction history.
+
+        Args:
+            uuid (str): user's uuid.
+
+        Returns:
+            Response: List of transactions if operation succeeded, appropriate error otherwise.
+
+        """
+        with DatabaseProvider.handler() as handler:
+            handler().execute(QUERIES.WALLET_TRANSACTION_HISTORY, (uuid,))
+            transaction_history: list[tuple[str, str, str, str, str, str]] = handler().fetchall()
+        if not handler.success:
+            print(f"ERROR: server.wallet.wallet_service.history: {handler.message}")
+            return Responses.internal_database_error(handler.message)
+
+        transactions: list[tuple[str, str, float, float, float, float]] = []
+        for transaction in transaction_history:
+            transactions.append(
+                (
+                    transaction[0],
+                    transaction[1],
+                    float(transaction[2]),
+                    float(transaction[3]),
+                    float(transaction[4]),
+                    float(transaction[5]),
+                )
+            )
+        return Responses.transaction_history(transactions)

@@ -4,6 +4,10 @@ info:
   version: 1.0.1
 servers:
   - url: https://ctb-backend.onrender.com
+  - url: https://ctb-backend-pr-{id}.onrender.com
+    variables:
+      id:
+        default: '0'
 tags:
   - name: auth
     description: Authentication and user management
@@ -249,7 +253,7 @@ paths:
       tags:
         - wallet
       summary: Withdraw
-      description: Witdhraw cash in USD
+      description: Withdraw cash in USD
       parameters:
         - in: header
           name: x-access-token
@@ -271,9 +275,7 @@ paths:
         '401':
           description: Unauthorized
         '409':
-          description: Invalid amount USD
-        '409':
-          description: Invalid amount BTC
+          description: Invalid amount
         '500':
           description: Internal server error
       security:
@@ -314,8 +316,8 @@ paths:
     post:
       tags:
         - wallet
-      summary: Sell [Beta]
-      description: Sell BTC cryptocurrency [Beta]
+      summary: Sell
+      description: Sell BTC cryptocurrency
       parameters:
         - in: header
           name: x-access-token
@@ -342,6 +344,32 @@ paths:
           description: Internal server error
       security:
         - JWT: []
+  /api/v1/wallet/history:
+    get:
+      tags:
+        - wallet
+      summary: Transaction history
+      description: Get user's transaction history
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          required: true
+          description: JWT access token
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transactions'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      security:
+       - JWT: []
 components:
   schemas:
     User:
@@ -389,7 +417,6 @@ components:
         amount:
           type: number
           example: 0.1
-
     Price:
       type: object
       properties:
@@ -408,7 +435,34 @@ components:
       required:
         - date
         - avg
-
+    Transactions:
+      type: object
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+    Transaction:
+      type: object
+      properties:
+          timestamp:
+            type: string
+            example: "2020-01-26T15:04:05.000Z"
+          type:
+            type: string
+            example: "deposit"
+          amount_usd:
+            type: number
+            example: 0.1
+          amount_btc:
+            type: number
+            example: 0.1
+          total_usd_after_transaction:
+            type: number
+            example: 7124.1
+          total_btc_after_transaction:
+            type: number
+            example: 7124.1
   securitySchemes:
     JWT:
       type: http
