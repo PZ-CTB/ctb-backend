@@ -19,6 +19,7 @@ class Server:
 
         self.name: str = __name__
         self.app: Flask = self._create_app()
+        self.app.json.sort_keys = False
         self.ctx = self.app.app_context()
         self.ctx.push()
 
