@@ -8,3 +8,6 @@ psycopg~=3.1.8
 pyopenssl~=23.1.1
 pyjwt~=2.6.0
 uuid~=1.30
+apscheduler~=3.10.1
+requests~=2.25.1
+types-requests~=2.29.0.0

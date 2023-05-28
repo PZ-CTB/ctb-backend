@@ -4,7 +4,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 
 from . import SchemaValidator
 from .auth import AuthController
-from .database import DatabaseProvider
+from .database import DatabaseProvider, DatabaseUpdater
 from .stock_market import StockMarketController
 from .wallet import WalletController
 
@@ -16,6 +16,7 @@ class Server:
         """Initialize server application along with its endpoints and cors."""
         DatabaseProvider.initialize()
         SchemaValidator.initialize()
+        DatabaseUpdater.initialize()
 
         self.name: str = __name__
         self.app: Flask = self._create_app()

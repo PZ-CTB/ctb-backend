@@ -59,6 +59,12 @@ class QUERIES:
                                         GROUP BY period_number
                                         ORDER BY period_number"""
 
+    SELECT_LAST_KNOWN_DATE: Query = """SELECT MAX(date)
+                                       FROM exchange_rate_history"""
+
+    INSERT_PRICE: Query = """INSERT INTO exchange_rate_history (date, value)
+                             VALUES (%s, %s)"""
+
     SELECT_ALL_RATE_HISTORY: Query = "SELECT date, value FROM exchange_rate_history"
     SELECT_ALL_RATE_HISTORY_DESC: Query = (
         "SELECT date, value FROM exchange_rate_history ORDER BY date DESC LIMIT %s"
