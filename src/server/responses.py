@@ -57,12 +57,22 @@ class Responses:
         )
 
     @staticmethod
+    def chart(filtered_list: list[dict]) -> Response:
+        """200: success on chart endpoint."""
+        return make_response(filtered_list)
+
+    @staticmethod
     def transaction_history(transactions: list[dict[str, Union[str, float]]]) -> Response:
         """200: /history endpoint response."""
         return make_response(
             {"transactions": transactions},
             200,
         )
+
+    @staticmethod
+    def price(price: float) -> Response:
+        """200: successfully retrieved current BTC price."""
+        return make_response({"price": price}, 200)
 
     @staticmethod
     def auth_token(token: str) -> Response:
@@ -110,6 +120,14 @@ class Responses:
         """400: password and confirmPassword don't match."""
         return make_response(
             {"message": "Passwords don't match"},
+            400,
+        )
+
+    @staticmethod
+    def chart_missing_parameters_error() -> Response:
+        """400: missing parameters in chart endpoint."""
+        return make_response(
+            {"message": "Please provide both from and to parameters!"},
             400,
         )
 
@@ -171,17 +189,4 @@ class Responses:
         return make_response(
             {"message": "Internal server error"},
             500,
-        )
-
-    @staticmethod
-    def chart(filtered_list: list[dict]) -> Response:
-        """200: success on chart endpoint."""
-        return make_response(filtered_list)
-
-    @staticmethod
-    def chart_missing_parameters_error() -> Response:
-        """400: missing parameters in chart endpoint."""
-        return make_response(
-            {"message": "Please provide both from and to parameters!"},
-            400,
         )
