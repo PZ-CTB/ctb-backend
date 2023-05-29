@@ -198,7 +198,7 @@ paths:
         - stock
       summary: Stock price
       description: Current price of one BTC in USD
-      reponses:
+      responses:
         '200':
           description: Successful operation
           content:
