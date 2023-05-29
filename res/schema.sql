@@ -1,4 +1,8 @@
+-- Setup
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Users
 
 CREATE TABLE IF NOT EXISTS users
 (
@@ -11,6 +15,8 @@ CREATE TABLE IF NOT EXISTS users
 
 CREATE UNIQUE INDEX IF NOT EXISTS user_uuid_index ON users (uuid);
 
+-- Revoked tokens
+
 CREATE TABLE IF NOT EXISTS revoked_tokens
 (
     token  TEXT PRIMARY KEY,
@@ -18,6 +24,8 @@ CREATE TABLE IF NOT EXISTS revoked_tokens
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS token_index ON revoked_tokens (token);
+
+-- Exchange rate history
 
 CREATE TABLE IF NOT EXISTS exchange_rate_history
 (
@@ -27,6 +35,8 @@ CREATE TABLE IF NOT EXISTS exchange_rate_history
 );
 
 CREATE INDEX IF NOT EXISTS exchange_rate_history_date_index ON exchange_rate_history (date);
+
+-- Transaction history
 
 DO
 $$
@@ -89,3 +99,45 @@ CREATE TRIGGER update_transaction_history_trigger
     ON users
     FOR EACH ROW
 EXECUTE FUNCTION update_transaction_history();
+
+-- Prevent invalid wallet_usd
+
+CREATE OR REPLACE FUNCTION prevent_invalid_wallet_usd()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF NEW.wallet_usd < 0 THEN
+        RAISE EXCEPTION 'Cannot perform transaction leading to negative USD balance.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS prevent_invalid_wallet_usd_trigger ON users;
+CREATE TRIGGER prevent_invalid_wallet_usd_trigger
+    BEFORE UPDATE OF wallet_usd
+    ON users
+    FOR EACH ROW
+EXECUTE FUNCTION prevent_invalid_wallet_usd();
+
+-- Prevent invalid wallet_btc
+
+CREATE OR REPLACE FUNCTION prevent_invalid_wallet_btc()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF NEW.wallet_btc < 0 THEN
+        RAISE EXCEPTION 'Cannot perform transaction leading to negative BTC balance.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS prevent_invalid_wallet_btc_trigger ON users;
+CREATE TRIGGER prevent_invalid_wallet_btc_trigger
+    BEFORE UPDATE OF wallet_btc
+    ON users
+    FOR EACH ROW
+EXECUTE FUNCTION prevent_invalid_wallet_btc();
