@@ -853,7 +853,6 @@ class Test_Server:
 
             @pytest.mark.parametrize("days", [5, 8])
             def test_send_200_on_success(self, days: int) -> None:
-                expected: list[tuple[float]] = []
                 iter = days
                 if days > 7:
                     iter = 7
