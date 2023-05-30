@@ -75,6 +75,14 @@ class Responses:
         return make_response({"price": price}, 200)
 
     @staticmethod
+    def future_value(future_values: list[tuple[float]]) -> Response:
+        """200: /future_value endpoint response."""
+        return make_response(
+            {"future_values": future_values},
+            200,
+        )
+
+    @staticmethod
     def auth_token(token: str) -> Response:
         """201: returning auth token to user on login or refresh."""
         return make_response(
