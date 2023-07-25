@@ -28,7 +28,6 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
-**/src/model
 **/tests
 pyproject.toml
 LICENSE*
