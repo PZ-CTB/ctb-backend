@@ -1,4 +1,5 @@
 import json
+import logging
 from functools import wraps
 from pathlib import Path
 from typing import Callable
@@ -18,12 +19,12 @@ class SchemaValidator:
     @classmethod
     def initialize(cls) -> None:
         """Load schema files."""
-        print("INFO: server.schema_validator.SchemaValidator.initialize(): Loading schemas...")
+        logging.info("Loading schemas...")
         files = [p.stem for p in Path(PATHS.VALIDATION_SCHEMAS).iterdir() if p.is_file()]
         for schema in files:
             with open(f"{PATHS.VALIDATION_SCHEMAS}{schema}.json") as file:
                 cls.schemas[schema] = json.load(file)
-        print("INFO: server.schema_validator.SchemaValidator.initialize(): Schemas loaded.")
+        logging.info("Schemas loaded.")
 
     @classmethod
     def get_schema(cls, schema: str) -> dict:
@@ -42,7 +43,7 @@ class SchemaValidator:
                 try:
                     validate(request.get_json(), SchemaValidator.get_schema(schema_name))
                 except ValidationError as e:
-                    print(f"ERROR: server.schema_validator.SchemaValidator.validate(): {e}")
+                    logging.error(f"{e=}")
                     return Responses.invalid_json_format_error()
                 return fun(*args, **kwargs)
 
