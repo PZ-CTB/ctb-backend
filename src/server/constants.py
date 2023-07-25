@@ -29,6 +29,8 @@ class CONSTANTS:
     DATABASE_PASSWORD: str = os.getenv("CTB_DB_PWD", "")
     DATABASE_HOSTNAME: str = os.getenv("CTB_DB_HOST", "")
     DATABASE_CONNECTION_TIMEOUT: int = int(os.getenv("CTB_DB_CONN_TMOUT", 30))
+    LOG_DIRECTORY: str = os.getenv("CTB_LOG_DIR", f"{PATHS.APPLICATION_ROOT_PATH}/logs/")
+    LOG_LEVEL: str = os.getenv("CTB_LOG_LEVEL", "INFO")
 
 
 @dataclass(frozen=True)
