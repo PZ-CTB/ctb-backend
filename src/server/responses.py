@@ -176,7 +176,7 @@ class Responses:
         )
 
     @staticmethod
-    def maximum_possible_value_exceeded() -> Response:
+    def maximum_possible_amount_exceeded() -> Response:
         """409: user tried to perform wallet operation with amount exceeding allowed maximum."""
         return make_response(
             {
