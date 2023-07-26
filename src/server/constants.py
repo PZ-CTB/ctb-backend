@@ -29,6 +29,7 @@ class CONSTANTS:
     DATABASE_PASSWORD: str = os.getenv("CTB_DB_PWD", "")
     DATABASE_HOSTNAME: str = os.getenv("CTB_DB_HOST", "")
     DATABASE_CONNECTION_TIMEOUT: int = int(os.getenv("CTB_DB_CONN_TMOUT", 30))
+    MAXIMUM_ALLOWED_OPERATION_AMOUNT: float = float(os.getenv("CTB_MAX_AMOUNT", 1.0e+12))
 
 
 @dataclass(frozen=True)
