@@ -18,6 +18,8 @@ class DatabaseUpdater:
     """Class for updating the database with new stock matket data."""
 
     scheduler: Optional[BackgroundScheduler] = None
+    if "pytest" not in sys.modules:
+        stock_predictor: StockPredictorManager
 
     @classmethod
     def initialize(cls) -> None:
