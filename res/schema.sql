@@ -28,6 +28,15 @@ CREATE TABLE IF NOT EXISTS exchange_rate_history
 
 CREATE INDEX IF NOT EXISTS exchange_rate_history_date_index ON exchange_rate_history (date);
 
+CREATE TABLE IF NOT EXISTS future_value
+(
+    date      TIMESTAMP WITH TIME ZONE PRIMARY KEY CHECK (date::date = date),
+    timestamp FLOAT GENERATED ALWAYS AS (EXTRACT(EPOCH FROM date AT TIME ZONE 'UTC')) STORED,
+    value     FLOAT
+);
+
+CREATE INDEX IF NOT EXISTS future_value_index ON future_value (date);
+
 DO
 $$
     BEGIN

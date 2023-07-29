@@ -7,6 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from .. import QUERIES
+from ...model import StockPredictorManager
 from . import DatabaseProvider
 
 
@@ -14,15 +15,18 @@ class DatabaseUpdater:
     """Class for updating the database with new stock matket data."""
 
     scheduler: Optional[BackgroundScheduler] = None
+    stock_predictor: StockPredictorManager
 
     @classmethod
     def initialize(cls) -> None:
         """Initialize DatabaseUpdater."""
         cls.scheduler = BackgroundScheduler()
         cls.scheduler.start()
+        cls.stock_predictor = StockPredictorManager()
 
         def scheduled_tasks() -> None:
-            DatabaseUpdater.daily_database_update()
+            DatabaseUpdater.daily_prices_update()
+            daily_predictions_update()
 
         cls.scheduler.add_job(
             func=scheduled_tasks,
@@ -31,13 +35,26 @@ class DatabaseUpdater:
         )
 
     @staticmethod
-    def daily_database_update() -> None:
+    def daily_predictions_update() -> None:
+        """Update the database with predictions up to the current day."""
+        logging.debug(f"Daily predictions update triggered. Today is {today_date}.")
+        predictions = cls.stock_predictor.predict_values()
+        with DatabaseProvider.handler() as handler:
+            handler().execute(QUERIES.TRUNCATE_FUTURE_VALUE)
+            for date in df.index:
+                handler().execute(
+                    QUERIES.INSERT_FUTURE_VALUE,
+                    (date.strftime("%Y-%m-%d"), predictions["value"][date])
+                )
+
+    @staticmethod
+    def daily_prices_update() -> None:
         """Update the database with prices up to the current day."""
         today_date: date = date.today()
         last_known_date: Optional[date] = DatabaseUpdater._get_last_known_date()
         if last_known_date is None:
             return
-        logging.debug(f"Daily database update triggered. Today is {today_date}.")
+        logging.debug(f"Daily historical prices update triggered. Today is {today_date}.")
 
         if today_date == last_known_date:
             logging.debug("Nothing to update.")
