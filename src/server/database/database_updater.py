@@ -27,9 +27,9 @@ class DatabaseUpdater:
         if "pytest" not in sys.modules:
         	cls.stock_predictor = StockPredictorManager()
 
-        def scheduled_tasks() -> None:
-            DatabaseUpdater.daily_prices_update()
-			if "pytest" not in sys.modules:
+		if "pytest" not in sys.modules:
+        	def scheduled_tasks() -> None:
+            	DatabaseUpdater.daily_prices_update()
             	DatabaseUpdater.daily_predictions_update()
 
         cls.scheduler.add_job(
