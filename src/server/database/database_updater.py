@@ -41,16 +41,15 @@ class DatabaseUpdater:
     def daily_predictions_update(cls) -> None:
         """Update the database with predictions up to the current day."""
         logging.debug(f"Daily predictions update triggered.")
-		predictions = None
 		if "pytest" not in sys.modules:
             predictions = cls.stock_predictor.predict_values()
-        with DatabaseProvider.handler() as handler:
-            handler().execute(QUERIES.TRUNCATE_FUTURE_VALUE)
-            for date in predictions.index:
-                handler().execute(
-                    QUERIES.INSERT_FUTURE_VALUE,
-                    (date.strftime("%Y-%m-%d"), predictions["value"][date]),
-                )
+			with DatabaseProvider.handler() as handler:
+				handler().execute(QUERIES.TRUNCATE_FUTURE_VALUE)
+				for date in predictions.index:
+					handler().execute(
+						QUERIES.INSERT_FUTURE_VALUE,
+						(date.strftime("%Y-%m-%d"), predictions["value"][date]),
+					)
 
     @staticmethod
     def daily_prices_update() -> None:
