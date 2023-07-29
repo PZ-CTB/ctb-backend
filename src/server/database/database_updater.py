@@ -1,5 +1,4 @@
 import logging
-import sys
 from datetime import date, timedelta
 from typing import Optional
 
