@@ -1,3 +1,4 @@
+import logging
 from typing import Union
 
 from flask import Response
@@ -25,7 +26,7 @@ class WalletService:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
             user_data: list[tuple[str, str, str]] = handler().fetchall()
         if not handler.success:
-            print(f"ERROR: server.wallet.wallet_service.balance: {handler.message}")
+            logging.error(f"{handler.message}")
             return Responses.internal_database_error(handler.message)
 
         if user_data:
@@ -51,7 +52,7 @@ class WalletService:
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.WALLET_DEPOSIT, (amount, uuid))
         if not handler.success:
-            print(f"ERROR: server.wallet.wallet_service.deposit: {handler.message}")
+            logging.error(f"{handler.message}")
             return Responses.internal_database_error(handler.message)
 
         return Responses.successfully_deposited()
@@ -81,7 +82,7 @@ class WalletService:
             else:
                 handler().execute(QUERIES.WALLET_WITHDRAW, (amount, uuid))
         if not handler.success:
-            print(f"ERROR: server.wallet.wallet_service.withdraw: {handler.message}")
+            logging.error(f"{handler.message}")
             return Responses.internal_database_error(handler.message)
 
         return Responses.successfully_withdrawn()
@@ -118,7 +119,7 @@ class WalletService:
             else:
                 return Responses.internal_server_error()
         if not handler.success:
-            print(f"ERROR: server.wallet.wallet_service.buy: {handler.message}")
+            logging.error(f"{handler.message}")
             return Responses.internal_database_error(handler.message)
 
         return Responses.successfully_bought()
@@ -155,7 +156,7 @@ class WalletService:
             else:
                 return Responses.internal_server_error()
         if not handler.success:
-            print(f"ERROR: server.wallet.wallet_service.sell: {handler.message}")
+            logging.error(f"{handler.message}")
             return Responses.internal_database_error(handler.message)
 
         return Responses.successfully_sold()
@@ -175,7 +176,7 @@ class WalletService:
             handler().execute(QUERIES.WALLET_TRANSACTION_HISTORY, (uuid,))
             transaction_history: list[tuple[str, str, str, str, str, str]] = handler().fetchall()
         if not handler.success:
-            print(f"ERROR: server.wallet.wallet_service.history: {handler.message}")
+            logging.error(f"{handler.message}")
             return Responses.internal_database_error(handler.message)
 
         transactions: list[dict[str, Union[str, float]]] = []
