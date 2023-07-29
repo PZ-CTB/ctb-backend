@@ -15,7 +15,7 @@ class DatabaseUpdater:
     """Class for updating the database with new stock matket data."""
 
     scheduler: Optional[BackgroundScheduler] = None
-    stock_predictor: StockPredictorManager = None
+    stock_predictor: StockPredictorManager
 
     @classmethod
     def initialize(cls) -> None:
