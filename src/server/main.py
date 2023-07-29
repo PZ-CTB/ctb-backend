@@ -2,7 +2,6 @@ from flask import Blueprint, Flask
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
 
-from ..model import StockPredictorManager
 from . import SchemaValidator
 from .auth import AuthController
 from .database import DatabaseProvider, DatabaseUpdater
@@ -20,7 +19,6 @@ class Server:
         DatabaseProvider.initialize()
         SchemaValidator.initialize()
         DatabaseUpdater.initialize()
-        DatabaseUpdater.attach_stock_predictor(StockPredictorManager())
 
         self.name: str = __name__
         self.app: Flask = self._create_app()
