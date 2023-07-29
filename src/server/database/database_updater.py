@@ -6,8 +6,8 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from .. import QUERIES
 from ...model import StockPredictorManager
+from .. import QUERIES
 from . import DatabaseProvider
 
 
@@ -26,7 +26,7 @@ class DatabaseUpdater:
 
         def scheduled_tasks() -> None:
             DatabaseUpdater.daily_prices_update()
-            daily_predictions_update()
+            DatabaseUpdater.daily_predictions_update()
 
         cls.scheduler.add_job(
             func=scheduled_tasks,
@@ -34,17 +34,17 @@ class DatabaseUpdater:
             max_instances=1,
         )
 
-    @staticmethod
-    def daily_predictions_update() -> None:
+    @classmethod
+    def daily_predictions_update(cls) -> None:
         """Update the database with predictions up to the current day."""
-        logging.debug(f"Daily predictions update triggered. Today is {today_date}.")
+        logging.debug(f"Daily predictions update triggered.")
         predictions = cls.stock_predictor.predict_values()
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.TRUNCATE_FUTURE_VALUE)
-            for date in df.index:
+            for date in predictions.index:
                 handler().execute(
                     QUERIES.INSERT_FUTURE_VALUE,
-                    (date.strftime("%Y-%m-%d"), predictions["value"][date])
+                    (date.strftime("%Y-%m-%d"), predictions["value"][date]),
                 )
 
     @staticmethod
