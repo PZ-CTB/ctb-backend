@@ -7,9 +7,7 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-if "pytest" not in sys.modules:
-    from ...model import StockPredictorManager
-
+from ...model import StockPredictorManager
 from .. import QUERIES
 from . import DatabaseProvider
 
@@ -18,16 +16,14 @@ class DatabaseUpdater:
     """Class for updating the database with new stock matket data."""
 
     scheduler: Optional[BackgroundScheduler] = None
-    if "pytest" not in sys.modules:
-        stock_predictor: StockPredictorManager
+    stock_predictor: StockPredictorManager
 
     @classmethod
     def initialize(cls) -> None:
         """Initialize DatabaseUpdater."""
         cls.scheduler = BackgroundScheduler()
         cls.scheduler.start()
-        if "pytest" not in sys.modules:
-            cls.stock_predictor = StockPredictorManager()
+        cls.stock_predictor = StockPredictorManager()
 
         def scheduled_tasks() -> None:
             DatabaseUpdater.daily_prices_update()
@@ -43,15 +39,14 @@ class DatabaseUpdater:
     def daily_predictions_update(cls) -> None:
         """Update the database with predictions up to the current day."""
         logging.debug(f"Daily predictions update triggered.")
-        if "pytest" not in sys.modules:
-            predictions = cls.stock_predictor.predict_values()
-            with DatabaseProvider.handler() as handler:
-                handler().execute(QUERIES.TRUNCATE_FUTURE_VALUE)
-                for date in predictions.index:
-                    handler().execute(
-                        QUERIES.INSERT_FUTURE_VALUE,
-                        (date.strftime("%Y-%m-%d"), predictions["value"][date]),
-                    )
+        predictions = cls.stock_predictor.predict_values()
+        with DatabaseProvider.handler() as handler:
+            handler().execute(QUERIES.TRUNCATE_FUTURE_VALUE)
+            for date in predictions.index:
+                handler().execute(
+                    QUERIES.INSERT_FUTURE_VALUE,
+                    (date.strftime("%Y-%m-%d"), predictions["value"][date]),
+                )
 
     @staticmethod
     def daily_prices_update() -> None:
