@@ -41,7 +41,7 @@ class DatabaseUpdater:
     def daily_predictions_update(cls) -> None:
         """Update the database with predictions up to the current day."""
         logging.debug(f"Daily predictions update triggered.")
-	    if "pytest" not in sys.modules:
+        if "pytest" not in sys.modules:
             predictions = cls.stock_predictor.predict_values()
 			with DatabaseProvider.handler() as handler:
 				handler().execute(QUERIES.TRUNCATE_FUTURE_VALUE)
