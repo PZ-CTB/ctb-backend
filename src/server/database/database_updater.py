@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 if "pytest" not in sys.modules:
-  from ...model import StockPredictorManager
+    from ...model import StockPredictorManager
 
 from .. import QUERIES
 from . import DatabaseProvider
