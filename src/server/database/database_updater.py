@@ -22,7 +22,6 @@ class DatabaseUpdater:
         """Initialize DatabaseUpdater."""
         cls.scheduler = BackgroundScheduler()
         cls.scheduler.start()
-        cls.stock_predictor = StockPredictorManager()
 
         def scheduled_tasks() -> None:
             DatabaseUpdater.daily_prices_update()
@@ -33,6 +32,10 @@ class DatabaseUpdater:
             trigger=CronTrigger(hour=6, minute=0, second=0),
             max_instances=1,
         )
+
+    @classmethod
+    def attach_stock_predictor(clc, stock_predictor: StockPredictorManager):
+        cls.stock_predictor = stock_predictor
 
     @classmethod
     def daily_predictions_update(cls) -> None:
