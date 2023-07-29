@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 from typing import Generator
 
@@ -40,12 +41,12 @@ class DatabaseProvider:
     def initialize(cls) -> None:
         """Initialize connection to the database."""
         if "" in [cls.db_name, cls.db_user, cls.db_password, cls.db_hostname]:
-            print(f"DEBUG: {cls.db_name=}, {cls.db_user=}, {cls.db_hostname=}")
+            logging.debug(f"{cls.db_name=}, {cls.db_user=}, {cls.db_hostname=}")
             raise EnvironmentError("Cannot launch server due to invalid environment")
 
         result: Message = cls._connect_to_database()
         if result is not Message.OK:
-            print(f"WARNING: cannot connect to a file database: {result}")
+            logging.warn(f"Cannot connect to a file database: {result}")
 
     @classmethod
     @contextmanager
@@ -62,7 +63,7 @@ class DatabaseProvider:
             handler._cursor = cursor  # pylint: disable=W0212
             yield handler
         except psycopg.Error as err:
-            print(f"ERROR: {err}")
+            logging.exception(err)
             cls.connection.rollback()
             match err:
                 case psycopg.IntegrityError():
@@ -96,10 +97,10 @@ class DatabaseProvider:
                 f"connect_timeout={cls.db_connection_timeout}"
             )
         except psycopg.errors.ConnectionTimeout as err:
-            print(f"ERROR: can't connect to the database: {err}")
+            logging.exception(f"Can't connect to the database: {err}")
             return Message.NO_CONNECTION
         except psycopg.Error as err:
-            print(f"ERROR: {err}")
+            logging.exception(f"{err}")
             return Message.UNKNOWN_ERROR
 
         return Message.OK

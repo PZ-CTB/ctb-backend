@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 from flask import Response
@@ -51,13 +52,13 @@ class StockMarketService:
             price: Optional[tuple[str]] = handler().fetchone()
 
         if not handler.success or price is None:
-            print(f"ERROR: cannot retrieve current BTC price from database: {price=}")
+            logging.error(f"Cannot retrieve current BTC price from database: {price=}")
             return Responses.internal_database_error(handler.message)
 
         try:
             price_float: float = float(price[0])
         except Exception:
-            print(f"ERROR: cannot convert price '{price[0]}' to float")
+            logging.error(f"Cannot convert price '{price[0]}' to float")
             return Responses.internal_database_error(handler.message)
         else:
             return Responses.price(price_float)
