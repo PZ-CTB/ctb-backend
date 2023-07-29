@@ -1,14 +1,15 @@
 import logging
+import sys
 from datetime import date, timedelta
 from typing import Optional
 
 import requests
-import sys
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 if "pytest" not in sys.modules:
-    from ...model import StockPredictorManager
+  from ...model import StockPredictorManager
+
 from .. import QUERIES
 from . import DatabaseProvider
 
@@ -28,7 +29,8 @@ class DatabaseUpdater:
 
         def scheduled_tasks() -> None:
             DatabaseUpdater.daily_prices_update()
-            DatabaseUpdater.daily_predictions_update()
+			if "pytest" not in sys.modules:
+            	DatabaseUpdater.daily_predictions_update()
 
         cls.scheduler.add_job(
             func=scheduled_tasks,
