@@ -27,10 +27,9 @@ class DatabaseUpdater:
         if "pytest" not in sys.modules:
         	cls.stock_predictor = StockPredictorManager()
 
-		if "pytest" not in sys.modules:
-        	def scheduled_tasks() -> None:
-            	DatabaseUpdater.daily_prices_update()
-            	DatabaseUpdater.daily_predictions_update()
+        def scheduled_tasks() -> None:
+            DatabaseUpdater.daily_prices_update()
+            DatabaseUpdater.daily_predictions_update()
 
         cls.scheduler.add_job(
             func=scheduled_tasks,
@@ -42,7 +41,9 @@ class DatabaseUpdater:
     def daily_predictions_update(cls) -> None:
         """Update the database with predictions up to the current day."""
         logging.debug(f"Daily predictions update triggered.")
-        predictions = cls.stock_predictor.predict_values()
+		predictions = None
+		if "pytest" not in sys.modules:
+        	predictions = cls.stock_predictor.predict_values()
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.TRUNCATE_FUTURE_VALUE)
             for date in predictions.index:
