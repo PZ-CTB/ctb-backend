@@ -3,10 +3,12 @@ from datetime import date, timedelta
 from typing import Optional
 
 import requests
+import sys
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from ...model import StockPredictorManager
+if "pytest" not in sys.modules:
+    from ...model import StockPredictorManager
 from .. import QUERIES
 from . import DatabaseProvider
 
@@ -15,14 +17,14 @@ class DatabaseUpdater:
     """Class for updating the database with new stock matket data."""
 
     scheduler: Optional[BackgroundScheduler] = None
-    stock_predictor: StockPredictorManager
 
     @classmethod
     def initialize(cls) -> None:
         """Initialize DatabaseUpdater."""
         cls.scheduler = BackgroundScheduler()
         cls.scheduler.start()
-        cls.stock_predictor = StockPredictorManager()
+        if "pytest" not in sys.modules:
+        	cls.stock_predictor = StockPredictorManager()
 
         def scheduled_tasks() -> None:
             DatabaseUpdater.daily_prices_update()
