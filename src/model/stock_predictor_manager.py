@@ -158,7 +158,7 @@ class StockPredictorManager:
                 best_val_loss = val_loss
                 no_improvement_count = 0
 
-    def predict_values(self, days: int) -> pd.DataFrame:
+    def predict_values(self, days: int = 7) -> pd.DataFrame:
         """Predict stock value for next x days"""
 
         # Gets newest seq_length dates from the data source.
