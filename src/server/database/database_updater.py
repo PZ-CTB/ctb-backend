@@ -34,7 +34,7 @@ class DatabaseUpdater:
         )
 
     @classmethod
-    def attach_stock_predictor(clc, stock_predictor: StockPredictorManager):
+    def attach_stock_predictor(cls, stock_predictor: StockPredictorManager) -> None:
         cls.stock_predictor = stock_predictor
 
     @classmethod
