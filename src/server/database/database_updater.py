@@ -43,7 +43,7 @@ class DatabaseUpdater:
         logging.debug(f"Daily predictions update triggered.")
 		predictions = None
 		if "pytest" not in sys.modules:
-        	predictions = cls.stock_predictor.predict_values()
+            predictions = cls.stock_predictor.predict_values()
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.TRUNCATE_FUTURE_VALUE)
             for date in predictions.index:
