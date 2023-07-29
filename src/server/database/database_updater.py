@@ -25,7 +25,7 @@ class DatabaseUpdater:
         cls.scheduler = BackgroundScheduler()
         cls.scheduler.start()
         if "pytest" not in sys.modules:
-        	cls.stock_predictor = StockPredictorManager()
+            cls.stock_predictor = StockPredictorManager()
 
         def scheduled_tasks() -> None:
             DatabaseUpdater.daily_prices_update()
@@ -49,7 +49,7 @@ class DatabaseUpdater:
                     handler().execute(
                         QUERIES.INSERT_FUTURE_VALUE,
                         (date.strftime("%Y-%m-%d"), predictions["value"][date]),
-                )
+                    )
 
     @staticmethod
     def daily_prices_update() -> None:
