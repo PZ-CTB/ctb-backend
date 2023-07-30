@@ -36,6 +36,6 @@ class StockMarketController:
         """Model data estimation endpoint."""
         body: dict[str, int] = request.get_json()
 
-        days: int = body.get("days", 0)
+        days: int = body.get("days", 7)
 
         return StockMarketService.future_value(days)

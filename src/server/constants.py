@@ -73,10 +73,6 @@ class QUERIES:
         "SELECT date, value FROM exchange_rate_history ORDER BY date DESC LIMIT %s"
     )
 
-    SELECT_FUTURE_VALUE: Query = """SELECT value FROM exchange_rate_future
-            ORDER BY date ASC
-            LIMIT %s"""
-
     WALLET_DEPOSIT: Query = "UPDATE users SET wallet_usd = wallet_usd + %s WHERE uuid=%s"
     WALLET_WITHDRAW: Query = "UPDATE users SET wallet_usd = wallet_usd - %s WHERE uuid=%s"
 

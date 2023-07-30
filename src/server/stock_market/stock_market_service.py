@@ -73,14 +73,12 @@ class StockMarketService:
         Returns:
             Response: future values from database if successful, return error otherwise
         """
-        if days > 7:
-            days = 7
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_FUTURE_VALUE, (days,))
-            future_values: list[tuple[float]] = handler().fetchall()
+            future_values: list[tuple[str, float]] = handler().fetchall()
 
         if not handler.success or len(future_values) is 0:
-            print(f"ERROR: cannot retrieve future values from database: {future_values=}")
+            logging.error(f"ERROR: cannot retrieve future values from database: {future_values=}")
             return Responses.internal_database_error(handler.message)
         else:
             return Responses.future_value(future_values)
