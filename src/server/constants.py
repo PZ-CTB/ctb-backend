@@ -90,3 +90,7 @@ class QUERIES:
                                            total_usd_after_transaction, total_btc_after_transaction
                                            FROM transaction_history
                                            WHERE user_uuid=%s"""
+
+    TRUNCATE_FUTURE_VALUE: Query = "TRUNCATE future_value"
+    INSERT_FUTURE_VALUE: Query = "INSERT INTO future_value (date, value) VALUES (%s, %s)"
+    SELECT_FUTURE_VALUE: Query = "SELECT date, value FROM future_value ORDER BY date DESC LIMIT %s"
