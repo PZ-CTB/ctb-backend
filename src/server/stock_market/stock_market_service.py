@@ -35,7 +35,8 @@ class StockMarketService:
                 )
                 data = handler().fetchall()
                 filtered_list = [
-                    {"date": date.strftime("%Y-%m-%d"), "avg": avg, "low": low, "high": high}
+                    {"date": date.strftime("%Y-%m-%d"), "avg": round(avg, 2), "low": round(low, 2),
+                     "high": round(high, 2)}
                     for period, date, avg, low, high in data
                 ]
 
@@ -56,7 +57,7 @@ class StockMarketService:
             return Responses.internal_database_error(handler.message)
 
         try:
-            price_float: float = float(price[0])
+            price_float: float = round(float(price[0]), 2)
         except Exception:
             logging.error(f"Cannot convert price '{price[0]}' to float")
             return Responses.internal_database_error(handler.message)
