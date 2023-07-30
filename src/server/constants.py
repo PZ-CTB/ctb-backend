@@ -31,6 +31,7 @@ class CONSTANTS:
     DATABASE_CONNECTION_TIMEOUT: int = int(os.getenv("CTB_DB_CONN_TMOUT", 30))
     LOG_DIRECTORY: str = os.getenv("CTB_LOG_DIR", f"{PATHS.APPLICATION_ROOT_PATH}/logs/")
     LOG_LEVEL: str = os.getenv("CTB_LOG_LEVEL", "INFO")
+    MAXIMUM_ALLOWED_OPERATION_AMOUNT: float = float(os.getenv("CTB_MAX_AMOUNT", 1.0e12))
 
 
 @dataclass(frozen=True)

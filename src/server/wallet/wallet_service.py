@@ -4,6 +4,7 @@ from typing import Union
 from flask import Response
 
 from .. import QUERIES, Responses
+from ..constants import CONSTANTS
 from ..database import DatabaseProvider
 
 
@@ -46,6 +47,8 @@ class WalletService:
             Response: successfully_deposited if deposit succeed, appropriate error otherwise.
 
         """
+        if amount > CONSTANTS.MAXIMUM_ALLOWED_OPERATION_AMOUNT:
+            return Responses.maximum_possible_amount_exceeded()
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.WALLET_DEPOSIT, (amount, uuid))
         if not handler.success:
@@ -66,6 +69,8 @@ class WalletService:
             Response: successfully_withdrawn if withdrawal succeeded, appropriate error otherwise.
 
         """
+        if amount > CONSTANTS.MAXIMUM_ALLOWED_OPERATION_AMOUNT:
+            return Responses.maximum_possible_amount_exceeded()
         # Check if user has enough money to withdraw
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
@@ -94,6 +99,8 @@ class WalletService:
             Response: successfully_bought if transaction succeed, return error otherwise.
 
         """
+        if amount > CONSTANTS.MAXIMUM_ALLOWED_OPERATION_AMOUNT:
+            return Responses.maximum_possible_amount_exceeded()
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
             user_data: tuple[str, str, str] = handler().fetchone()
@@ -129,6 +136,8 @@ class WalletService:
             Response: successfully_sold if transaction succeed, return error otherwise.
 
         """
+        if amount > CONSTANTS.MAXIMUM_ALLOWED_OPERATION_AMOUNT:
+            return Responses.maximum_possible_amount_exceeded()
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (uuid,))
             user_data: tuple[str, str, str] = handler().fetchone()
