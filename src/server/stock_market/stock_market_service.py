@@ -37,7 +37,7 @@ class StockMarketService:
                         "date": date.strftime("%Y-%m-%d"),
                         "avg": round(avg, 2),
                         "low": round(low, 2),
-                        "high": round(high, 2)
+                        "high": round(high, 2),
                     }
                     for period, date, avg, low, high in data
                 ]
