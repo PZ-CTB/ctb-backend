@@ -15,9 +15,12 @@ RUN apt update && \
     apt install -y libsasl2-dev libldap2-dev libssl-dev libpq5
 
 # Install pip requirements
-COPY src/server/requirements.txt .
+COPY src/server/requirements.txt /tmp/requirements-server.txt
+COPY src/model/requirements.txt /tmp/requirements-model.txt
+RUN cat /tmp/requirements-server.txt /tmp/requirements-model.txt | sort -u > /tmp/requirements.txt
 RUN python -m pip install --upgrade pip
-RUN python -m pip install -r requirements.txt
+RUN python -m pip install -r /tmp/requirements.txt
+RUN rm -f /tmp/requirements*.txt
 
 WORKDIR /app
 COPY . /app

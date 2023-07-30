@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 from typing import Any, Generator
 from unittest.mock import Mock
@@ -68,7 +69,7 @@ class FakeDatabase:
         self._last_result = []
         self._last_generator = self._invalid_generator()
 
-        print(f"TEST: {self._last_query=}, {self._last_params=}")
+        logging.debug(f"{self._last_query=}, {self._last_params=}")
         match query:
             case QUERIES.INSERT_USER:
                 if params[0] in [_uuid for _uuid, _, _, _, _ in self.db_users]:
@@ -170,7 +171,7 @@ class FakeDatabase:
     def _invalid_generator(self) -> Generator:
         for i in range(0):
             yield i
-        print("TEST: USING INVALID GENERATOR")
+        logging.debug("USING INVALID GENERATOR")
         raise StopIteration
 
     def _fetchone_generator(self) -> Generator:
@@ -210,7 +211,7 @@ def mock_psycopg_connection_cursor(monkeypatch: pytest.MonkeyPatch) -> Mock:
 def mock_database_handler(monkeypatch: pytest.MonkeyPatch, cursor: psycopg.Cursor) -> Mock:
     @contextmanager
     def mocked_handler() -> Generator[DatabaseHandler, None, None]:
-        print(f"DEBUG: yielding mocked handler")
+        logging.debug(f"Yielding mocked handler")
         yield DatabaseHandler(cursor, Message.OK)
 
     mock_handler = Mock(side_effect=mocked_handler)

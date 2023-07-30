@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from flask import Response
@@ -47,7 +48,7 @@ class AuthService:
                 QUERIES.INSERT_USER, (str(new_uuid), email, generate_password_hash(password))
             )
         if not handler.success:
-            print(f"ERROR: server.auth.auth_service.register(): {handler.message}")
+            logging.error(f"{handler.message}")
             return Responses.internal_database_error(handler.message)
 
         return Responses.successfully_registered()
@@ -99,8 +100,8 @@ class AuthService:
         with DatabaseProvider.handler() as handler:
             handler().execute(QUERIES.SELECT_USER_DATA_BY_UUID, (user_uuid,))
             user_information: list = handler().fetchall()
-            print(f"{user_information=}")
-        print(f"{user_information=}")
+            logging.debug(f"{user_information=}")
+        logging.debug(f"{user_information=}")
 
         if not handler.success:
             return Responses.internal_database_error(handler.message)

@@ -29,6 +29,9 @@ class CONSTANTS:
     DATABASE_PASSWORD: str = os.getenv("CTB_DB_PWD", "")
     DATABASE_HOSTNAME: str = os.getenv("CTB_DB_HOST", "")
     DATABASE_CONNECTION_TIMEOUT: int = int(os.getenv("CTB_DB_CONN_TMOUT", 30))
+    LOG_DIRECTORY: str = os.getenv("CTB_LOG_DIR", f"{PATHS.APPLICATION_ROOT_PATH}/logs/")
+    LOG_LEVEL: str = os.getenv("CTB_LOG_LEVEL", "INFO")
+    MAXIMUM_ALLOWED_OPERATION_AMOUNT: float = float(os.getenv("CTB_MAX_AMOUNT", 1.0e12))
 
 
 @dataclass(frozen=True)
@@ -91,3 +94,7 @@ class QUERIES:
                                            total_usd_after_transaction, total_btc_after_transaction
                                            FROM transaction_history
                                            WHERE user_uuid=%s"""
+
+    TRUNCATE_FUTURE_VALUE: Query = "TRUNCATE future_value"
+    INSERT_FUTURE_VALUE: Query = "INSERT INTO future_value (date, value) VALUES (%s, %s)"
+    SELECT_FUTURE_VALUE: Query = "SELECT date, value FROM future_value ORDER BY date DESC LIMIT %s"
