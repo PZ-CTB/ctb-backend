@@ -1,3 +1,5 @@
+import logging
+
 import psycopg
 
 from . import Message
@@ -41,7 +43,7 @@ class DatabaseHandler:
             psycopg.Cursor: Cursor held by DatabaseProvider.
 
         """
-        print("DEBUG: Getting Handler.cursor")
+        logging.debug("Getting Handler.cursor")
         return self._cursor
 
     @property
@@ -63,7 +65,7 @@ class DatabaseHandler:
 
         """
         self._message = msg
-        print(f"DEBUG: query result -- {self._message}")
+        logging.debug(f"Query result -- {self._message}")
 
     def __call__(self) -> psycopg.Cursor:
         """Magic function allowing to treat Handler as a function.

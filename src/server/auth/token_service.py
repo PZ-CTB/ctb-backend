@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime, timedelta
 from functools import wraps
@@ -39,7 +40,7 @@ class TokenService:
             try:
                 data: dict[str, Any] = jwt.decode(token, cls._secret, algorithms=cls._algorithms)
             except jwt.InvalidTokenError as e:
-                print(f"ERROR: server.auth.token_service.token_required(): {e}")
+                logging.error(f"{e=}")
                 return Responses.unauthorized_error()
 
             user_uuid: str = data["uuid"]

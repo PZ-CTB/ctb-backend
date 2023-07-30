@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS users
     uuid          TEXT PRIMARY KEY,
     email         TEXT  NOT NULL UNIQUE,
     password_hash TEXT,
-    wallet_usd    FLOAT NOT NULL DEFAULT 0.0,
-    wallet_btc    FLOAT NOT NULL DEFAULT 0.0
+    wallet_usd    FLOAT NOT NULL DEFAULT 0.0 CHECK (wallet_usd >= 0.0 AND wallet_usd <= 1.0e+12),
+    wallet_btc    FLOAT NOT NULL DEFAULT 0.0 CHECK (wallet_btc >= 0.0 AND wallet_btc <= 1.0e+12),
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS user_uuid_index ON users (uuid);
@@ -35,6 +35,17 @@ CREATE TABLE IF NOT EXISTS exchange_rate_history
 );
 
 CREATE INDEX IF NOT EXISTS exchange_rate_history_date_index ON exchange_rate_history (date);
+
+-- Future value
+
+CREATE TABLE IF NOT EXISTS future_value
+(
+    date      TIMESTAMP WITH TIME ZONE PRIMARY KEY CHECK (date::date = date),
+    timestamp FLOAT GENERATED ALWAYS AS (EXTRACT(EPOCH FROM date AT TIME ZONE 'UTC')) STORED,
+    value     FLOAT
+);
+
+CREATE INDEX IF NOT EXISTS future_value_index ON future_value (date);
 
 -- Transaction history
 
