@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users
     email         TEXT  NOT NULL UNIQUE,
     password_hash TEXT,
     wallet_usd    FLOAT NOT NULL DEFAULT 0.0 CHECK (wallet_usd >= 0.0 AND wallet_usd <= 1.0e+12),
-    wallet_btc    FLOAT NOT NULL DEFAULT 0.0 CHECK (wallet_btc >= 0.0 AND wallet_btc <= 1.0e+12),
+    wallet_btc    FLOAT NOT NULL DEFAULT 0.0 CHECK (wallet_btc >= 0.0 AND wallet_btc <= 1.0e+12)
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS user_uuid_index ON users (uuid);
