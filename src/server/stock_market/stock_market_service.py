@@ -13,8 +13,6 @@ class StockMarketService:
     @staticmethod
     def chart(from_param: str, to_param: str, aggregate_param: int) -> Response:
         """Chart data retrieval endpoint handler."""
-        filtered_list: list = []
-
         with DatabaseProvider.handler() as handler:
             if aggregate_param == 1:
                 handler().execute(QUERIES.SELECT_CHART, [from_param, to_param])
@@ -35,8 +33,12 @@ class StockMarketService:
                 )
                 data = handler().fetchall()
                 filtered_list = [
-                    {"date": date.strftime("%Y-%m-%d"), "avg": round(avg, 2), "low": round(low, 2),
-                     "high": round(high, 2)}
+                    {
+                        "date": date.strftime("%Y-%m-%d"),
+                        "avg": round(avg, 2),
+                        "low": round(low, 2),
+                        "high": round(high, 2)
+                    }
                     for period, date, avg, low, high in data
                 ]
 
