@@ -65,3 +65,23 @@ class StockMarketService:
             return Responses.internal_database_error(handler.message)
         else:
             return Responses.price(price_float)
+
+    @staticmethod
+    def future_value(days: int) -> Response:
+        """Future_value prediction endpoint service.
+
+        Args:
+            days (int): number of future days' value to return
+
+        Returns:
+            Response: future values from database if successful, return error otherwise
+        """
+        with DatabaseProvider.handler() as handler:
+            handler().execute(QUERIES.SELECT_FUTURE_VALUE, (days,))
+            future_values: list[tuple[str, float]] = handler().fetchall()
+
+        if not handler.success or len(future_values) is 0:
+            logging.error(f"ERROR: cannot retrieve future values from database: {future_values=}")
+            return Responses.internal_database_error(handler.message)
+        else:
+            return Responses.future_value(future_values)

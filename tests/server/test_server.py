@@ -19,6 +19,7 @@ class FakeDatabase:
         ] = []  # uuid, email, pwd_hash, usd, btc
         self._db_tokens: list[tuple[str, str]] = []
         self._db_prices: list[tuple[float, str]] = []  # price, date
+        self._db_future: list[tuple[float]] = []  # price
         self._last_query: str = ""
         self._last_params: list | tuple = []
         self._last_result: list = []
@@ -28,6 +29,15 @@ class FakeDatabase:
 
     def prefill(self) -> None:
         self._db_prices.append((3.0, "01-01-2019"))
+
+        self._db_future.append((1.0,))
+        self._db_future.append((2.0,))
+        self._db_future.append((3.0,))
+        self._db_future.append((4.0,))
+        self._db_future.append((5.0,))
+        self._db_future.append((6.0,))
+        self._db_future.append((7.0,))
+        self._db_future.append((8.0,))
 
     @property
     def db_users(self) -> list[tuple[str, str, str, str, str]]:
@@ -40,6 +50,10 @@ class FakeDatabase:
     @property
     def db_prices(self) -> list[tuple[str, str]]:
         return [(str(t[0]), t[1]) for t in self._db_prices]
+
+    @property
+    def db_future(self) -> list[tuple[str]]:
+        return [(str(t[0]),) for t in self._db_future]
 
     @property
     def last_query(self) -> str:
@@ -141,6 +155,8 @@ class FakeDatabase:
                 ]
             case QUERIES.SELECT_LATEST_STOCK_PRICE:
                 return [(value, data) for value, data in self.db_prices]
+            case QUERIES.SELECT_FUTURE_VALUE:
+                return [(value,) for value in self.db_future[: self.last_params[0]]]
             case _:
                 return []
 
@@ -170,6 +186,7 @@ def fixture_clear_fake_database() -> None:
     DATABASE._db_users.clear()
     DATABASE._db_tokens.clear()
     DATABASE._db_prices.clear()
+    DATABASE._db_future.clear()
     DATABASE._last_query = ""
     DATABASE._last_params = []
     DATABASE._last_result = []
@@ -826,5 +843,60 @@ class Test_Server:
                 DATABASE._db_prices.clear()
 
                 response = self.client.get(self.url_path)
+
+                assert response.status_code == 500
+
+        class Test_Future_ValueEndpoint:
+            @pytest.fixture(autouse=True)
+            def prepare_tests(self, client: FlaskClient) -> None:
+                self.url_path: str = "api/v1/stock/future_value"
+                self.client: FlaskClient = client
+
+            @pytest.mark.parametrize("days", [5, 8])
+            def test_send_200_on_success(self, days: int) -> None:
+                iter = days
+                if days > 7:
+                    iter = 7
+                    expected = [value for value in DATABASE.db_future[:7]]
+                else:
+                    expected = [value for value in DATABASE.db_future[:days]]
+
+                response = self.client.post(
+                    self.url_path,
+                    json={"days": days},
+                )
+                actual = response.get_json()["future_values"]
+
+                assert response.status_code == 200
+                i = 0
+                while i < iter:
+                    assert actual[i][0][0] == expected[i][0]
+                    i += 1
+
+            @pytest.mark.parametrize("days", [-3, 0])
+            def test_send_409_when_wrong_number_of_days(self, days: int) -> None:
+                response = self.client.post(
+                    self.url_path,
+                    json={"days": days},
+                )
+                assert response.status_code == 400
+
+            def test_send_500_on_database_error(self, failing_handler: Mock) -> None:
+                days = 5
+                response = self.client.post(
+                    self.url_path,
+                    json={"days": days},
+                )
+
+                assert response.status_code == 500
+
+            def test_send_500_on_none_returned(self) -> None:
+                days = 5
+                DATABASE._db_future.clear()
+
+                response = self.client.post(
+                    self.url_path,
+                    json={"days": days},
+                )
 
                 assert response.status_code == 500

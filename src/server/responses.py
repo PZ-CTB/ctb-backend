@@ -72,7 +72,18 @@ class Responses:
     @staticmethod
     def price(price: float) -> Response:
         """200: successfully retrieved current BTC price."""
-        return make_response({"price": price}, 200)
+        return make_response(
+            {"price": price},
+            200,
+        )
+
+    @staticmethod
+    def future_value(future_values: list[tuple[str, float]]) -> Response:
+        """200: /future_value endpoint response."""
+        return make_response(
+            {"future_values": future_values},
+            200,
+        )
 
     @staticmethod
     def auth_token(token: str) -> Response:

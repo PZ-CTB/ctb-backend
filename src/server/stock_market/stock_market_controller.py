@@ -1,6 +1,6 @@
 from flask import Blueprint, Response, request
 
-from .. import Responses
+from .. import Responses, SchemaValidator
 from . import StockMarketService
 
 
@@ -30,7 +30,12 @@ class StockMarketController:
         return StockMarketService.price()
 
     @staticmethod
-    @blueprint.route("/future_value")
-    def future_value() -> str:
+    @blueprint.route("/future_value", methods=["POST"])
+    @SchemaValidator.validate("future_value")
+    def future_value() -> Response:
         """Model data estimation endpoint."""
-        return "future_value"
+        body: dict[str, int] = request.get_json()
+
+        days: int = body.get("days", 7)
+
+        return StockMarketService.future_value(days)
