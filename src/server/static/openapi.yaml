@@ -62,8 +62,6 @@ paths:
           description: Unauthorized
         '403':
           description: Unauthorized - wrong password
-        '403':
-          description: Unauthorized - wrong password
         '500':
           description: Internal server error
   /api/v1/auth/me:
