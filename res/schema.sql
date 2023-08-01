@@ -1,4 +1,8 @@
+-- Setup
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Users
 
 CREATE TABLE IF NOT EXISTS users
 (
@@ -6,10 +10,12 @@ CREATE TABLE IF NOT EXISTS users
     email         TEXT  NOT NULL UNIQUE,
     password_hash TEXT,
     wallet_usd    FLOAT NOT NULL DEFAULT 0.0 CHECK (wallet_usd >= 0.0 AND wallet_usd <= 1.0e+12),
-    wallet_btc    FLOAT NOT NULL DEFAULT 0.0 CHECK (wallet_btc >= 0.0 AND wallet_btc <= 1.0e+12),
+    wallet_btc    FLOAT NOT NULL DEFAULT 0.0 CHECK (wallet_btc >= 0.0 AND wallet_btc <= 1.0e+12)
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS user_uuid_index ON users (uuid);
+
+-- Revoked tokens
 
 CREATE TABLE IF NOT EXISTS revoked_tokens
 (
@@ -18,6 +24,8 @@ CREATE TABLE IF NOT EXISTS revoked_tokens
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS token_index ON revoked_tokens (token);
+
+-- Exchange rate history
 
 CREATE TABLE IF NOT EXISTS exchange_rate_history
 (
@@ -28,6 +36,8 @@ CREATE TABLE IF NOT EXISTS exchange_rate_history
 
 CREATE INDEX IF NOT EXISTS exchange_rate_history_date_index ON exchange_rate_history (date);
 
+-- Future value
+
 CREATE TABLE IF NOT EXISTS future_value
 (
     date      TIMESTAMP WITH TIME ZONE PRIMARY KEY CHECK (date::date = date),
@@ -36,6 +46,8 @@ CREATE TABLE IF NOT EXISTS future_value
 );
 
 CREATE INDEX IF NOT EXISTS future_value_index ON future_value (date);
+
+-- Transaction history
 
 DO
 $$
