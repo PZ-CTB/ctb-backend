@@ -31,7 +31,7 @@ class WalletService:
 
         if user_data:
             _, usd_balance, btc_balance = user_data[0]
-            return Responses.balance(float(usd_balance), float(btc_balance))
+            return Responses.balance(round(float(usd_balance), 2), round(float(btc_balance), 8))
         else:
             return Responses.unauthorized_error()
 
@@ -186,10 +186,10 @@ class WalletService:
                     {
                         "timestamp": transaction[0],
                         "type": transaction[1],
-                        "amount_usd": float(transaction[2]),
-                        "amount_btc": float(transaction[3]),
-                        "total_usd_after_transaction": float(transaction[4]),
-                        "total_btc_after_transaction": float(transaction[5]),
+                        "amount_usd": round(float(transaction[2]), 2),
+                        "amount_btc": round(float(transaction[3]), 8),
+                        "total_usd_after_transaction": round(float(transaction[4]), 2),
+                        "total_btc_after_transaction": round(float(transaction[5]), 8),
                     }
                 )
             )
